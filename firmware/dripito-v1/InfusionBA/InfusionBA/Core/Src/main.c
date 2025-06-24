@@ -31,6 +31,19 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define BTN_MINUS_Pin GPIO_PIN_6
+#define BTN_PLUS_Pin  GPIO_PIN_7
+#define BTN_MODE_Pin  GPIO_PIN_8
+#define BTN_MUTE_Pin  GPIO_PIN_9
+#define BTN_PORT      GPIOB
+
+/* ---------------- EA DOGS102 SPI DRIVER ---------------- */
+#define DOG_CS_PORT   LCD_CS_GPIO_Port   // PB?
+#define DOG_CS_PIN    LCD_CS_Pin
+#define DOG_RST_PORT  GPIOB
+#define DOG_RST_PIN   LCD_RST_Pin
+#define DOG_CD_PORT   GPIOB             // D/C# wired to BOOST_MODE_CTRL_Pin
+#define DOG_CD_PIN    BOOST_MODE_CTRL_Pin
 
 /* USER CODE END PD */
 
@@ -68,6 +81,20 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static void Buzzer_SetDuty(uint16_t duty)
+{
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, duty);
+}
+void Buzzer_PlayFreq(uint16_t freq, uint16_t duration_ms)
+{
+    uint32_t timer_clk = 1000000;  // TIM1 clock after prescaler = 64 MHz / (63 + 1)
+    uint32_t period = timer_clk / freq;
+
+    __HAL_TIM_SET_AUTORELOAD(&htim1, period - 1);
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, period / 2);  // 50% duty
+    HAL_Delay(duration_ms);
+    Buzzer_SetDuty(0);
+}
 
 /* USER CODE END 0 */
 
@@ -106,6 +133,13 @@ int main(void)
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+
+  //Startup Sweep
+  for (int freq = 3000; freq <= 4000; freq += 100) {
+      Buzzer_PlayFreq(freq, 30);
+      HAL_Delay(20);
+  }
 
   /* USER CODE END 2 */
 
@@ -113,6 +147,33 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if (HAL_GPIO_ReadPin(BTN_PORT, BTN_MINUS_Pin) == GPIO_PIN_RESET)
+	      {
+	          Buzzer_PlayFreq(3800, 100);  // 2 kHz, 100 ms
+
+	          HAL_Delay(200);              // debounce
+	      }
+
+	      if (HAL_GPIO_ReadPin(BTN_PORT, BTN_PLUS_Pin) == GPIO_PIN_RESET)
+	      {
+	          Buzzer_PlayFreq(4000, 100);
+
+	          HAL_Delay(200);
+	      }
+
+	      if (HAL_GPIO_ReadPin(BTN_PORT, BTN_MODE_Pin) == GPIO_PIN_RESET)
+	      {
+	          Buzzer_PlayFreq(4200, 100);
+
+	          HAL_Delay(200);
+	      }
+
+	      if (HAL_GPIO_ReadPin(BTN_PORT, BTN_MUTE_Pin) == GPIO_PIN_RESET)
+	      {
+	          Buzzer_PlayFreq(4400, 100);
+
+	          HAL_Delay(200);
+	      }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
