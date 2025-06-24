@@ -136,7 +136,7 @@ int main(void)
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 
   //Startup Sweep
-  for (int freq = 3000; freq <= 4000; freq += 100) {
+  for (int freq = 3300; freq <= 4000; freq += 100) {
       Buzzer_PlayFreq(freq, 30);
       HAL_Delay(20);
   }
@@ -149,28 +149,28 @@ int main(void)
   {
 	  if (HAL_GPIO_ReadPin(BTN_PORT, BTN_MINUS_Pin) == GPIO_PIN_RESET)
 	      {
-	          Buzzer_PlayFreq(3800, 100);  // 2 kHz, 100 ms
+	          Buzzer_PlayFreq(3800, 30);  // 2 kHz, 100 ms
 
 	          HAL_Delay(200);              // debounce
 	      }
 
 	      if (HAL_GPIO_ReadPin(BTN_PORT, BTN_PLUS_Pin) == GPIO_PIN_RESET)
 	      {
-	          Buzzer_PlayFreq(4000, 100);
+	          Buzzer_PlayFreq(4000, 30);
 
 	          HAL_Delay(200);
 	      }
 
 	      if (HAL_GPIO_ReadPin(BTN_PORT, BTN_MODE_Pin) == GPIO_PIN_RESET)
 	      {
-	          Buzzer_PlayFreq(4200, 100);
+	          Buzzer_PlayFreq(4200, 30);
 
 	          HAL_Delay(200);
 	      }
 
 	      if (HAL_GPIO_ReadPin(BTN_PORT, BTN_MUTE_Pin) == GPIO_PIN_RESET)
 	      {
-	          Buzzer_PlayFreq(4400, 100);
+	          Buzzer_PlayFreq(4400, 30);
 
 	          HAL_Delay(200);
 	      }
