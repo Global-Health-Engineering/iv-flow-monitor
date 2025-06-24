@@ -20,3 +20,27 @@ Dripito is developed as part of a Bachelor's thesis at ETH Zurich in collaborati
 git clone https://github.com/Global-Health-Engineering/dripito.git
 cd dripito/firmware
 # build or flash via STM32CubeIDE / CLI
+
+## Milestones
+
+- ✅ Schematic and PCB design finalized  
+- ✅ Initial firmware structure and button interface  
+- ✅ Basic drop sensing and IR LED control  
+- ☐ Full system integration and casing assembly  
+- ☐ Calibration and experimental validation  
+- ☐ Final documentation and ETH submission  
+- ☐ Optional open hardware release
+
+## Authors
+
+- **Leandro Catarci** – Bachelor student, ETH Zürich
+- **Rebecca Jean Alcock** – Co-Supervisor, Global Health Engineering  
+- **Dr. Jakub Tkaczuk** – Co-Supervisor, Global Health Engineering  
+- **Prof. Elizabeth Tilley** – Thesis Advisor, ETH Zürich
+- **Dr. Michelle Niescierenko (Harvard)
+
+## License
+
+All code and documentation in this repository is provided for academic and research purposes under the supervision of ETH Zürich.  
+License terms will be finalized upon project completion.  
+Please contact the authors before reuse or redistribution.
