@@ -21,7 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <string.h>
+#include <stddef.h>       // for size_t
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -37,12 +39,12 @@
 #define BTN_MUTE_Pin  GPIO_PIN_9
 #define BTN_PORT      GPIOB
 
-/* ---------------- EA DOGS102 SPI DRIVER ---------------- */
-#define DOG_CS_PORT   LCD_CS_GPIO_Port   // PB?
+/* Display pins (already wired on your PCB) */
+#define DOG_CS_PORT   LCD_CS_GPIO_Port
 #define DOG_CS_PIN    LCD_CS_Pin
 #define DOG_RST_PORT  GPIOB
 #define DOG_RST_PIN   LCD_RST_Pin
-#define DOG_CD_PORT   GPIOB             // D/C# wired to BOOST_MODE_CTRL_Pin
+#define DOG_CD_PORT   GPIOB
 #define DOG_CD_PIN    BOOST_MODE_CTRL_Pin
 
 /* USER CODE END PD */
@@ -76,11 +78,56 @@ static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+/* DOGS164 helpers ----------------------------------------------------------*/
+static void DOG_Reset(void);
+static void DOG_Init(void);
+static inline void DOG_Write(uint8_t dc, uint8_t byte);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/* ---- DOGS164 implementation ---------------------------------------------*/
+/* ---- DOGS164 serial-SPI transmitter ------------------------------------ */
+/* ---- DOGS164 low-level SPI write (4-wire, mode-3) ------------------------ */
+static inline void DOG_Write(uint8_t rs, uint8_t byte)
+{
+    /* RS pin = command(0) | data(1) */
+    HAL_GPIO_WritePin(DOG_CD_PORT, DOG_CD_PIN, rs ? GPIO_PIN_SET : GPIO_PIN_RESET);
+
+    /* Sync-byte: 0xF8 for command, 0xFA for data (RW = 0 for write) */
+    uint8_t sync = (uint8_t)(0xF8 | (rs ? 0x02 : 0x00));
+
+    /* Split payload into two 4-bit transfers, high nibble first */
+    uint8_t hi =  byte        & 0xF0;           /* DB7…DB4 -> D7…D4 */
+    uint8_t lo = (byte << 4) & 0xF0;           /* DB3…DB0 -> D7…D4 */
+
+    HAL_GPIO_WritePin(DOG_CS_PORT, DOG_CS_PIN, GPIO_PIN_RESET);   /* CS low */
+    HAL_SPI_Transmit(&hspi1, &sync, 1, HAL_MAX_DELAY);
+    HAL_SPI_Transmit(&hspi1, &hi,   1, HAL_MAX_DELAY);
+    HAL_SPI_Transmit(&hspi1, &lo,   1, HAL_MAX_DELAY);
+    HAL_GPIO_WritePin(DOG_CS_PORT, DOG_CS_PIN, GPIO_PIN_SET);     /* CS high */
+}
+
+#define DOG_CMD(x)  DOG_Write(0U, (x))
+#define DOG_DAT(x)  DOG_Write(1U, (x))
+
+static void DOG_Reset(void)
+{
+    HAL_GPIO_WritePin(DOG_RST_PORT, DOG_RST_PIN, GPIO_PIN_RESET);        // keep low ≥30 µs
+    HAL_Delay(1);                                                        // 1 ms = plenty
+    HAL_GPIO_WritePin(DOG_RST_PORT, DOG_RST_PIN, GPIO_PIN_SET);          // release
+    HAL_Delay(2);                                                        // let booster start
+}
+
+static void DOG_Init(void)
+{
+    static const uint8_t seq[11] = {0x3A,0x09,0x06,0x1E,0x39,
+                                    0x1B,0x6C,0x56,0x7A,0x38,0x0F};
+    for (size_t i = 0; i < sizeof(seq); ++i)  DOG_CMD(seq[i]);           // p.20 init example :contentReference[oaicite:0]{index=0}
+    HAL_Delay(1);                                                        // settle 1 frame
+    DOG_CMD(0x0C);                                                       // display ON, cursor OFF
+}
+
 static void Buzzer_SetDuty(uint16_t duty)
 {
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, duty);
@@ -133,12 +180,39 @@ int main(void)
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  /* === DOGS164 bring-up =================================================== */
+  DOG_Reset();                   // must toggle high again
+  DOG_Init();             // sends the 11-byte sequence
+  DOG_CMD(0x80);                 // DDRAM home
+  DOG_DAT('O'); DOG_DAT('K');    // two letters are enough
+
+  // Half-duplex default enables both TE and RE. We want TX only.
+  SET_BIT(huart2.Instance->CR1, USART_CR1_UE);
+
+  __HAL_UART_DISABLE_IT(&huart2, UART_IT_ERR | UART_IT_RXNE);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 
   //Startup Sweep
-  for (int freq = 3300; freq <= 4000; freq += 100) {
-      Buzzer_PlayFreq(freq, 30);
-      HAL_Delay(20);
+  Buzzer_PlayFreq(2812, 40);  // G♯ – soft intro
+  HAL_Delay(30);
+
+  Buzzer_PlayFreq(3000, 50);  // A – root
+  HAL_Delay(30);
+
+  Buzzer_PlayFreq(3375, 60);  // E – fifth
+  HAL_Delay(40);
+
+  Buzzer_PlayFreq(3750, 80);  // C♯ – major third
+  HAL_Delay(50);
+
+  Buzzer_PlayFreq(3000, 120); // A – resolution/root
+  HAL_Delay(80);
+
+  const char *test = "Hello from STM32\r\n";
+  HAL_StatusTypeDef status = HAL_UART_Transmit(&huart2, (uint8_t *)test, 18, 100);
+  if (status != HAL_OK) {
+      Error_Handler();
   }
 
   /* USER CODE END 2 */
@@ -149,13 +223,16 @@ int main(void)
   {
 	  if (HAL_GPIO_ReadPin(BTN_PORT, BTN_MINUS_Pin) == GPIO_PIN_RESET)
 	      {
+		  	  const char *msg = "BTN_MINUS pressed\r\n";
+		      HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 	          Buzzer_PlayFreq(3800, 30);  // 2 kHz, 100 ms
-
 	          HAL_Delay(200);              // debounce
 	      }
 
 	      if (HAL_GPIO_ReadPin(BTN_PORT, BTN_PLUS_Pin) == GPIO_PIN_RESET)
 	      {
+	    	  const char *msg = "BTN_PLUS pressed\r\n";
+	    	  HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 	          Buzzer_PlayFreq(4000, 30);
 
 	          HAL_Delay(200);
@@ -163,15 +240,17 @@ int main(void)
 
 	      if (HAL_GPIO_ReadPin(BTN_PORT, BTN_MODE_Pin) == GPIO_PIN_RESET)
 	      {
+	    	  const char *msg = "BTN_MODE pressed\r\n";
+	    	  HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 	          Buzzer_PlayFreq(4200, 30);
-
 	          HAL_Delay(200);
 	      }
 
 	      if (HAL_GPIO_ReadPin(BTN_PORT, BTN_MUTE_Pin) == GPIO_PIN_RESET)
 	      {
+	    	  const char *msg = "BTN_MUTE pressed\r\n";
+	    	  HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 	          Buzzer_PlayFreq(4400, 30);
-
 	          HAL_Delay(200);
 	      }
     /* USER CODE END WHILE */
@@ -341,18 +420,18 @@ static void MX_SPI1_Init(void)
   /* SPI1 parameter configuration*/
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.Direction = SPI_DIRECTION_1LINE;
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi1.Init.CRCPolynomial = 7;
   hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  hspi1.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
   if (HAL_SPI_Init(&hspi1) != HAL_OK)
   {
     Error_Handler();
@@ -385,7 +464,7 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 63;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 249;
+  htim1.Init.Period = 31;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -459,12 +538,14 @@ static void MX_USART2_UART_Init(void)
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.Mode = UART_MODE_TX;
   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
   huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart2.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT|UART_ADVFEATURE_DMADISABLEONERROR_INIT;
+  huart2.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
+  huart2.AdvancedInit.DMADisableonRxError = UART_ADVFEATURE_DMA_DISABLEONRXERROR;
   if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
