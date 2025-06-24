@@ -20,7 +20,7 @@ Dripito is developed as part of a Bachelor's thesis at ETH Zurich in collaborati
 git clone https://github.com/Global-Health-Engineering/dripito.git
 cd dripito/firmware
 # build or flash via STM32CubeIDE / CLI
-
+```
 ## Milestones
 
 - ✅ Schematic and PCB design finalized  
