@@ -32,12 +32,16 @@
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
+
 /* USER CODE BEGIN PD */
 #define BTN_MINUS_Pin GPIO_PIN_6
 #define BTN_PLUS_Pin  GPIO_PIN_7
 #define BTN_MODE_Pin  GPIO_PIN_8
 #define BTN_MUTE_Pin  GPIO_PIN_9
 #define BTN_PORT      GPIOB
+#define VREFINT_CAL (*(uint16_t*)0x1FFF75AA)  // Factory-calibrated ADC value for VREFINT at 3.0 V
+#define VREFINT_MV 3000  // Calibration is done at 3.00 V
+
 
 /* Display pins (already wired on your PCB) */
 #define DOG_CS_PORT   LCD_CS_GPIO_Port
@@ -78,6 +82,7 @@ static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
+uint32_t  Read_Battery_mV(void);
 /* DOGS164 helpers ----------------------------------------------------------*/
 static void DOG_Reset(void);
 static void DOG_Init(void);
@@ -253,6 +258,11 @@ int main(void)
 	          Buzzer_PlayFreq(4400, 30);
 	          HAL_Delay(200);
 	      }
+	      uint32_t voltage_mV = Read_Battery_mV();
+
+	      char msg[64];
+	      sprintf(msg, "Battery Voltage: %lu mV\r\n", voltage_mV);
+	      HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -341,7 +351,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
-  hadc1.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_1CYCLE_5;
+  hadc1.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_19CYCLES_5;
   hadc1.Init.SamplingTimeCommon2 = ADC_SAMPLETIME_1CYCLE_5;
   hadc1.Init.OversamplingMode = DISABLE;
   hadc1.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_HIGH;
@@ -352,7 +362,7 @@ static void MX_ADC1_Init(void)
 
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_3;
+  sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_1;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -611,7 +621,39 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+uint32_t Read_VDDA_mV(void)
+{
+    ADC_ChannelConfTypeDef sConfig = {0};
+    sConfig.Channel = ADC_CHANNEL_VREFINT;
+    sConfig.Rank = ADC_REGULAR_RANK_1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_19CYCLES_5;
+    HAL_ADC_ConfigChannel(&hadc1, &sConfig);
 
+    HAL_ADC_Start(&hadc1);
+    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+    uint32_t vrefint_adc = HAL_ADC_GetValue(&hadc1);
+    HAL_ADC_Stop(&hadc1);
+
+    // VDDA (real) = 3.000 V × (VREFINT_CAL / measured VREFINT)
+    return (VREFINT_CAL * VREFINT_MV) / vrefint_adc;  // in millivolts
+}
+uint32_t Read_Battery_mV(void)
+{
+    uint32_t vdda_mv = Read_VDDA_mV();
+
+    ADC_ChannelConfTypeDef sConfig = {0};
+    sConfig.Channel = ADC_CHANNEL_4;  // PA4
+    sConfig.Rank = ADC_REGULAR_RANK_1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_19CYCLES_5;
+    HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+
+    HAL_ADC_Start(&hadc1);
+    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+    uint32_t adc_val = HAL_ADC_GetValue(&hadc1);
+    HAL_ADC_Stop(&hadc1);
+
+    return (adc_val * vdda_mv) / 4095;  // Battery voltage at PA4 in mV
+}
 /* USER CODE END 4 */
 
 /**
