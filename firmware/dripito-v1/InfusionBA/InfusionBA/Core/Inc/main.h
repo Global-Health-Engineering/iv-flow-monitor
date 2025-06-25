@@ -67,14 +67,6 @@ void Error_Handler(void);
 #define LOG_TX_GPIO_Port GPIOA
 #define PD_ADC_Pin GPIO_PIN_3
 #define PD_ADC_GPIO_Port GPIOA
-#define LCD_SCK_Pin GPIO_PIN_5
-#define LCD_SCK_GPIO_Port GPIOA
-#define LCD_MOSI_Pin GPIO_PIN_7
-#define LCD_MOSI_GPIO_Port GPIOA
-#define LCD_CS_Pin GPIO_PIN_0
-#define LCD_CS_GPIO_Port GPIOB
-#define LCD_RST_Pin GPIO_PIN_1
-#define LCD_RST_GPIO_Port GPIOB
 #define DROP_INT_Pin GPIO_PIN_10
 #define DROP_INT_GPIO_Port GPIOB
 #define BOOST_MODE_CTRL_Pin GPIO_PIN_12

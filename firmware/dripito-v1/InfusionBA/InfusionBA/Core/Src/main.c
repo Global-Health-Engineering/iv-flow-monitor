@@ -32,8 +32,11 @@
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
-
 /* USER CODE BEGIN PD */
+#define CS_Pin        GPIO_PIN_0
+#define CS_GPIO_Port  GPIOB
+#define RST_Pin       GPIO_PIN_1
+#define RST_GPIO_Port GPIOB
 #define BTN_MINUS_Pin GPIO_PIN_6
 #define BTN_PLUS_Pin  GPIO_PIN_7
 #define BTN_MODE_Pin  GPIO_PIN_8
@@ -42,14 +45,6 @@
 #define VREFINT_CAL (*(uint16_t*)0x1FFF75AA)  // Factory-calibrated ADC value for VREFINT at 3.0 V
 #define VREFINT_MV 3000  // Calibration is done at 3.00 V
 
-
-/* Display pins (already wired on your PCB) */
-#define DOG_CS_PORT   LCD_CS_GPIO_Port
-#define DOG_CS_PIN    LCD_CS_Pin
-#define DOG_RST_PORT  GPIOB
-#define DOG_RST_PIN   LCD_RST_Pin
-#define DOG_CD_PORT   GPIOB
-#define DOG_CD_PIN    BOOST_MODE_CTRL_Pin
 
 /* USER CODE END PD */
 
@@ -78,61 +73,16 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_RTC_Init(void);
-static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 uint32_t  Read_Battery_mV(void);
 /* DOGS164 helpers ----------------------------------------------------------*/
-static void DOG_Reset(void);
-static void DOG_Init(void);
-static inline void DOG_Write(uint8_t dc, uint8_t byte);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-/* ---- DOGS164 implementation ---------------------------------------------*/
-/* ---- DOGS164 serial-SPI transmitter ------------------------------------ */
-/* ---- DOGS164 low-level SPI write (4-wire, mode-3) ------------------------ */
-static inline void DOG_Write(uint8_t rs, uint8_t byte)
-{
-    /* RS pin = command(0) | data(1) */
-    HAL_GPIO_WritePin(DOG_CD_PORT, DOG_CD_PIN, rs ? GPIO_PIN_SET : GPIO_PIN_RESET);
-
-    /* Sync-byte: 0xF8 for command, 0xFA for data (RW = 0 for write) */
-    uint8_t sync = (uint8_t)(0xF8 | (rs ? 0x02 : 0x00));
-
-    /* Split payload into two 4-bit transfers, high nibble first */
-    uint8_t hi =  byte        & 0xF0;           /* DB7…DB4 -> D7…D4 */
-    uint8_t lo = (byte << 4) & 0xF0;           /* DB3…DB0 -> D7…D4 */
-
-    HAL_GPIO_WritePin(DOG_CS_PORT, DOG_CS_PIN, GPIO_PIN_RESET);   /* CS low */
-    HAL_SPI_Transmit(&hspi1, &sync, 1, HAL_MAX_DELAY);
-    HAL_SPI_Transmit(&hspi1, &hi,   1, HAL_MAX_DELAY);
-    HAL_SPI_Transmit(&hspi1, &lo,   1, HAL_MAX_DELAY);
-    HAL_GPIO_WritePin(DOG_CS_PORT, DOG_CS_PIN, GPIO_PIN_SET);     /* CS high */
-}
-
-#define DOG_CMD(x)  DOG_Write(0U, (x))
-#define DOG_DAT(x)  DOG_Write(1U, (x))
-
-static void DOG_Reset(void)
-{
-    HAL_GPIO_WritePin(DOG_RST_PORT, DOG_RST_PIN, GPIO_PIN_RESET);        // keep low ≥30 µs
-    HAL_Delay(1);                                                        // 1 ms = plenty
-    HAL_GPIO_WritePin(DOG_RST_PORT, DOG_RST_PIN, GPIO_PIN_SET);          // release
-    HAL_Delay(2);                                                        // let booster start
-}
-
-static void DOG_Init(void)
-{
-    static const uint8_t seq[11] = {0x3A,0x09,0x06,0x1E,0x39,
-                                    0x1B,0x6C,0x56,0x7A,0x38,0x0F};
-    for (size_t i = 0; i < sizeof(seq); ++i)  DOG_CMD(seq[i]);           // p.20 init example :contentReference[oaicite:0]{index=0}
-    HAL_Delay(1);                                                        // settle 1 frame
-    DOG_CMD(0x0C);                                                       // display ON, cursor OFF
-}
-
 static void Buzzer_SetDuty(uint16_t duty)
 {
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, duty);
@@ -181,16 +131,21 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_RTC_Init();
-  MX_SPI1_Init();
   MX_TIM1_Init();
   MX_USART2_UART_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
+  /* --- DOGS164 scope test --------------------------------------- */
+  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET);
+  HAL_Delay(2);
+  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);
 
-  /* === DOGS164 bring-up =================================================== */
-  DOG_Reset();                   // must toggle high again
-  DOG_Init();             // sends the 11-byte sequence
-  DOG_CMD(0x80);                 // DDRAM home
-  DOG_DAT('O'); DOG_DAT('K');    // two letters are enough
+  const uint8_t burst[4] = {0xAA, 0x55, 0xFF, 0x00};
+
+
+
+
+  /* -------------------------------------------------------------- */
 
   // Half-duplex default enables both TE and RE. We want TX only.
   SET_BIT(huart2.Instance->CR1, USART_CR1_UE);
@@ -226,43 +181,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if (HAL_GPIO_ReadPin(BTN_PORT, BTN_MINUS_Pin) == GPIO_PIN_RESET)
-	      {
-		  	  const char *msg = "BTN_MINUS pressed\r\n";
-		      HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-	          Buzzer_PlayFreq(3800, 30);  // 2 kHz, 100 ms
-	          HAL_Delay(200);              // debounce
-	      }
-
-	      if (HAL_GPIO_ReadPin(BTN_PORT, BTN_PLUS_Pin) == GPIO_PIN_RESET)
-	      {
-	    	  const char *msg = "BTN_PLUS pressed\r\n";
-	    	  HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-	          Buzzer_PlayFreq(4000, 30);
-
-	          HAL_Delay(200);
-	      }
-
-	      if (HAL_GPIO_ReadPin(BTN_PORT, BTN_MODE_Pin) == GPIO_PIN_RESET)
-	      {
-	    	  const char *msg = "BTN_MODE pressed\r\n";
-	    	  HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-	          Buzzer_PlayFreq(4200, 30);
-	          HAL_Delay(200);
-	      }
-
-	      if (HAL_GPIO_ReadPin(BTN_PORT, BTN_MUTE_Pin) == GPIO_PIN_RESET)
-	      {
-	    	  const char *msg = "BTN_MUTE pressed\r\n";
-	    	  HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-	          Buzzer_PlayFreq(4400, 30);
-	          HAL_Delay(200);
-	      }
-	      uint32_t voltage_mV = Read_Battery_mV();
-
-	      char msg[64];
-	      sprintf(msg, "Battery Voltage: %lu mV\r\n", voltage_mV);
-	      HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+	    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
+	    HAL_SPI_Transmit(&hspi1, (uint8_t*)burst, sizeof(burst), HAL_MAX_DELAY);
+	    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
+	    HAL_Delay(10);  // adjust to slow down if needed
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -351,7 +273,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
-  hadc1.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_19CYCLES_5;
+  hadc1.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_1CYCLE_5;
   hadc1.Init.SamplingTimeCommon2 = ADC_SAMPLETIME_1CYCLE_5;
   hadc1.Init.OversamplingMode = DISABLE;
   hadc1.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_HIGH;
@@ -362,7 +284,7 @@ static void MX_ADC1_Init(void)
 
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_4;
+  sConfig.Channel = ADC_CHANNEL_3;
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_1;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -430,12 +352,12 @@ static void MX_SPI1_Init(void)
   /* SPI1 parameter configuration*/
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_1LINE;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -584,30 +506,20 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LCD_CS_Pin|LCD_RST_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(BOOST_MODE_CTRL_GPIO_Port, BOOST_MODE_CTRL_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin : LCD_CS_Pin */
-  GPIO_InitStruct.Pin = LCD_CS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(LCD_CS_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : LCD_RST_Pin BOOST_MODE_CTRL_Pin */
-  GPIO_InitStruct.Pin = LCD_RST_Pin|BOOST_MODE_CTRL_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : DROP_INT_Pin */
   GPIO_InitStruct.Pin = DROP_INT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(DROP_INT_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : BOOST_MODE_CTRL_Pin */
+  GPIO_InitStruct.Pin = BOOST_MODE_CTRL_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
+  HAL_GPIO_Init(BOOST_MODE_CTRL_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BTN_MINUS_Pin BTN_PLUS_Pin BTN_MODE_Pin BTN_MUTE_Pin */
   GPIO_InitStruct.Pin = BTN_MINUS_Pin|BTN_PLUS_Pin|BTN_MODE_Pin|BTN_MUTE_Pin;
