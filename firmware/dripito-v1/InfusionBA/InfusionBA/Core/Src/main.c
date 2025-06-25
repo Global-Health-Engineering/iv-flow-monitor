@@ -78,11 +78,80 @@ static void MX_USART2_UART_Init(void);
 static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 uint32_t  Read_Battery_mV(void);
+
 /* DOGS164 helpers ----------------------------------------------------------*/
+void DOG_WriteCommand(uint8_t cmd);
+void DOG_WriteData(uint8_t dat);
+void DOG_Init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/* ------------------------------------------------------------------------- */
+/*  EA-DOGS164-A  SPI helpers (SSD1803A, 3-byte frames, mode-3 @ ≤1 MHz)     */
+/* ------------------------------------------------------------------------- */
+static inline void DOG_Select (void) { HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET); }
+static inline void DOG_Deselect(void) { HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET); }
+
+/* Generic 3-byte frame: sync (0xF8 = cmd, 0xFA = data) + hi-nib + lo-nib */
+static void DOG_WriteFrame(uint8_t sync, uint8_t value)
+{
+    uint8_t frame[3] = {
+        sync,
+        (value << 4) & 0xF0,
+        value        & 0xF0
+    };
+
+    printf("A0: %s, CS: LOW, SPI Frame: %02X %02X %02X\r\n",
+           (sync == 0xFA) ? "DATA" : "CMD", frame[0], frame[1], frame[2]);
+
+    DOG_Select();
+    HAL_StatusTypeDef res = HAL_SPI_Transmit(&hspi1, frame, 3, HAL_MAX_DELAY);
+    DOG_Deselect();
+
+    printf("CS: HIGH, SPI Status: %d\r\n", res);
+}
+
+void DOG_WriteData(uint8_t dat) {
+    printf("DOG DATA: 0x%02X\r\n", dat);
+    DOG_WriteFrame(0xFA, dat);
+}
+void DOG_WriteCommand(uint8_t cmd) {
+    printf("DOG CMD: 0x%02X\r\n", cmd);
+    DOG_WriteFrame(0xF8, cmd);
+}
+
+/* ------------------------------------------------------------------------- */
+/*  Power-on initialisation sequence (bottom-view, 4 × 16)                   */
+/* ------------------------------------------------------------------------- */
+/* --- DOGS164 power-on ---------------------------------------------------- */
+void DOG_Init(void)
+{
+	DOG_WriteCommand(0x3A); // Function Set (RE=1)
+	HAL_Delay(1);
+	DOG_WriteCommand(0x09); // 4-line display
+	HAL_Delay(1);
+	DOG_WriteCommand(0x1E); // Bias set BS1=1
+	HAL_Delay(1);
+	DOG_WriteCommand(0x39); // Function Set (RE=0, IS=1)
+	HAL_Delay(1);
+	DOG_WriteCommand(0x1B); // Internal OSC
+	HAL_Delay(1);
+	DOG_WriteCommand(0x6C); // Follower Control (booster on)
+	HAL_Delay(10);          // Wait for booster to stabilize
+	DOG_WriteCommand(0x56); // Power Control
+	HAL_Delay(1);
+	DOG_WriteCommand(0x7F); // Contrast Set
+	HAL_Delay(1);
+	DOG_WriteCommand(0x38); // Function Set (RE=0, IS=0)
+	HAL_Delay(1);
+	DOG_WriteCommand(0x0F); // Display ON
+
+    //DOG_WriteCommand(0x01);
+    HAL_Delay(10);
+}
+
+
 static void Buzzer_SetDuty(uint16_t duty)
 {
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, duty);
@@ -135,56 +204,49 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  /* --- DOGS164 scope test --------------------------------------- */
   HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET);
-  HAL_Delay(2);
+  HAL_Delay(10);
   HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);
-
-  const uint8_t burst[4] = {0xAA, 0x55, 0xFF, 0x00};
-
-
-
-
-  /* -------------------------------------------------------------- */
-
-  // Half-duplex default enables both TE and RE. We want TX only.
-  SET_BIT(huart2.Instance->CR1, USART_CR1_UE);
-
-  __HAL_UART_DISABLE_IT(&huart2, UART_IT_ERR | UART_IT_RXNE);
-  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-
-  //Startup Sweep
-  Buzzer_PlayFreq(2812, 40);  // G♯ – soft intro
-  HAL_Delay(30);
-
-  Buzzer_PlayFreq(3000, 50);  // A – root
-  HAL_Delay(30);
-
-  Buzzer_PlayFreq(3375, 60);  // E – fifth
-  HAL_Delay(40);
-
-  Buzzer_PlayFreq(3750, 80);  // C♯ – major third
   HAL_Delay(50);
 
-  Buzzer_PlayFreq(3000, 120); // A – resolution/root
-  HAL_Delay(80);
+  //DOG_PushVOUT();   // test booster only, don’t touch DDRAM
+  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET);
+  HAL_Delay(10);
+  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);
+  HAL_Delay(40);
+  printf("Performed hard reset on DOGS164\r\n");
+  printf("Init start\r\n");
+  DOG_Init();
+  DOG_WriteCommand(0x01); // Clear screen
+  HAL_Delay(100);
+  DOG_WriteCommand(0x0F); // Display ON, Cursor & Blink ON
+  printf("Wrote Display ON and waiting for 1 second\r\n");
+  HAL_Delay(1000);
+  printf("SPI1 Mode: %lu, Direction: %lu\r\n", hspi1.Init.Mode, hspi1.Init.Direction);
 
-  const char *test = "Hello from STM32\r\n";
-  HAL_StatusTypeDef status = HAL_UART_Transmit(&huart2, (uint8_t *)test, 18, 100);
-  if (status != HAL_OK) {
-      Error_Handler();
-  }
+  printf("DOG_Init done\r\n");
 
+  DOG_WriteCommand(0x80);
+  printf("Set DDRAM address\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint8_t blk = 0xFF, space = 0x00;
   while (1)
   {
-	    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
-	    HAL_SPI_Transmit(&hspi1, (uint8_t*)burst, sizeof(burst), HAL_MAX_DELAY);
-	    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
-	    HAL_Delay(10);  // adjust to slow down if needed
+//	  DOG_WriteCommand(0x6C);
+//	  HAL_Delay(250);
+//	  printf("Voltage follower enabled, check VOUT now\r\n");
+//	  DOG_WriteCommand(0x80);  // Go to start
+//	      for (int i = 0; i < 64; ++i)
+//	          DOG_WriteData((i % 2 == 0) ? blk : space);  // Striped pattern
+//	      HAL_Delay(1000);
+//
+//	      DOG_WriteCommand(0x80);
+//	      for (int i = 0; i < 64; ++i)
+//	          DOG_WriteData((i % 2 == 0) ? space : blk);
+//	      HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -497,6 +559,17 @@ static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   /* USER CODE BEGIN MX_GPIO_Init_1 */
+  /* --- DOGS164 control lines: PB0 = /CS, PB1 = /RST, PB14 = A0 --- */
+  GPIO_InitStruct.Pin   = CS_Pin | RST_Pin | GPIO_PIN_14;
+  GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull  = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* Initial idle levels */
+  HAL_GPIO_WritePin(CS_GPIO_Port,  CS_Pin,  GPIO_PIN_SET);   // /CS high (inactive)
+  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);   // RST high (normal operation)
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);     // A0 low (command)
 
   /* USER CODE END MX_GPIO_Init_1 */
 
@@ -506,7 +579,17 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|LCD_RST_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(BOOST_MODE_CTRL_GPIO_Port, BOOST_MODE_CTRL_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pins : PB0 LCD_RST_Pin */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|LCD_RST_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : DROP_INT_Pin */
   GPIO_InitStruct.Pin = DROP_INT_Pin;
@@ -579,6 +662,7 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+
   }
   /* USER CODE END Error_Handler_Debug */
 }
