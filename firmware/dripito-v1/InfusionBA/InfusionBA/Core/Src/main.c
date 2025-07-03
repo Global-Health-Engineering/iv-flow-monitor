@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>       // for size_t
+#include "stm32g0xx_hal.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,6 +46,18 @@
 #define BTN_PORT      GPIOB
 #define VREFINT_CAL (*(uint16_t*)0x1FFF75AA)  // Factory-calibrated ADC value for VREFINT at 3.0 V
 #define VREFINT_MV 3000  // Calibration is done at 3.00 V
+
+#define DROP_VOLUME_ML     0.05f
+#define DEAD_DROP_TIMEOUT_MS 10000  // 10 seconds
+#define LOCKOUT_MS 100  // Debounce lockout time
+
+#define DOG_TRACE   1
+
+#if DOG_TRACE
+  #define TRACE(...)   printf(__VA_ARGS__)
+#else
+  #define TRACE(...)
+#endif
 
 
 /* USER CODE END PD */
@@ -79,12 +93,15 @@ static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 uint32_t  Read_Battery_mV(void);
 uint32_t Read_VDDA_mV(void);
-void Monitor_ADC_Drop_Spikes();
+void Monitor_Drops_WithFlow();
 
 /* DOGS164 helpers ----------------------------------------------------------*/
 void DOG_WriteCommand(uint8_t cmd);
 void DOG_WriteData(uint8_t dat);
 void DOG_Init(void);
+
+static inline void DOG_Select(void)   { HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET); }
+static inline void DOG_Deselect(void) { HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);  }
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -92,66 +109,104 @@ void DOG_Init(void);
 /* ------------------------------------------------------------------------- */
 /*  EA-DOGS164-A  SPI helpers (SSD1803A, 3-byte frames, mode-3 @ ≤1 MHz)     */
 /* ------------------------------------------------------------------------- */
-static inline void DOG_Select (void) { HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET); }
-static inline void DOG_Deselect(void) { HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET); }
-
-/* Generic 3-byte frame: sync (0xF8 = cmd, 0xFA = data) + hi-nib + lo-nib */
-static void DOG_WriteFrame(uint8_t sync, uint8_t value)
+uint8_t DOG_ReadStatus(void)
 {
-    uint8_t frame[3] = {
-        sync,
-        (value << 4) & 0xF0,
-        value        & 0xF0
+    uint8_t status;
+
+    DOG_Select();
+
+    // Status read command for SSD1803A is typically 0xFC (check your datasheet to confirm)
+    uint8_t read_cmd = 0xFC;
+    HAL_SPI_Transmit(&hspi1, &read_cmd, 1, HAL_MAX_DELAY);
+    HAL_SPI_Receive(&hspi1, &status, 1, HAL_MAX_DELAY);
+
+    DOG_Deselect();
+
+    printf("DOG Status: 0x%02X\r\n", status);
+    return status;
+}
+
+/* --------------------------------------------------------------------------
+ *  DOGS164 low-level serial driver
+ * -------------------------------------------------------------------------*/
+
+
+/* comment this line out if you don’t want the printf-traces */
+
+
+extern SPI_HandleTypeDef hspi1;               /* created by CubeMX */
+
+
+/* ---------- generic 3-wire frame (cmd or data) -------------------------- */
+static HAL_StatusTypeDef DOG_WriteFrame(uint8_t sync, uint8_t value)
+{
+    uint8_t frame[3] =
+    {
+        sync,                 /* 0xF8 = command, 0xFA = data              */
+        value       & 0xF0,   /* upper nibble first                        */
+       (value << 4) & 0xF0    /* lower nibble second                       */
     };
 
-    printf("A0: %s, CS: LOW, SPI Frame: %02X %02X %02X\r\n",
-           (sync == 0xFA) ? "DATA" : "CMD", frame[0], frame[1], frame[2]);
+    TRACE("A0: %s, CS LOW, SPI: %02X %02X %02X\r\n",
+          (sync == 0xFA) ? "DATA" : "CMD",
+          frame[0], frame[1], frame[2]);
 
     DOG_Select();
     HAL_StatusTypeDef res = HAL_SPI_Transmit(&hspi1, frame, 3, HAL_MAX_DELAY);
     DOG_Deselect();
 
-    printf("CS: HIGH, SPI Status: %d\r\n", res);
+    TRACE("CS HIGH, SPI Status: %d\r\n", res);
+    return res;
 }
 
-void DOG_WriteData(uint8_t dat) {
-    printf("DOG DATA: 0x%02X\r\n", dat);
-    DOG_WriteFrame(0xFA, dat);
-}
-void DOG_WriteCommand(uint8_t cmd) {
-    printf("DOG CMD: 0x%02X\r\n", cmd);
+/* ---------- wrappers ---------------------------------------------------- */
+void DOG_WriteCommand(uint8_t cmd)
+{
+    TRACE("DOG CMD 0x%02X\r\n", cmd);
     DOG_WriteFrame(0xF8, cmd);
 }
 
-/* ------------------------------------------------------------------------- */
-/*  Power-on initialisation sequence (bottom-view, 4 × 16)                   */
-/* ------------------------------------------------------------------------- */
-/* --- DOGS164 power-on ---------------------------------------------------- */
+void DOG_WriteData(uint8_t dat)
+{
+    TRACE("DOG DAT 0x%02X\r\n", dat);
+    DOG_WriteFrame(0xFA, dat);
+}
+
+/* --------------------------------------------------------------------------
+ *  Because BF (bit7) cannot be read in serial mode (SSD1803A data-sheet
+ *  §9.19, note 1) we simply wait the times given in Fig 13-8.
+ * -------------------------------------------------------------------------*/
+static inline void DOG_ShortDelay (void) { HAL_Delay(  20); }   /* ≥ 1 ms   */
+static inline void DOG_LongDelay  (void) { HAL_Delay(200); }   /* ≥ 200 ms */
+
 void DOG_Init(void)
 {
-	DOG_WriteCommand(0x3A); // Function Set (RE=1)
-	HAL_Delay(1);
-	DOG_WriteCommand(0x09); // 4-line display
-	HAL_Delay(1);
-	DOG_WriteCommand(0x1E); // Bias set BS1=1
-	HAL_Delay(1);
-	DOG_WriteCommand(0x39); // Function Set (RE=0, IS=1)
-	HAL_Delay(1);
-	DOG_WriteCommand(0x1B); // Internal OSC
-	HAL_Delay(1);
-	DOG_WriteCommand(0x6C); // Follower Control (booster on)
-	HAL_Delay(10);          // Wait for booster to stabilize
-	DOG_WriteCommand(0x56); // Power Control
-	HAL_Delay(1);
-	DOG_WriteCommand(0x7F); // Contrast Set
-	HAL_Delay(1);
-	DOG_WriteCommand(0x38); // Function Set (RE=0, IS=0)
-	HAL_Delay(1);
-	DOG_WriteCommand(0x0F); // Display ON
+    /* --- hard reset ----------------------------------------------------- */
+    HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET);
+    HAL_Delay(20);
+    HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);
+    HAL_Delay(100);
 
-    //DOG_WriteCommand(0x01);
-    HAL_Delay(10);
+    /* --- initialisation sequence (4-line, bottom-view) ------------------ */
+    DOG_WriteCommand(0x3A);           /* Function set   RE=1              */
+    DOG_WriteCommand(0x09);           /* 4-line display                    */
+    DOG_WriteCommand(0x1E);           /* Bias 1/5                          */
+
+    DOG_WriteCommand(0x39);           /* Function set   RE=0, IS=1         */
+    DOG_WriteCommand(0x1B);           /* Internal OSC freq                 */
+
+    DOG_WriteCommand(0x6C);           /* Follower ON                       */
+    DOG_LongDelay();                  /* 200 ms                            */
+
+    DOG_WriteCommand(0x56);           /* Power control                     */
+    DOG_ShortDelay();                 /* 20 ms + is plenty                 */
+
+    DOG_WriteCommand(0x72);           /* Contrast                          */
+
+    DOG_WriteCommand(0x38);           /* Function set   RE=0, IS=0         */
+    DOG_WriteCommand(0x0F);           /* Display ON, cursor+blink ON       */
 }
+
 
 
 static void Buzzer_SetDuty(uint16_t duty)
@@ -217,37 +272,26 @@ int main(void)
        HAL_Delay(20);
    }
 
-  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET);
-  HAL_Delay(10);
-  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);
-  HAL_Delay(50);
-
-  //DOG_PushVOUT();   // test booster only, don’t touch DDRAM
-  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET);
-  HAL_Delay(10);
-  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);
-  HAL_Delay(40);
-  printf("Performed hard reset on DOGS164\r\n");
   printf("Init start\r\n");
   DOG_Init();
-  DOG_WriteCommand(0x01); // Clear screen
-  HAL_Delay(100);
-  DOG_WriteCommand(0x0F); // Display ON, Cursor & Blink ON
-  printf("Wrote Display ON and waiting for 1 second\r\n");
-  HAL_Delay(1000);
+
+  printf("Reading DOGS164 status:\r\n");
+  for (int i = 0; i < 5; i++) {
+      uint8_t status = DOG_ReadStatus();
+      HAL_Delay(500);
+  }
+
+  HAL_Delay(5000);
   printf("SPI1 Mode: %lu, Direction: %lu\r\n", hspi1.Init.Mode, hspi1.Init.Direction);
 
   printf("DOG_Init done\r\n");
-
-  DOG_WriteCommand(0x80);
-  printf("Set DDRAM address\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  Monitor_ADC_Drop_Spikes();
+	  Monitor_Drops_WithFlow();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -618,48 +662,70 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-void Monitor_ADC_Drop_Spikes(void)
+void Monitor_Drops_WithFlow(void)
 {
-    const float spike_threshold_mV = 1800.0f;   // Voltage threshold for spike detection
-    static float previous_voltage_mv = 0.0f;    // Store previous measurement
-    const uint32_t sampling_interval_ms = 1;   // 100 Hz sampling rate (adjust as needed)
+    static uint32_t last_drop_time_ms = 0;
+    static uint32_t drop_count = 0;
+    static float total_volume_ml = 0.0f;
 
-    // Read VDDA voltage once per iteration
+    uint32_t current_time_ms = HAL_GetTick();
+    uint32_t delta_t_ms = current_time_ms - last_drop_time_ms;
+
+    // === Sample ADC ===
     uint32_t vdda_mv = Read_VDDA_mV();
 
-    // Configure ADC Channel for PD_ADC (PA3)
     ADC_ChannelConfTypeDef adcConfig = {0};
     adcConfig.Channel = ADC_CHANNEL_3;
     adcConfig.Rank = ADC_REGULAR_RANK_1;
     adcConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_1;
     HAL_ADC_ConfigChannel(&hadc1, &adcConfig);
 
-    // Start ADC Conversion
     HAL_ADC_Start(&hadc1);
     HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
     uint32_t adc_raw = HAL_ADC_GetValue(&hadc1);
     HAL_ADC_Stop(&hadc1);
 
-    // Calculate voltage in mV
     float voltage_mv = ((float)adc_raw * vdda_mv) / 4095.0f;
 
-    // Print debug information
-    //printf("ADC raw: %lu, Voltage: %.2f mV, VDDA: %lu mV, Previous: %.2f mV\r\n",
-    //       adc_raw, voltage_mv, vdda_mv, previous_voltage_mv);
-
-    // Spike Detection Logic
-    if ((voltage_mv > spike_threshold_mV) && (previous_voltage_mv <= spike_threshold_mV))
+    // === Drop Detected ===
+    if ((voltage_mv > 1800.0f) && (delta_t_ms > LOCKOUT_MS))
     {
-        printf("SPIKE DETECTED! Current Voltage: %.2f mV exceeded threshold of %.2f mV\r\n",
-               voltage_mv, spike_threshold_mV);
+        drop_count++;
+        total_volume_ml += DROP_VOLUME_ML;
+        last_drop_time_ms = current_time_ms;
+
+        float delta_t_sec = (float)delta_t_ms / 1000.0f;
+        float ml_per_h = (DROP_VOLUME_ML / delta_t_sec) * 3600.0f;
+        float drops_per_min = 60.0f / delta_t_sec;
+
+        printf("DROP #%lu at %lu ms | Δt = %lu ms | Rate: %.1f ml/h (%.1f drops/min) | Total: %.2f ml\r\n",
+               drop_count, current_time_ms, delta_t_ms, ml_per_h, drops_per_min, total_volume_ml);
     }
 
-    // Store current measurement as previous for next iteration
-    previous_voltage_mv = voltage_mv;
+    // === Dead-drop detection ===
+    static uint8_t alarm_triggered = 0;
+    if ((current_time_ms - last_drop_time_ms) > DEAD_DROP_TIMEOUT_MS)
+    {
+        if (!alarm_triggered)
+        {
+            printf("ALARM: No drop detected for %lu ms. Flow interruption suspected.\r\n",
+                   DEAD_DROP_TIMEOUT_MS);
+            for(int i = 0; i < 3; i++){
+            	Buzzer_PlayFreq(2000, 500);  // 2 kHz for 500 ms
+            	HAL_Delay(100);
+            }
+            alarm_triggered = 1;
+        }
+    }
+    else
+    {
+        // Reset alarm flag if flow resumed
+        alarm_triggered = 0;
+    }
 
-    // Delay before next sampling
-    HAL_Delay(sampling_interval_ms);
+    HAL_Delay(1);  // Sampling delay ~1000 Hz
 }
+
 
 
 uint32_t Read_VDDA_mV(void)
@@ -708,7 +774,6 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
-	  Monitor_ADC_Drop_Spikes();
   }
   /* USER CODE END Error_Handler_Debug */
 }
