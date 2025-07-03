@@ -78,6 +78,8 @@ static void MX_USART2_UART_Init(void);
 static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 uint32_t  Read_Battery_mV(void);
+uint32_t Read_VDDA_mV(void);
+void Monitor_ADC_Drop_Spikes();
 
 /* DOGS164 helpers ----------------------------------------------------------*/
 void DOG_WriteCommand(uint8_t cmd);
@@ -167,6 +169,7 @@ void Buzzer_PlayFreq(uint16_t freq, uint16_t duration_ms)
     Buzzer_SetDuty(0);
 }
 
+
 /* USER CODE END 0 */
 
 /**
@@ -204,6 +207,16 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
+  // After MX_TIM1_Init()
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET);  // drive gate high → IR LED on
+
+   //Startup Sweep
+   for (int freq = 3000; freq <= 4000; freq += 100) {
+       Buzzer_PlayFreq(freq, 30);
+       HAL_Delay(20);
+   }
+
   HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET);
   HAL_Delay(10);
   HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);
@@ -232,21 +245,9 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint8_t blk = 0xFF, space = 0x00;
   while (1)
   {
-//	  DOG_WriteCommand(0x6C);
-//	  HAL_Delay(250);
-//	  printf("Voltage follower enabled, check VOUT now\r\n");
-//	  DOG_WriteCommand(0x80);  // Go to start
-//	      for (int i = 0; i < 64; ++i)
-//	          DOG_WriteData((i % 2 == 0) ? blk : space);  // Striped pattern
-//	      HAL_Delay(1000);
-//
-//	      DOG_WriteCommand(0x80);
-//	      for (int i = 0; i < 64; ++i)
-//	          DOG_WriteData((i % 2 == 0) ? space : blk);
-//	      HAL_Delay(1000);
+	  Monitor_ADC_Drop_Spikes();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -484,10 +485,6 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
   sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
   sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
   sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
@@ -579,13 +576,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|LCD_RST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|LCD_RST_Pin|GPIO_PIN_3, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(BOOST_MODE_CTRL_GPIO_Port, BOOST_MODE_CTRL_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : PB0 LCD_RST_Pin */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|LCD_RST_Pin;
+  /*Configure GPIO pins : PB0 LCD_RST_Pin PB3 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|LCD_RST_Pin|GPIO_PIN_3;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -610,12 +607,61 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+
+void Monitor_ADC_Drop_Spikes(void)
+{
+    const float spike_threshold_mV = 1800.0f;   // Voltage threshold for spike detection
+    static float previous_voltage_mv = 0.0f;    // Store previous measurement
+    const uint32_t sampling_interval_ms = 1;   // 100 Hz sampling rate (adjust as needed)
+
+    // Read VDDA voltage once per iteration
+    uint32_t vdda_mv = Read_VDDA_mV();
+
+    // Configure ADC Channel for PD_ADC (PA3)
+    ADC_ChannelConfTypeDef adcConfig = {0};
+    adcConfig.Channel = ADC_CHANNEL_3;
+    adcConfig.Rank = ADC_REGULAR_RANK_1;
+    adcConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_1;
+    HAL_ADC_ConfigChannel(&hadc1, &adcConfig);
+
+    // Start ADC Conversion
+    HAL_ADC_Start(&hadc1);
+    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+    uint32_t adc_raw = HAL_ADC_GetValue(&hadc1);
+    HAL_ADC_Stop(&hadc1);
+
+    // Calculate voltage in mV
+    float voltage_mv = ((float)adc_raw * vdda_mv) / 4095.0f;
+
+    // Print debug information
+    //printf("ADC raw: %lu, Voltage: %.2f mV, VDDA: %lu mV, Previous: %.2f mV\r\n",
+    //       adc_raw, voltage_mv, vdda_mv, previous_voltage_mv);
+
+    // Spike Detection Logic
+    if ((voltage_mv > spike_threshold_mV) && (previous_voltage_mv <= spike_threshold_mV))
+    {
+        printf("SPIKE DETECTED! Current Voltage: %.2f mV exceeded threshold of %.2f mV\r\n",
+               voltage_mv, spike_threshold_mV);
+    }
+
+    // Store current measurement as previous for next iteration
+    previous_voltage_mv = voltage_mv;
+
+    // Delay before next sampling
+    HAL_Delay(sampling_interval_ms);
+}
+
+
 uint32_t Read_VDDA_mV(void)
 {
     ADC_ChannelConfTypeDef sConfig = {0};
@@ -662,7 +708,7 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
-
+	  Monitor_ADC_Drop_Spikes();
   }
   /* USER CODE END Error_Handler_Debug */
 }

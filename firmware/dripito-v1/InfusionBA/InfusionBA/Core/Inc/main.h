@@ -71,10 +71,9 @@ void Error_Handler(void);
 #define LCD_RST_GPIO_Port GPIOB
 #define DROP_INT_Pin GPIO_PIN_10
 #define DROP_INT_GPIO_Port GPIOB
+#define DROP_INT_EXTI_IRQn EXTI4_15_IRQn
 #define BOOST_MODE_CTRL_Pin GPIO_PIN_12
 #define BOOST_MODE_CTRL_GPIO_Port GPIOB
-#define LED_CTRL_Pin GPIO_PIN_3
-#define LED_CTRL_GPIO_Port GPIOB
 #define BTN_MINUS_Pin GPIO_PIN_6
 #define BTN_MINUS_GPIO_Port GPIOB
 #define BTN_PLUS_Pin GPIO_PIN_7
