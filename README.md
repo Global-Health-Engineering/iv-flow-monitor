@@ -14,19 +14,12 @@ Dripito is developed as part of a Bachelor's thesis at ETH Zurich in collaborati
 - `/docs/` — System architecture, design rationale, photos
 - `/testing/` — Test scripts and evaluation notes
 
-## Quick Start
-
-```bash
-git clone https://github.com/Global-Health-Engineering/dripito.git
-cd dripito/firmware
-# build or flash via STM32CubeIDE / CLI
-```
 ## Milestones
 
 - ✅ Schematic and PCB design finalized  
 - ✅ Initial firmware structure and button interface  
 - ✅ Basic drop sensing and IR LED control  
-- ☐ Full system integration and casing assembly  
+- ✅ Full system integration and casing assembly  
 - ☐ Calibration and experimental validation  
 - ☐ Final documentation and ETH submission  
 - ☐ Optional open hardware release
