@@ -103,10 +103,9 @@ static void ui_render_run(void)
         strcat(l1, " mL/h");
     }
 
-    /* L2: Infused#### mL (integer) */
+    /* L2: Infused####.# mL (one decimal place) */
     char l2[LCD_CHARS+1]="Infused";
-    print_rjust(l2+7, 4, (int)total_volume_ml, NULL);
-    strcat(l2, " mL");
+    sprintf(l2+7, "%5.1f mL", total_volume_ml);
 
     /* L3: Time HH:MM:SS (HAL tick based) */
     uint32_t s = HAL_GetTick()/1000;
