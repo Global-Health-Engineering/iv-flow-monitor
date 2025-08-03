@@ -18,6 +18,7 @@
 #include "ui.h"
 #include "lcd.h"      /* thin wrapper around LCD_Write*() from main.c */
 #include "buzzer.h"   /* start/stop helpers – see ui_alarm_start() */
+#include "alarm.h"    /* for alarm_mute() */
 
 /*---------------------------------------------------------------------------
  *  Compile‑time constants
@@ -251,7 +252,7 @@ void ui_on_button(enum ui_button_e btn, bool long_press)
             edit_rate = target_rate_mlh ? target_rate_mlh : 1;
             lcd_clear_shadow();
         } else if (btn == BTN_MUTE) {
-            buzzer_mute();             /* spec: silence non‑latched alarm */
+            alarm_mute();             /* silence active alarm */
         }
         break;
     /*-------------------------------------------------- SET -------------*/
@@ -272,7 +273,7 @@ void ui_on_button(enum ui_button_e btn, bool long_press)
     /*------------------------------------------------- ALARM ------------*/
     case UI_ALARM:
         if (btn == BTN_MUTE) {
-            buzzer_mute();                     /* silence buzzer only */
+            alarm_mute();                     /* silence buzzer only */
         }
         /* other buttons ignored */
         break;
@@ -286,6 +287,7 @@ void ui_alarm_start(enum alarm_id_e id)
 {
     current_alarm = id;
     ui_state = UI_ALARM;
+    LCD_Clear();
     lcd_clear_shadow();
 }
 
