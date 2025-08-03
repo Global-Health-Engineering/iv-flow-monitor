@@ -28,6 +28,7 @@
 #include "lcd.h"
 #include "buzzer.h"
 #include "ui.h"
+#include "alarm.h"
 
 /* USER CODE END Includes */
 
@@ -190,6 +191,7 @@ int main(void)
           HandleTargetAdjustment();
           HandleSimulatedDrop();
           ui_task();
+          alarm_task();
 
           uint32_t batt_mv = Read_Battery_mV();
           uint8_t  batt_pct = Battery_mV_to_percent(batt_mv);
