@@ -25,8 +25,12 @@
 #include <string.h>
 #include <stddef.h>       // for size_t
 #include <stdint.h>
+<<<<<<< HEAD
 #include "lcd.h"
 #include "buzzer.h"
+=======
+#include "ui.h"
+>>>>>>> 812bee0 (Small Changes)
 
 /* USER CODE END Includes */
 
@@ -86,6 +90,9 @@ static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 uint32_t  Read_Battery_mV(void);
 uint32_t Read_VDDA_mV(void);
+uint8_t Battery_mV_to_percent(uint32_t mv);
+void LCD_ShowBatteryPercentage(uint8_t percent);
+
 void Monitor_ADC_Drop_Spikes();
 
 /* USER CODE END PFP */
@@ -94,8 +101,33 @@ void Monitor_ADC_Drop_Spikes();
 /* USER CODE BEGIN 0 */
 
 
+void LCD_Print(uint8_t line, const char* msg)
+{
+    LCD_SetCursor(line);
+    for (uint8_t i = 0; i < strlen(msg); ++i)
+        LCD_WriteData(msg[i]);
+    HAL_Delay(1);
+}
 
+void LCD_SplashScreen(void)
+{
+    LCD_Print(0, " IV Flow Meter");
+    LCD_Print(1, "   DRIPITO v1");
+    LCD_Print(2, "Leandro Catarci");
+}
 
+void LCD_ShowBatteryPercentage(uint8_t percent)
+{
+    char buf[6];  // Enough for "100%"
+    snprintf(buf, sizeof(buf), "%3u%%", percent);
+
+    // Set cursor to top-right corner
+    // Line 0, column 16 – 4 chars from the end (0-based index)
+    LCD_WriteCmd(0x80 | (16 - strlen(buf)));  // Line 0 starts at 0x00
+
+    for (size_t i = 0; i < strlen(buf); ++i)
+        LCD_WriteData(buf[i]);
+}
 
 static float MovingAvg_Add(float new_val)
 {
@@ -107,8 +139,6 @@ static float MovingAvg_Add(float new_val)
     for (uint8_t i = 0; i < FLOW_AVG_WINDOW; ++i) sum += flow_window[i];
     return sum / FLOW_AVG_WINDOW;
 }
-
-
 
 
 /* USER CODE END 0 */
@@ -162,11 +192,11 @@ int main(void)
    printf("BEGIN LCD INITIALIZATION");
    LCD_Init();
    printf("FINISHED LCD INITIALIZATION");
-   const char* msg = "DRIPITO";
-   for (size_t i = 0; i < strlen(msg); ++i) {
-       LCD_WriteData(msg[i]);
-       HAL_Delay(1);  // small delay for safety
-   }
+
+   LCD_SplashScreen();
+   HAL_Delay(1500);
+   LCD_Clear();
+
 
 /*
    for (uint16_t cmd = 0x00; cmd <= 0xFF; cmd++)
@@ -185,24 +215,12 @@ int main(void)
   {
 
 	  // Track the current line: 0 to 3
-	  static uint8_t currentLine = 0;
+	  HandleSimulatedDrop();
+	  ui_task();
 
-	  // Poll button (falling edge detection)
-	  uint8_t now = HAL_GPIO_ReadPin(GPIOB, BTN_MINUS_Pin);
-	  if (now == GPIO_PIN_RESET && lastBtnMinus == GPIO_PIN_SET)
-	  {
-	      // Move to next line
-	      currentLine = (currentLine + 1) % 4;
-
-	      // Set DDRAM address based on line
-	      uint8_t lineAddr[] = {0x00, 0x20, 0x40, 0x60};  // Line 1–4 addresses
-	      LCD_WriteCmd(0x80 | lineAddr[currentLine]);
-	      HAL_Delay(1);
-	      LCD_WriteData('o');  // Show a test char on new line
-
-	      HAL_Delay(200);  // Debounce
-	  }
-	  lastBtnMinus = now;
+	  uint32_t batt_mv = Read_Battery_mV();
+	  uint8_t  batt_pct = Battery_mV_to_percent(batt_mv);
+	  LCD_ShowBatteryPercentage(batt_pct);
 
     /* USER CODE END WHILE */
 
@@ -376,7 +394,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
   hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -578,23 +596,23 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-/* USER CODE BEGIN BatteryPct */
-/* Piece-wise linear %-estimator for ONE alkaline cell (700-1500 mV)      */
-static uint8_t Battery_mV_to_percent(uint32_t mv)
+uint8_t Battery_mV_to_percent(uint32_t mv)
 {
-    if (mv <= 700)  return 0;     /* boost can no longer regulate        */
-    if (mv >= 1500) return 100;   /* fresh cell, OCV ~1.6 V → clamp      */
+    if (mv <= 700)  return 0;
+    if (mv >= 1500) return 100;
 
-    if (mv < 1100) {                          /* 0-25 %  (0.70-1.10 V) */
+    if (mv < 1100) {
         return (uint8_t)((mv - 700) * 25 / 400);
-    } else if (mv < 1250) {                   /* 25-60 % (1.10-1.25 V) */
+    } else if (mv < 1250) {
         return 25 + (uint8_t)((mv - 1100) * 35 / 150);
-    } else if (mv < 1350) {                   /* 60-85 % (1.25-1.35 V) */
+    } else if (mv < 1350) {
         return 60 + (uint8_t)((mv - 1250) * 25 / 100);
-    } else {                                  /* 85-100 % (1.35-1.50 V)*/
+    } else {
         return 85 + (uint8_t)((mv - 1350) * 15 / 150);
     }
 }
+
+
 /* USER CODE END BatteryPct */
 
 void Monitor_ADC_Drop_Spikes(void)
@@ -665,6 +683,9 @@ void Monitor_ADC_Drop_Spikes(void)
                elapsed_s % 60);
 
     }
+    char flow_str[17];  // 16 chars + null terminator
+    snprintf(flow_str, sizeof(flow_str), "Rate: %4.0f mL/h", inst_flow_mlh);
+    LCD_Print(1, flow_str);  // Show on line 1 (second line)
 
 
     // Store current measurement as previous for next iteration
@@ -708,6 +729,62 @@ uint32_t Read_Battery_mV(void)
 
     return (adc_val * vdda_mv) / 4095;  // Battery voltage at PA4 in mV
 }
+
+/* ---------- LCD stats helpers ------------------------------------------ */
+void UpdateStatsDisplay(void)
+{
+    /* Elapsed time since power-up */
+    uint32_t elapsed_ms = HAL_GetTick();
+    uint32_t hrs  = elapsed_ms / 3600000UL;
+    uint32_t mins = (elapsed_ms / 60000UL) % 60;
+    uint32_t secs = (elapsed_ms / 1000UL)  % 60;
+
+    char time_str[17];
+    snprintf(time_str, sizeof(time_str), "%02lu:%02lu:%02lu", hrs, mins, secs);
+    LCD_Print(0, time_str);          // top line
+
+    /* Total infused volume */
+    char vol_str[17];
+    snprintf(vol_str, sizeof(vol_str), "Vol: %4.1f mL", total_volume_ml);
+    LCD_Print(2, vol_str);           // third line
+}
+
+/* ---------- PLUS-button drop simulator --------------------------------- */
+void HandleSimulatedDrop(void)
+{
+    static uint8_t lastBtnPlus = GPIO_PIN_SET;      // unpressed
+    uint8_t nowPlus = HAL_GPIO_ReadPin(GPIOB, BTN_PLUS_Pin);
+
+    if (nowPlus == GPIO_PIN_RESET && lastBtnPlus == GPIO_PIN_SET)
+    {
+        /* Simulated drop */
+        uint32_t now = HAL_GetTick();
+
+        if (drop_count > 0) {
+            dt_ms = now - last_drop_ms;
+            inst_flow_mlh = (3600.0f * 1000.0f) /
+                            ((float)dt_ms * DRIP_FACTOR_GTT_PER_ML);
+            flow_avg_mlh  = MovingAvg_Add(inst_flow_mlh);
+        }
+
+        last_drop_ms = now;
+        drop_count++;
+        total_volume_ml = (float)drop_count / DRIP_FACTOR_GTT_PER_ML;
+
+        char rate_str[17];
+        snprintf(rate_str, sizeof(rate_str), "Rate: %4.0f mL/h", inst_flow_mlh);
+        LCD_Print(1, rate_str);       // middle line
+
+        UpdateStatsDisplay();         // update time + volume
+
+        Buzzer_PlayFreq(3000, 30);    // audible feedback
+        HAL_Delay(200);               // debounce
+    }
+
+    lastBtnPlus = nowPlus;
+}
+
+
 /* USER CODE END 4 */
 
 /**
