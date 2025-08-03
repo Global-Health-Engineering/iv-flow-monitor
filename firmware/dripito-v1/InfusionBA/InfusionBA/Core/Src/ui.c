@@ -124,7 +124,8 @@ static uint16_t edit_rate = 0;
 
 static void ui_render_set(bool blink)
 {
-    char l0[LCD_CHARS+1]="   — SET TARGET —"; // centred (4 spaces prefix)
+    /* keep within 16 character limit using ASCII dashes */
+    char l0[LCD_CHARS+1]="   - SET TARGET -"; // centred (3 spaces prefix)
     char l1[LCD_CHARS+1]="Rate: ";
 
     if (!blink) {
@@ -143,8 +144,19 @@ static void ui_render_set(bool blink)
 /*---------------------------------------------------------------------------
  *  ALARM screen – headline blinks @2 Hz
  *---------------------------------------------------------------------------*/
-static enum alarm_id_e current_alarm = ALARM_NONE;   /* from alarm.c */
-extern const struct alarm_desc_s alarm_table[];      /* look‑up table */
+/* simple alarm description used for UI titles */
+struct alarm_desc_s {
+    const char *title;
+};
+
+static const struct alarm_desc_s alarm_table[] = {
+    [ALARM_NONE] = { "" },
+    [ALARM_FLOW] = { "FLOW" },
+    [ALARM_STOP] = { "STOP" },
+    [ALARM_BATT] = { "BATT" },
+};
+
+static enum alarm_id_e current_alarm = ALARM_NONE;   /* current active alarm */
 
 static void ui_render_alarm(bool blink)
 {

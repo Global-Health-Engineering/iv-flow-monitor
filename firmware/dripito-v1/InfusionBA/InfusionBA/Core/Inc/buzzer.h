@@ -5,5 +5,6 @@
 #include <stdint.h>
 
 void Buzzer_PlayFreq(uint16_t freq, uint16_t duration_ms);
+void buzzer_mute(void);
 
 #endif // BUZZER_H
