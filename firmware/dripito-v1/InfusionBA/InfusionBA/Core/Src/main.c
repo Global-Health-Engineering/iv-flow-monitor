@@ -657,7 +657,7 @@ void Monitor_ADC_Drop_Spikes(void)
     }
     char flow_str[17];  // 16 chars + null terminator
     snprintf(flow_str, sizeof(flow_str), "Rate: %4.0f mL/h", inst_flow_mlh);
-    LCD_Print(1, flow_str);  // Show on line 1 (second line)
+    //LCD_Print(1, flow_str);  // Show on line 1 (second line)
 
 
     // Store current measurement as previous for next iteration
@@ -717,7 +717,7 @@ void UpdateStatsDisplay(void)
     /* Total infused volume */
     char vol_str[17];
     snprintf(vol_str, sizeof(vol_str), "Vol: %4.1f mL", total_volume_ml);
-    LCD_Print(2, vol_str);           // third line
+    //LCD_Print(2, vol_str);           // third line
 }
 
 /* ---------- PLUS-button drop simulator --------------------------------- */
@@ -744,7 +744,7 @@ void HandleSimulatedDrop(void)
 
         char rate_str[17];
         snprintf(rate_str, sizeof(rate_str), "Rate: %4.0f mL/h", inst_flow_mlh);
-        LCD_Print(1, rate_str);       // middle line
+        //LCD_Print(1, rate_str);       // middle line
 
         UpdateStatsDisplay();         // update time + volume
 
@@ -769,7 +769,7 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
-	  Monitor_ADC_Drop_Spikes();
+	  //Monitor_ADC_Drop_Spikes();
   }
   /* USER CODE END Error_Handler_Debug */
 }
