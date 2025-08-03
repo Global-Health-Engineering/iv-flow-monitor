@@ -653,8 +653,8 @@ void Monitor_ADC_Drop_Spikes(void)
                total_volume_ml,
                elapsed_s / 60,
                elapsed_s % 60);
-
     }
+
     char flow_str[17];  // 16 chars + null terminator
     snprintf(flow_str, sizeof(flow_str), "Rate: %4.0f mL/h", inst_flow_mlh);
     //LCD_Print(1, flow_str);  // Show on line 1 (second line)
