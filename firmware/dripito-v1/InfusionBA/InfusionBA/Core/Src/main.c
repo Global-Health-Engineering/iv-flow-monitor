@@ -25,12 +25,9 @@
 #include <string.h>
 #include <stddef.h>       // for size_t
 #include <stdint.h>
-<<<<<<< HEAD
 #include "lcd.h"
 #include "buzzer.h"
-=======
 #include "ui.h"
->>>>>>> 812bee0 (Small Changes)
 
 /* USER CODE END Includes */
 
