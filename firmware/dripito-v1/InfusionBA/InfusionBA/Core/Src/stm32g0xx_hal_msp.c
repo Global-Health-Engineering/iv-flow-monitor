@@ -101,7 +101,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     PA3     ------> ADC1_IN3
     PA4     ------> ADC1_IN4
     */
-    GPIO_InitStruct.Pin = PD_ADC_Pin|GPIO_PIN_4;
+    GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -134,7 +134,7 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
     PA3     ------> ADC1_IN3
     PA4     ------> ADC1_IN4
     */
-    HAL_GPIO_DeInit(GPIOA, PD_ADC_Pin|GPIO_PIN_4);
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_3|GPIO_PIN_4);
 
     /* USER CODE BEGIN ADC1_MspDeInit 1 */
 
@@ -225,10 +225,10 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     PA6     ------> SPI1_MISO
     PA7     ------> SPI1_MOSI
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
+    GPIO_InitStruct.Pin = SCLK_Pin|GPIO_PIN_6|GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF0_SPI1;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
@@ -261,7 +261,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
     PA6     ------> SPI1_MISO
     PA7     ------> SPI1_MOSI
     */
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7);
+    HAL_GPIO_DeInit(GPIOA, SCLK_Pin|GPIO_PIN_6|GPIO_PIN_7);
 
     /* USER CODE BEGIN SPI1_MspDeInit 1 */
 
@@ -303,8 +303,10 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
     /* USER CODE END TIM1_MspPostInit 0 */
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
     /**TIM1 GPIO Configuration
     PA8     ------> TIM1_CH1
+    PB3     ------> TIM1_CH2
     */
     GPIO_InitStruct.Pin = GPIO_PIN_8;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -312,6 +314,13 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF2_TIM1;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = LED_CTRL_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF1_TIM1;
+    HAL_GPIO_Init(LED_CTRL_GPIO_Port, &GPIO_InitStruct);
 
     /* USER CODE BEGIN TIM1_MspPostInit 1 */
 

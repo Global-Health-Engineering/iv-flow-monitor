@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>       // for size_t
-#include "stm32g0xx_hal.h"
+#include <stdint.h>
 
 /* USER CODE END Includes */
 
@@ -47,17 +47,9 @@
 #define VREFINT_CAL (*(uint16_t*)0x1FFF75AA)  // Factory-calibrated ADC value for VREFINT at 3.0 V
 #define VREFINT_MV 3000  // Calibration is done at 3.00 V
 
-#define DROP_VOLUME_ML     0.05f
-#define DEAD_DROP_TIMEOUT_MS 10000  // 10 seconds
-#define LOCKOUT_MS 100  // Debounce lockout time
-
-#define DOG_TRACE   1
-
-#if DOG_TRACE
-  #define TRACE(...)   printf(__VA_ARGS__)
-#else
-  #define TRACE(...)
-#endif
+/* SSD1803A serial “start-byte” – see Fig 7-11 in the datasheet :contentReference[oaicite:6]{index=6} */
+#define LCD_START_CMD   0xF8      /* 11111 - RW=0, RS=0, 0 */
+#define LCD_START_DATA  0xFA      /* 11111 - RW=0, RS=1, 0 */
 
 
 /* USER CODE END PD */
@@ -79,6 +71,18 @@ TIM_HandleTypeDef htim1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+#define DRIP_FACTOR_GTT_PER_ML   20      // 20 gtt ≈ 1 mL -- change for your set
+#define FLOW_AVG_WINDOW          30      // keep last 30 drops for moving-avg
+
+volatile uint32_t drop_count           = 0;          // running tally
+volatile uint32_t last_drop_ms         = 0;          // HAL_GetTick timestamp
+volatile uint32_t dt_ms                = 0;          // time between last 2 drops
+volatile float    inst_flow_mlh        = 0.0f;       // mL/h from single dt
+volatile float    flow_window[FLOW_AVG_WINDOW] = {0};
+volatile uint8_t  flow_idx             = 0;          // circular buffer index
+volatile float    flow_avg_mlh         = 0.0f;       // moving average flow
+volatile float    total_volume_ml      = 0.0f;       // drops ÷ drip-factor
+
 
 /* USER CODE END PV */
 
@@ -93,118 +97,140 @@ static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 uint32_t  Read_Battery_mV(void);
 uint32_t Read_VDDA_mV(void);
-void Monitor_Drops_WithFlow();
+void Monitor_ADC_Drop_Spikes();
 
-/* DOGS164 helpers ----------------------------------------------------------*/
-void DOG_WriteCommand(uint8_t cmd);
-void DOG_WriteData(uint8_t dat);
-void DOG_Init(void);
+static void LCD_Reset(void);
+static void LCD_Write(uint8_t startByte, uint8_t val);
+static void LCD_WriteCmd(uint8_t cmd);
+static void LCD_WriteData(uint8_t data);
+static void LCD_Init(void);
 
-static inline void DOG_Select(void)   { HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET); }
-static inline void DOG_Deselect(void) { HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);  }
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-/* ------------------------------------------------------------------------- */
-/*  EA-DOGS164-A  SPI helpers (SSD1803A, 3-byte frames, mode-3 @ ≤1 MHz)     */
-/* ------------------------------------------------------------------------- */
-uint8_t DOG_ReadStatus(void)
+
+/* --- low-level helpers --------------------------------------------------- */
+/* reverse a 4-bit value: b3 b2 b1 b0 -> b0 b1 b2 b3 */
+static uint8_t rev4(uint8_t n)
 {
-    uint8_t status;
-
-    DOG_Select();
-
-    // Status read command for SSD1803A is typically 0xFC (check your datasheet to confirm)
-    uint8_t read_cmd = 0xFC;
-    HAL_SPI_Transmit(&hspi1, &read_cmd, 1, HAL_MAX_DELAY);
-    HAL_SPI_Receive(&hspi1, &status, 1, HAL_MAX_DELAY);
-
-    DOG_Deselect();
-
-    printf("DOG Status: 0x%02X\r\n", status);
-    return status;
+    n = ((n & 0x3) << 2) | ((n & 0xC) >> 2); // swap bit-pairs
+    n = ((n & 0x5) << 1) | ((n & 0xA) >> 1); // swap neighbours
+    return n & 0x0F;
 }
 
-/* --------------------------------------------------------------------------
- *  DOGS164 low-level serial driver
- * -------------------------------------------------------------------------*/
-
-
-/* comment this line out if you don’t want the printf-traces */
-
-
-extern SPI_HandleTypeDef hspi1;               /* created by CubeMX */
-
-
-/* ---------- generic 3-wire frame (cmd or data) -------------------------- */
-static HAL_StatusTypeDef DOG_WriteFrame(uint8_t sync, uint8_t value)
+static void LCD_Write(uint8_t startByte, uint8_t val)
 {
-    uint8_t frame[3] =
-    {
-        sync,                 /* 0xF8 = command, 0xFA = data              */
-        value       & 0xF0,   /* upper nibble first                        */
-       (value << 4) & 0xF0    /* lower nibble second                       */
+    uint8_t tx[3] = {
+        startByte,
+        (uint8_t)(rev4(val & 0x0F) << 4),          // D0..D3 → bits 7-4
+        (uint8_t)(rev4(val >> 4)    << 4)           // D4..D7 → bits 7-4
     };
 
-    TRACE("A0: %s, CS LOW, SPI: %02X %02X %02X\r\n",
-          (sync == 0xFA) ? "DATA" : "CMD",
-          frame[0], frame[1], frame[2]);
-
-    DOG_Select();
-    HAL_StatusTypeDef res = HAL_SPI_Transmit(&hspi1, frame, 3, HAL_MAX_DELAY);
-    DOG_Deselect();
-
-    TRACE("CS HIGH, SPI Status: %d\r\n", res);
-    return res;
+    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&hspi1, tx, 3, HAL_MAX_DELAY);
+    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
 }
 
-/* ---------- wrappers ---------------------------------------------------- */
-void DOG_WriteCommand(uint8_t cmd)
+static uint8_t LCD_ReadBF_AC(void)           /* returns BF|AC                */
 {
-    TRACE("DOG CMD 0x%02X\r\n", cmd);
-    DOG_WriteFrame(0xF8, cmd);
+    uint8_t tx[3] = { 0xFC, 0, 0 };          /* 111111 RW=1 RS=0 0           */
+    uint8_t rx[3];
+
+    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_TransmitReceive(&hspi1, tx, rx, 3, HAL_MAX_DELAY);
+    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
+
+    return rx[1];                            /* bit7 = BF, bits6-0 = AC      */
 }
 
-void DOG_WriteData(uint8_t dat)
+/* wait until BF=0 – but give up after ~2 ms so we don't hang forever */
+static void LCD_WaitReady(void)
 {
-    TRACE("DOG DAT 0x%02X\r\n", dat);
-    DOG_WriteFrame(0xFA, dat);
+    const uint32_t t0 = HAL_GetTick();        /* current tick (1 ms resolution) */
+
+    for (;;) {
+        uint8_t bf_ac = LCD_ReadBF_AC();      /* bit7 = BF                     */
+        if ((bf_ac & 0x80) == 0)              /* BF cleared → ready            */
+            return;
+
+        if (HAL_GetTick() - t0 > 2) {        /* 2-ms guard-time              */
+            printf("BF never cleared (last = 0x%02X) – giving up\r\n", bf_ac);
+            return;                           /* or Error_Handler();           */
+        }
+    }
 }
 
-/* --------------------------------------------------------------------------
- *  Because BF (bit7) cannot be read in serial mode (SSD1803A data-sheet
- *  §9.19, note 1) we simply wait the times given in Fig 13-8.
- * -------------------------------------------------------------------------*/
-static inline void DOG_ShortDelay (void) { HAL_Delay(  20); }   /* ≥ 1 ms   */
-static inline void DOG_LongDelay  (void) { HAL_Delay(200); }   /* ≥ 200 ms */
-
-void DOG_Init(void)
+static void LCD_WriteCmd(uint8_t cmd)
 {
-    /* --- hard reset ----------------------------------------------------- */
-    HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET);
-    HAL_Delay(20);
-    HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);
-    HAL_Delay(100);
+    //LCD_WaitReady();                         /* NEW                           */
+    LCD_Write(LCD_START_CMD, cmd);
+}
 
-    /* --- initialisation sequence (4-line, bottom-view) ------------------ */
-    DOG_WriteCommand(0x3A);           /* Function set   RE=1              */
-    DOG_WriteCommand(0x09);           /* 4-line display                    */
-    DOG_WriteCommand(0x1E);           /* Bias 1/5                          */
+static void LCD_WriteData(uint8_t dat)
+{
+    //LCD_WaitReady();                         /* NEW                           */
+    LCD_Write(LCD_START_DATA, dat);
+}
 
-    DOG_WriteCommand(0x39);           /* Function set   RE=0, IS=1         */
-    DOG_WriteCommand(0x1B);           /* Internal OSC freq                 */
+static void LCD_Reset(void)
+{
+    HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET); /* RST low */
+    HAL_Delay(20);                                              /* ≥20 µs  */
+    HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);   /* RST high */
+    HAL_Delay(100);                                             /* let VOUT settle */
+}
 
-    DOG_WriteCommand(0x6C);           /* Follower ON                       */
-    DOG_LongDelay();                  /* 200 ms                            */
+static void LCD_Init(void)
+{
+    HAL_Delay(200);
+    LCD_Reset();  // Ensure proper reset timing
 
-    DOG_WriteCommand(0x56);           /* Power control                     */
-    DOG_ShortDelay();                 /* 20 ms + is plenty                 */
+    LCD_WriteCmd(0x3A); HAL_Delay(1);  // Function set (RE=1)
+    LCD_WriteCmd(0x09); HAL_Delay(1);  // 4-line display
+    LCD_WriteCmd(0x06); HAL_Delay(1);  // Entry mode
+    LCD_WriteCmd(0x1E); HAL_Delay(1);  // Bias set BS1=1
 
-    DOG_WriteCommand(0x72);           /* Contrast                          */
+    LCD_WriteCmd(0x39); HAL_Delay(1);  // Function set (RE=0, IS=1)
+    LCD_WriteCmd(0x1B); HAL_Delay(1);  // Internal OSC
+    LCD_WriteCmd(0x6C); HAL_Delay(500); // Follower control
 
-    DOG_WriteCommand(0x38);           /* Function set   RE=0, IS=0         */
-    DOG_WriteCommand(0x0F);           /* Display ON, cursor+blink ON       */
+    LCD_WriteCmd(0x54); HAL_Delay(1);  // Power control (Booster on, contrast C5/C4 = 1/0)
+    LCD_WriteCmd(0x79); HAL_Delay(1);  // Contrast set (C3–C0 = 0x0A)
+
+    LCD_WriteCmd(0x38); HAL_Delay(1);  // Function set (RE=0, IS=0)
+    LCD_WriteCmd(0x0F); HAL_Delay(1);  // Display ON, cursor OFF, blink OFF
+
+}
+
+
+/* Returns the second byte of the 24-bit frame.
+   bit7 = Busy-Flag, bits6-0 = Address Counter                    */
+static uint8_t LCD_ReadBusy(void)
+{
+	/* 16 clocks = 2 bytes: 1× start byte + 1× dummy */
+	    uint8_t tx[2] = { 0xFC, 0x00 };          // 111111 RW=1 RS=0 0  + dummy
+	    uint8_t rx[2] = { 0 };
+
+	    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
+	    HAL_SPI_TransmitReceive(&hspi1, tx, rx, 2, HAL_MAX_DELAY);
+	    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
+
+	    return rx[1];                            // bit7 = BF, bits6-0 = AC
+}
+
+
+
+
+static float MovingAvg_Add(float new_val)
+{
+    flow_window[flow_idx] = new_val;
+    flow_idx = (flow_idx + 1) % FLOW_AVG_WINDOW;
+
+    /* Re-compute running mean (cheap for only 30 samples) */
+    float sum = 0.0f;
+    for (uint8_t i = 0; i < FLOW_AVG_WINDOW; ++i) sum += flow_window[i];
+    return sum / FLOW_AVG_WINDOW;
 }
 
 
@@ -224,6 +250,10 @@ void Buzzer_PlayFreq(uint16_t freq, uint16_t duration_ms)
     Buzzer_SetDuty(0);
 }
 
+static void LCD_WriteChar(char c)
+{
+    LCD_WriteData((uint8_t)c);
+}
 
 /* USER CODE END 0 */
 
@@ -264,34 +294,60 @@ int main(void)
   /* USER CODE BEGIN 2 */
   // After MX_TIM1_Init()
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); //Boost Mode ON
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET);  // drive gate high → IR LED on
 
    //Startup Sweep
-   for (int freq = 3000; freq <= 4000; freq += 100) {
+   for (int freq = 3000; freq <= 4000; freq += 500) {
        Buzzer_PlayFreq(freq, 30);
        HAL_Delay(20);
    }
 
-  printf("Init start\r\n");
-  DOG_Init();
+   printf("BEGIN LCD INITIALIZATION");
+   LCD_Init();
+   printf("FINISHED LCD INITIALIZATION");
+   const char* msg = "DRIPITO";
+   for (size_t i = 0; i < strlen(msg); ++i) {
+       LCD_WriteData(msg[i]);
+       HAL_Delay(1);  // small delay for safety
+   }
 
-  printf("Reading DOGS164 status:\r\n");
-  for (int i = 0; i < 5; i++) {
-      uint8_t status = DOG_ReadStatus();
-      HAL_Delay(500);
-  }
+/*
+   for (uint16_t cmd = 0x00; cmd <= 0xFF; cmd++)
+   	  {
+   		  printf("Sending command: 0x%02X\r\n", cmd);
+   		  LCD_WriteCmd((uint8_t)cmd);
+   		  HAL_Delay(1);
+   	  }*/
 
-  HAL_Delay(5000);
-  printf("SPI1 Mode: %lu, Direction: %lu\r\n", hspi1.Init.Mode, hspi1.Init.Direction);
-
-  printf("DOG_Init done\r\n");
+   	uint8_t lastBtnMinus = GPIO_PIN_SET;  // button unpressed initially
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  Monitor_Drops_WithFlow();
+
+	  // Track the current line: 0 to 3
+	  static uint8_t currentLine = 0;
+
+	  // Poll button (falling edge detection)
+	  uint8_t now = HAL_GPIO_ReadPin(GPIOB, BTN_MINUS_Pin);
+	  if (now == GPIO_PIN_RESET && lastBtnMinus == GPIO_PIN_SET)
+	  {
+	      // Move to next line
+	      currentLine = (currentLine + 1) % 4;
+
+	      // Set DDRAM address based on line
+	      uint8_t lineAddr[] = {0x00, 0x20, 0x40, 0x60};  // Line 1–4 addresses
+	      LCD_WriteCmd(0x80 | lineAddr[currentLine]);
+	      HAL_Delay(1);
+	      LCD_WriteData('o');  // Show a test char on new line
+
+	      HAL_Delay(200);  // Debounce
+	  }
+	  lastBtnMinus = now;
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -391,7 +447,7 @@ static void MX_ADC1_Init(void)
 
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_3;
+  sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_1;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -464,7 +520,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
   hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -526,6 +582,10 @@ static void MX_TIM1_Init(void)
   sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
   sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
   if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
   {
     Error_Handler();
   }
@@ -620,13 +680,10 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|LCD_RST_Pin|GPIO_PIN_3, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, LCD_CS_Pin|LCD_RESET_Pin|BOOST_MODE_CTRL_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(BOOST_MODE_CTRL_GPIO_Port, BOOST_MODE_CTRL_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pins : PB0 LCD_RST_Pin PB3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|LCD_RST_Pin|GPIO_PIN_3;
+  /*Configure GPIO pins : LCD_CS_Pin LCD_RESET_Pin */
+  GPIO_InitStruct.Pin = LCD_CS_Pin|LCD_RESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -651,81 +708,115 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
-
   /* USER CODE BEGIN MX_GPIO_Init_2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET); // Default to DATA mode
+
 
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
-
-void Monitor_Drops_WithFlow(void)
+/* USER CODE BEGIN BatteryPct */
+/* Piece-wise linear %-estimator for ONE alkaline cell (700-1500 mV)      */
+static uint8_t Battery_mV_to_percent(uint32_t mv)
 {
-    static uint32_t last_drop_time_ms = 0;
-    static uint32_t drop_count = 0;
-    static float total_volume_ml = 0.0f;
+    if (mv <= 700)  return 0;     /* boost can no longer regulate        */
+    if (mv >= 1500) return 100;   /* fresh cell, OCV ~1.6 V → clamp      */
 
-    uint32_t current_time_ms = HAL_GetTick();
-    uint32_t delta_t_ms = current_time_ms - last_drop_time_ms;
+    if (mv < 1100) {                          /* 0-25 %  (0.70-1.10 V) */
+        return (uint8_t)((mv - 700) * 25 / 400);
+    } else if (mv < 1250) {                   /* 25-60 % (1.10-1.25 V) */
+        return 25 + (uint8_t)((mv - 1100) * 35 / 150);
+    } else if (mv < 1350) {                   /* 60-85 % (1.25-1.35 V) */
+        return 60 + (uint8_t)((mv - 1250) * 25 / 100);
+    } else {                                  /* 85-100 % (1.35-1.50 V)*/
+        return 85 + (uint8_t)((mv - 1350) * 15 / 150);
+    }
+}
+/* USER CODE END BatteryPct */
 
-    // === Sample ADC ===
+void Monitor_ADC_Drop_Spikes(void)
+{
+    const float spike_threshold_mV = 1700.0f;   // Voltage threshold for spike detection
+    static float previous_voltage_mv = 0.0f;    // Store previous measurement
+    const uint32_t sampling_interval_ms = 1;   // 100 Hz sampling rate (adjust as needed)
+
+    // Read VDDA voltage once per iteration
     uint32_t vdda_mv = Read_VDDA_mV();
 
+    // Configure ADC Channel for PD_ADC (PA3)
     ADC_ChannelConfTypeDef adcConfig = {0};
     adcConfig.Channel = ADC_CHANNEL_3;
     adcConfig.Rank = ADC_REGULAR_RANK_1;
     adcConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_1;
     HAL_ADC_ConfigChannel(&hadc1, &adcConfig);
 
+    // Start ADC Conversion
     HAL_ADC_Start(&hadc1);
     HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
     uint32_t adc_raw = HAL_ADC_GetValue(&hadc1);
     HAL_ADC_Stop(&hadc1);
 
+    // Calculate voltage in mV
     float voltage_mv = ((float)adc_raw * vdda_mv) / 4095.0f;
 
-    // === Drop Detected ===
-    if ((voltage_mv > 1800.0f) && (delta_t_ms > LOCKOUT_MS))
+    // Print debug information
+    //printf("ADC raw: %lu, Voltage: %.2f mV, VDDA: %lu mV, Previous: %.2f mV\r\n",
+    //       adc_raw, voltage_mv, vdda_mv, previous_voltage_mv);
+
+    // Spike Detection Logic
+    if ((voltage_mv > spike_threshold_mV) && (previous_voltage_mv <= spike_threshold_mV))
     {
-        drop_count++;
-        total_volume_ml += DROP_VOLUME_ML;
-        last_drop_time_ms = current_time_ms;
+        /* ----------  DROP DETECTED  ---------- */
+        uint32_t now = HAL_GetTick();            // ms since boot
 
-        float delta_t_sec = (float)delta_t_ms / 1000.0f;
-        float ml_per_h = (DROP_VOLUME_ML / delta_t_sec) * 3600.0f;
-        float drops_per_min = 60.0f / delta_t_sec;
-
-        printf("DROP #%lu at %lu ms | Δt = %lu ms | Rate: %.1f ml/h (%.1f drops/min) | Total: %.2f ml\r\n",
-               drop_count, current_time_ms, delta_t_ms, ml_per_h, drops_per_min, total_volume_ml);
-    }
-
-    // === Dead-drop detection ===
-    static uint8_t alarm_triggered = 0;
-    if ((current_time_ms - last_drop_time_ms) > DEAD_DROP_TIMEOUT_MS)
-    {
-        if (!alarm_triggered)
+        /* First drop has no dt */
+        if (drop_count > 0)
         {
-            printf("ALARM: No drop detected for %lu ms. Flow interruption suspected.\r\n",
-                   DEAD_DROP_TIMEOUT_MS);
-            for(int i = 0; i < 3; i++){
-            	Buzzer_PlayFreq(2000, 500);  // 2 kHz for 500 ms
-            	HAL_Delay(100);
-            }
-            alarm_triggered = 1;
+            dt_ms = now - last_drop_ms;
+            /* convert dt to instantaneous flow: 3600 s/h × 1000 ms/s */
+            inst_flow_mlh = (3600.0f * 1000.0f) / ((float)dt_ms * DRIP_FACTOR_GTT_PER_ML);
+            flow_avg_mlh  = MovingAvg_Add(inst_flow_mlh);
         }
-    }
-    else
-    {
-        // Reset alarm flag if flow resumed
-        alarm_triggered = 0;
+        last_drop_ms = now;
+        drop_count++;
+
+        total_volume_ml = (float)drop_count / DRIP_FACTOR_GTT_PER_ML;
+
+        /* Battery */
+        uint32_t batt_mv  = Read_Battery_mV();
+        uint8_t  batt_pct = Battery_mV_to_percent(batt_mv);
+
+        /* Time since power-up */
+        uint32_t elapsed_ms = now;                       // HAL_GetTick base = boot
+        uint32_t elapsed_s  = elapsed_ms / 1000;
+
+        /* -------------------------------------------------------------- */
+        /*  DROP DETECTED  — single-line logger                           */
+        /* -------------------------------------------------------------- */
+        printf("DROP %lu | Δt: %lums | Rate: %.0f mL/h | Total: %.2f mL | Time: %lu:%02lu min\r\n",
+               drop_count,
+               dt_ms,
+               inst_flow_mlh,
+               total_volume_ml,
+               elapsed_s / 60,
+               elapsed_s % 60);
+
     }
 
-    HAL_Delay(1);  // Sampling delay ~1000 Hz
+
+    // Store current measurement as previous for next iteration
+    previous_voltage_mv = voltage_mv;
+
+    // Delay before next sampling
+    HAL_Delay(sampling_interval_ms);
 }
-
 
 
 uint32_t Read_VDDA_mV(void)
@@ -774,6 +865,7 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+	  Monitor_ADC_Drop_Spikes();
   }
   /* USER CODE END Error_Handler_Debug */
 }
