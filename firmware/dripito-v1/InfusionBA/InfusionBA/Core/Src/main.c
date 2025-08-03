@@ -97,6 +97,7 @@ void LCD_ShowBatteryPercentage(uint8_t percent);
 void Monitor_ADC_Drop_Spikes();
 void HandleSimulatedDrop(void);
 void HandleTargetAdjustment(void);
+void HandleMuteButton(void);
 
 /* USER CODE END PFP */
 
@@ -190,6 +191,7 @@ int main(void)
   {
           HandleTargetAdjustment();
           HandleSimulatedDrop();
+          HandleMuteButton();
           ui_task();
           alarm_task();
 
@@ -798,6 +800,20 @@ void HandleSimulatedDrop(void)
     }
 
     lastBtnMode = nowMode;
+}
+
+/* ---------- MUTE-button handler --------------------------------------- */
+void HandleMuteButton(void)
+{
+    static uint8_t lastMute = GPIO_PIN_SET;
+    uint8_t nowMute = HAL_GPIO_ReadPin(BTN_MUTE_GPIO_Port, BTN_MUTE_Pin);
+
+    if (nowMute == GPIO_PIN_RESET && lastMute == GPIO_PIN_SET) {
+        ui_on_button(BTN_MUTE, false);
+        HAL_Delay(200);
+    }
+
+    lastMute = nowMute;
 }
 
 

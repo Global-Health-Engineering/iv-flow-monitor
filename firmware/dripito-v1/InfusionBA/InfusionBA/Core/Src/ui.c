@@ -287,6 +287,7 @@ void ui_alarm_start(enum alarm_id_e id)
 {
     current_alarm = id;
     ui_state = UI_ALARM;
+    LCD_Clear();
     lcd_clear_shadow();
 }
 
