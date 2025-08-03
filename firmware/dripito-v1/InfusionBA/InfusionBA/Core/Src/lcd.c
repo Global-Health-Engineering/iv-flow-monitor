@@ -19,6 +19,35 @@ static uint8_t rev4(uint8_t n)
     return n & 0x0F;
 }
 
+
+void LCD_Print(uint8_t line, const char* msg)
+{
+    LCD_SetCursor(line);
+    for (uint8_t i = 0; i < strlen(msg); ++i)
+        LCD_WriteData(msg[i]);
+    HAL_Delay(1);
+}
+
+void LCD_SplashScreen(void)
+{
+    LCD_Print(0, " IV Flow Meter");
+    LCD_Print(1, "   DRIPITO v1");
+    LCD_Print(2, "Leandro Catarci");
+}
+
+void LCD_ShowBatteryPercentage(uint8_t percent)
+{
+    char buf[6];  // Enough for "100%"
+    snprintf(buf, sizeof(buf), "%3u%%", percent);
+
+    // Set cursor to top-right corner
+    // Line 0, column 16 – 4 chars from the end (0-based index)
+    LCD_WriteCmd(0x80 | (16 - strlen(buf)));  // Line 0 starts at 0x00
+
+    for (size_t i = 0; i < strlen(buf); ++i)
+        LCD_WriteData(buf[i]);
+}
+
 static void LCD_Write(uint8_t startByte, uint8_t val)
 {
     uint8_t tx[3] = {
@@ -38,9 +67,9 @@ void LCD_SetCursor(uint8_t line)
 
     switch (line) {
         case 0: address = 0x00; break; // Line 1 DDRAM start
-        case 1: address = 0x10; break; // Line 2
-        case 2: address = 0x20; break; // Line 3
-        case 3: address = 0x30; break; // Line 4
+        case 1: address = 0x20; break; // Line 2
+        case 2: address = 0x40; break; // Line 3
+        case 3: address = 0x60; break; // Line 4
         default: return;               // Invalid line number
     }
 

@@ -100,34 +100,6 @@ void HandleSimulatedDrop(void);
 /* USER CODE BEGIN 0 */
 
 
-void LCD_Print(uint8_t line, const char* msg)
-{
-    LCD_SetCursor(line);
-    for (uint8_t i = 0; i < strlen(msg); ++i)
-        LCD_WriteData(msg[i]);
-    HAL_Delay(1);
-}
-
-void LCD_SplashScreen(void)
-{
-    LCD_Print(0, " IV Flow Meter");
-    LCD_Print(1, "   DRIPITO v1");
-    LCD_Print(2, "Leandro Catarci");
-}
-
-void LCD_ShowBatteryPercentage(uint8_t percent)
-{
-    char buf[6];  // Enough for "100%"
-    snprintf(buf, sizeof(buf), "%3u%%", percent);
-
-    // Set cursor to top-right corner
-    // Line 0, column 16 – 4 chars from the end (0-based index)
-    LCD_WriteCmd(0x80 | (16 - strlen(buf)));  // Line 0 starts at 0x00
-
-    for (size_t i = 0; i < strlen(buf); ++i)
-        LCD_WriteData(buf[i]);
-}
-
 static float MovingAvg_Add(float new_val)
 {
     flow_window[flow_idx] = new_val;
@@ -192,6 +164,7 @@ int main(void)
    LCD_Init();
    printf("FINISHED LCD INITIALIZATION");
 
+   LCD_Clear();
    LCD_SplashScreen();
    HAL_Delay(1500);
    LCD_Clear();
