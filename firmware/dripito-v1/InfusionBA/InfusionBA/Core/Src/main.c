@@ -62,16 +62,12 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 #define DRIP_FACTOR_GTT_PER_ML   20      // 20 gtt ≈ 1 mL -- change for your set
-#define FLOW_AVG_WINDOW          30      // keep last 30 drops for moving-avg
 
-volatile uint32_t drop_count           = 0;          // running tally
-volatile uint32_t last_drop_ms         = 0;          // HAL_GetTick timestamp
-volatile uint32_t dt_ms                = 0;          // time between last 2 drops
-volatile float    inst_flow_mlh        = 0.0f;       // mL/h from single dt
-volatile float    flow_window[FLOW_AVG_WINDOW] = {0};
-volatile uint8_t  flow_idx             = 0;          // circular buffer index
-volatile float    flow_avg_mlh         = 0.0f;       // moving average flow
-volatile float    total_volume_ml      = 0.0f;       // drops ÷ drip-factor
+volatile uint32_t drop_count      = 0;          // running tally
+volatile uint32_t last_drop_ms    = 0;          // HAL_GetTick timestamp
+volatile uint32_t dt_ms           = 0;          // time between last 2 drops
+volatile float    flow_mlh        = 0.0f;       // mL/h from last dt
+volatile float    total_volume_ml = 0.0f;       // drops ÷ drip-factor
 volatile uint16_t target_rate_mlh = 50; // Example default: 50 mL/h
 
 
@@ -98,18 +94,6 @@ void HandleSimulatedDrop(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-
-static float MovingAvg_Add(float new_val)
-{
-    flow_window[flow_idx] = new_val;
-    flow_idx = (flow_idx + 1) % FLOW_AVG_WINDOW;
-
-    /* Re-compute running mean (cheap for only 30 samples) */
-    float sum = 0.0f;
-    for (uint8_t i = 0; i < FLOW_AVG_WINDOW; ++i) sum += flow_window[i];
-    return sum / FLOW_AVG_WINDOW;
-}
 
 
 /* USER CODE END 0 */
@@ -627,8 +611,7 @@ void Monitor_ADC_Drop_Spikes(void)
         {
             dt_ms = now - last_drop_ms;
             /* convert dt to instantaneous flow: 3600 s/h × 1000 ms/s */
-            inst_flow_mlh = (3600.0f * 1000.0f) / ((float)dt_ms * DRIP_FACTOR_GTT_PER_ML);
-            flow_avg_mlh  = MovingAvg_Add(inst_flow_mlh);
+            flow_mlh = (3600.0f * 1000.0f) / ((float)dt_ms * DRIP_FACTOR_GTT_PER_ML);
         }
         last_drop_ms = now;
         drop_count++;
@@ -649,14 +632,14 @@ void Monitor_ADC_Drop_Spikes(void)
         printf("DROP %lu | Δt: %lums | Rate: %.0f mL/h | Total: %.2f mL | Time: %lu:%02lu min\r\n",
                drop_count,
                dt_ms,
-               inst_flow_mlh,
+               flow_mlh,
                total_volume_ml,
                elapsed_s / 60,
                elapsed_s % 60);
 
     }
     char flow_str[17];  // 16 chars + null terminator
-    snprintf(flow_str, sizeof(flow_str), "Rate: %4.0f mL/h", inst_flow_mlh);
+    snprintf(flow_str, sizeof(flow_str), "Rate: %4.0f mL/h", flow_mlh);
     LCD_Print(1, flow_str);  // Show on line 1 (second line)
 
 
@@ -733,9 +716,8 @@ void HandleSimulatedDrop(void)
 
         if (drop_count > 0) {
             dt_ms = now - last_drop_ms;
-            inst_flow_mlh = (3600.0f * 1000.0f) /
-                            ((float)dt_ms * DRIP_FACTOR_GTT_PER_ML);
-            flow_avg_mlh  = MovingAvg_Add(inst_flow_mlh);
+            flow_mlh = (3600.0f * 1000.0f) /
+                       ((float)dt_ms * DRIP_FACTOR_GTT_PER_ML);
         }
 
         last_drop_ms = now;
@@ -743,7 +725,7 @@ void HandleSimulatedDrop(void)
         total_volume_ml = (float)drop_count / DRIP_FACTOR_GTT_PER_ML;
 
         char rate_str[17];
-        snprintf(rate_str, sizeof(rate_str), "Rate: %4.0f mL/h", inst_flow_mlh);
+        snprintf(rate_str, sizeof(rate_str), "Rate: %4.0f mL/h", flow_mlh);
         LCD_Print(1, rate_str);       // middle line
 
         UpdateStatsDisplay();         // update time + volume
