@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "stm32g0xx_hal.h"
+#include "main.h"     /* for BTN_* pin definitions */
 #include "ui.h"
 #include "lcd.h"      /* thin wrapper around LCD_Write*() from main.c */
 #include "buzzer.h"   /* start/stop helpers – see ui_alarm_start() */
@@ -25,6 +26,7 @@
 #define UI_ALARM_BLINK_MS      500   /* 2 Hz blink for alarm headline        */
 #define UI_SET_FIELD_BLINK_MS  500   /* 1 Hz blink of editable field         */
 #define UI_INACTIVITY_TO_RUN   10000 /* 10 s timeout to leave SET            */
+#define UI_HOLD_REPEAT_MS      100   /* auto‑repeat interval for BTN +/-     */
 
 #define LCD_CHARS 16
 
@@ -47,6 +49,7 @@ static uint32_t last_activity_ms = 0;   /* for SET timeout                  */
 static bool     blink_phase      = false;
 static bool     alarm_blink      = false;
 static char     lcd_shadow[4][LCD_CHARS+1]; /* hold last text to minimise SPI */
+static uint32_t last_hold_ms     = 0;   /* auto-repeat timer for BTN +/-    */
 
 /*---------------------------------------------------------------------------
  *  Helpers – format fixed‑width fields as per spec
@@ -184,6 +187,26 @@ void ui_task(void)
 {
     uint32_t now = HAL_GetTick();
 
+    /* handle BTN_PLUS / BTN_MINUS hold for fast adjust in SET screen */
+    if (ui_state == UI_SET) {
+        GPIO_PinState plus  = HAL_GPIO_ReadPin(BTN_PLUS_GPIO_Port, BTN_PLUS_Pin);
+        GPIO_PinState minus = HAL_GPIO_ReadPin(BTN_MINUS_GPIO_Port, BTN_MINUS_Pin);
+
+        if ((plus == GPIO_PIN_RESET || minus == GPIO_PIN_RESET) &&
+            (now - last_hold_ms >= UI_HOLD_REPEAT_MS)) {
+            if (plus == GPIO_PIN_RESET) {
+                ui_on_button(BTN_PLUS, true);
+            } else if (minus == GPIO_PIN_RESET) {
+                ui_on_button(BTN_MINUS, true);
+            }
+            last_hold_ms = now;
+        }
+
+        if (plus == GPIO_PIN_SET && minus == GPIO_PIN_SET) {
+            last_hold_ms = now; /* reset when neither pressed */
+        }
+    }
+
     /* 200‑ms refresh ticker */
     if (now - last_refresh_ms >= UI_REFRESH_PERIOD_MS) {
         last_refresh_ms = now;
@@ -235,7 +258,7 @@ void ui_on_button(enum ui_button_e btn, bool long_press)
     /*-------------------------------------------------- SET -------------*/
     case UI_SET:
         if (btn == BTN_PLUS || btn == BTN_MINUS) {
-            int16_t delta = long_press ? 5 : 1;
+            int16_t delta = long_press ? 10 : 1;
             if (btn == BTN_MINUS) delta = -delta;
             int32_t tentative = (int32_t)edit_rate + delta;
             if (tentative < 1) tentative = 1;
