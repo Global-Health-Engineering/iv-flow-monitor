@@ -34,8 +34,8 @@
  *  Types & globals shared with main.c (extern)
  *---------------------------------------------------------------------------*/
 extern volatile uint16_t            target_rate_mlh;   /* user target (0 => unset) */
-extern volatile float               flow_avg_mlh;      /* moving‑average rate       */
-extern volatile float               total_volume_ml;   /* accumulated volume        */
+extern volatile float               flow_mlh;          /* rate from last drop      */
+extern volatile float               total_volume_ml;   /* accumulated volume       */
 extern uint8_t                      Battery_mV_to_percent(uint32_t mv);
 extern uint32_t                     Read_Battery_mV(void);
 
@@ -90,7 +90,7 @@ static void ui_render_run(void)
 {
     /* L0: Flow ### mL/h 99%   (battery right aligned) */
     char l0[LCD_CHARS+1]="Flow ";
-    print_rjust(l0+5, 3, (int)flow_avg_mlh, NULL);
+    print_rjust(l0+5, 3, (int)flow_mlh, NULL);
     strcat(l0, " mL/h ");
     uint8_t batt = Battery_mV_to_percent(Read_Battery_mV());
     char batt_buf[5];
@@ -171,7 +171,7 @@ static void ui_render_alarm(bool blink)
     }
 
     char l1[LCD_CHARS+1]="Meas:   mL/h";
-    print_rjust(l1+6,3,(int)flow_avg_mlh,NULL);
+    print_rjust(l1+6,3,(int)flow_mlh,NULL);
     char l2[LCD_CHARS+1]="Targ:   mL/h";
     print_rjust(l2+6,3,target_rate_mlh,NULL);
     const char *l3="Mute=Silence     ";
