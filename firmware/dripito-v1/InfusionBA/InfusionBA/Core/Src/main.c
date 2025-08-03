@@ -25,12 +25,9 @@
 #include <string.h>
 #include <stddef.h>       // for size_t
 #include <stdint.h>
-<<<<<<< HEAD
 #include "lcd.h"
 #include "buzzer.h"
-=======
 #include "ui.h"
->>>>>>> 812bee0 (Small Changes)
 
 /* USER CODE END Includes */
 
@@ -94,6 +91,7 @@ uint8_t Battery_mV_to_percent(uint32_t mv);
 void LCD_ShowBatteryPercentage(uint8_t percent);
 
 void Monitor_ADC_Drop_Spikes();
+void HandleSimulatedDrop(void);
 
 /* USER CODE END PFP */
 
@@ -535,15 +533,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   /* USER CODE BEGIN MX_GPIO_Init_1 */
   /* --- DOGS164 control lines: PB0 = /CS, PB1 = /RST, PB14 = A0 --- */
-  GPIO_InitStruct.Pin   = CS_Pin | RST_Pin | GPIO_PIN_14;
+  GPIO_InitStruct.Pin   = LCD_CS_Pin | LCD_RESET_Pin | GPIO_PIN_14;
   GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull  = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* Initial idle levels */
-  HAL_GPIO_WritePin(CS_GPIO_Port,  CS_Pin,  GPIO_PIN_SET);   // /CS high (inactive)
-  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);   // RST high (normal operation)
+  HAL_GPIO_WritePin(LCD_CS_GPIO_Port,  LCD_CS_Pin,  GPIO_PIN_SET);   // /CS high (inactive)
+  HAL_GPIO_WritePin(LCD_RESET_GPIO_Port, LCD_RESET_Pin, GPIO_PIN_SET);   // RST high (normal operation)
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);     // A0 low (command)
 
   /* USER CODE END MX_GPIO_Init_1 */

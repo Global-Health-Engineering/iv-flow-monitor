@@ -18,3 +18,8 @@ void Buzzer_PlayFreq(uint16_t freq, uint16_t duration_ms)
     Buzzer_SetDuty(0);
 }
 
+void buzzer_mute(void)
+{
+    Buzzer_SetDuty(0);
+}
+
