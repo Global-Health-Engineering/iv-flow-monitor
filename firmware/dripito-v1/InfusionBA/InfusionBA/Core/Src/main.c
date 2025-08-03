@@ -713,7 +713,6 @@ void UpdateStatsDisplay(void)
 
     char time_str[17];
     snprintf(time_str, sizeof(time_str), "%02lu:%02lu:%02lu", hrs, mins, secs);
-    LCD_Print(0, time_str);          // top line
 
     /* Total infused volume */
     char vol_str[17];
