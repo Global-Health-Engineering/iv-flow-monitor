@@ -54,6 +54,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/User/LCD}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/User/example}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/User/example}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Core/Src}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1965405633" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -109,6 +110,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/User/LCD}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/User/example}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/User/example}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Core/Src}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.435228625" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
