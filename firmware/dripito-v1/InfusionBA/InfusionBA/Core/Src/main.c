@@ -62,7 +62,7 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 #define DRIP_FACTOR_GTT_PER_ML   20      // 20 gtt ≈ 1 mL -- change for your set
-#define FLOW_AVG_WINDOW          30      // keep last 30 drops for moving-avg
+#define FLOW_AVG_WINDOW          3      // keep last 30 drops for moving-avg
 
 volatile uint32_t drop_count           = 0;          // running tally
 volatile uint32_t last_drop_ms         = 0;          // HAL_GetTick timestamp
