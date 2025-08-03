@@ -73,6 +73,7 @@ volatile uint8_t  flow_idx             = 0;          // circular buffer index
 volatile float    flow_avg_mlh         = 0.0f;       // moving average flow
 volatile float    total_volume_ml      = 0.0f;       // drops ÷ drip-factor
 volatile uint16_t target_rate_mlh = 50; // Example default: 50 mL/h
+volatile uint16_t flow_mlh = 0; // Example default: 50 mL/h
 
 
 /* USER CODE END PV */
