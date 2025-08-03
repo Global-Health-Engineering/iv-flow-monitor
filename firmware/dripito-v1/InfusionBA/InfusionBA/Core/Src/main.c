@@ -73,7 +73,7 @@ volatile uint8_t  flow_idx             = 0;          // circular buffer index
 volatile float    flow_avg_mlh         = 0.0f;       // moving average flow
 volatile float    total_volume_ml      = 0.0f;       // drops ÷ drip-factor
 volatile uint16_t target_rate_mlh = 100; // Default: 100 mL/h
-volatile uint16_t flow_mlh = 0; // Example default: 50 mL/h
+volatile float    flow_mlh            = 0.0f;       // current flow in mL/h
 
 
 
@@ -95,6 +95,7 @@ void LCD_ShowBatteryPercentage(uint8_t percent);
 
 void Monitor_ADC_Drop_Spikes();
 void HandleSimulatedDrop(void);
+void HandleTargetAdjustment(void);
 
 /* USER CODE END PFP */
 
@@ -180,21 +181,19 @@ int main(void)
    		  HAL_Delay(1);
    	  }*/
 
-   	uint8_t lastBtnMinus = GPIO_PIN_SET;  // button unpressed initially
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+          HandleTargetAdjustment();
+          HandleSimulatedDrop();
+          ui_task();
 
-	  // Track the current line: 0 to 3
-	  HandleSimulatedDrop();
-	  ui_task();
-
-	  uint32_t batt_mv = Read_Battery_mV();
-	  uint8_t  batt_pct = Battery_mV_to_percent(batt_mv);
-	  LCD_ShowBatteryPercentage(batt_pct);
+          uint32_t batt_mv = Read_Battery_mV();
+          uint8_t  batt_pct = Battery_mV_to_percent(batt_mv);
+          LCD_ShowBatteryPercentage(batt_pct);
 
     /* USER CODE END WHILE */
 
@@ -722,13 +721,42 @@ void UpdateStatsDisplay(void)
     //LCD_Print(2, vol_str);           // third line
 }
 
-/* ---------- PLUS-button drop simulator --------------------------------- */
+/* ---------- +/- buttons adjust target flow ----------------------------- */
+void HandleTargetAdjustment(void)
+{
+    static uint8_t lastPlus  = GPIO_PIN_SET;
+    static uint8_t lastMinus = GPIO_PIN_SET;
+
+    uint8_t nowPlus  = HAL_GPIO_ReadPin(BTN_PLUS_GPIO_Port,  BTN_PLUS_Pin);
+    uint8_t nowMinus = HAL_GPIO_ReadPin(BTN_MINUS_GPIO_Port, BTN_MINUS_Pin);
+
+    if (nowPlus == GPIO_PIN_RESET && lastPlus == GPIO_PIN_SET) {
+        if (target_rate_mlh < 999) {
+            target_rate_mlh++;
+        }
+        Buzzer_PlayFreq(4000, 30);
+        HAL_Delay(200);
+    }
+
+    if (nowMinus == GPIO_PIN_RESET && lastMinus == GPIO_PIN_SET) {
+        if (target_rate_mlh > 0) {
+            target_rate_mlh--;
+        }
+        Buzzer_PlayFreq(3800, 30);
+        HAL_Delay(200);
+    }
+
+    lastPlus  = nowPlus;
+    lastMinus = nowMinus;
+}
+
+/* ---------- MODE-button drop simulator --------------------------------- */
 void HandleSimulatedDrop(void)
 {
-    static uint8_t lastBtnPlus = GPIO_PIN_SET;      // unpressed
-    uint8_t nowPlus = HAL_GPIO_ReadPin(GPIOB, BTN_PLUS_Pin);
+    static uint8_t lastBtnMode = GPIO_PIN_SET;      // unpressed
+    uint8_t nowMode = HAL_GPIO_ReadPin(GPIOB, BTN_MODE_Pin);
 
-    if (nowPlus == GPIO_PIN_RESET && lastBtnPlus == GPIO_PIN_SET)
+    if (nowMode == GPIO_PIN_RESET && lastBtnMode == GPIO_PIN_SET)
     {
         /* Simulated drop */
         uint32_t now = HAL_GetTick();
@@ -738,6 +766,7 @@ void HandleSimulatedDrop(void)
             inst_flow_mlh = (3600.0f * 1000.0f) /
                             ((float)dt_ms * DRIP_FACTOR_GTT_PER_ML);
             flow_avg_mlh  = MovingAvg_Add(inst_flow_mlh);
+            flow_mlh      = flow_avg_mlh;            // update exported flow
         }
 
         last_drop_ms = now;
@@ -754,7 +783,7 @@ void HandleSimulatedDrop(void)
         HAL_Delay(200);               // debounce
     }
 
-    lastBtnPlus = nowPlus;
+    lastBtnMode = nowMode;
 }
 
 

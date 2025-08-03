@@ -81,13 +81,13 @@ void Error_Handler(void);
 #define BOOST_MODE_CTRL_GPIO_Port GPIOB
 #define LED_CTRL_Pin GPIO_PIN_3
 #define LED_CTRL_GPIO_Port GPIOB
-#define BTN_MINUS_Pin GPIO_PIN_6
+#define BTN_MINUS_Pin GPIO_PIN_9
 #define BTN_MINUS_GPIO_Port GPIOB
-#define BTN_PLUS_Pin GPIO_PIN_7
+#define BTN_PLUS_Pin GPIO_PIN_8
 #define BTN_PLUS_GPIO_Port GPIOB
-#define BTN_MODE_Pin GPIO_PIN_8
+#define BTN_MODE_Pin GPIO_PIN_7
 #define BTN_MODE_GPIO_Port GPIOB
-#define BTN_MUTE_Pin GPIO_PIN_9
+#define BTN_MUTE_Pin GPIO_PIN_6
 #define BTN_MUTE_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
