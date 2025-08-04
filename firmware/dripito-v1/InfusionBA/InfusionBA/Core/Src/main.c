@@ -95,7 +95,7 @@ uint8_t Battery_mV_to_percent(uint32_t mv);
 void LCD_ShowBatteryPercentage(uint8_t percent);
 
 void Monitor_ADC_Drop_Spikes();
-void HandleSimulatedDrop(void);
+void HandleModeButton(void);
 void HandleTargetAdjustment(void);
 void HandleMuteButton(void);
 
@@ -191,7 +191,7 @@ int main(void)
   while (1)
   {
           HandleTargetAdjustment();
-          HandleSimulatedDrop();
+          HandleModeButton();
           HandleMuteButton();
           ui_task();
           alarm_task();
@@ -720,24 +720,6 @@ uint32_t Read_Battery_mV(void)
     return (adc_val * vdda_mv) / 4095;  // Battery voltage at PA4 in mV
 }
 
-/* ---------- LCD stats helpers ------------------------------------------ */
-void UpdateStatsDisplay(void)
-{
-    /* Elapsed time since power-up */
-    uint32_t elapsed_ms = HAL_GetTick();
-    uint32_t hrs  = elapsed_ms / 3600000UL;
-    uint32_t mins = (elapsed_ms / 60000UL) % 60;
-    uint32_t secs = (elapsed_ms / 1000UL)  % 60;
-
-    char time_str[17];
-    snprintf(time_str, sizeof(time_str), "%02lu:%02lu:%02lu", hrs, mins, secs);
-
-    /* Total infused volume */
-    char vol_str[17];
-    snprintf(vol_str, sizeof(vol_str), "Vol: %4.1f mL", total_volume_ml);
-    //LCD_Print(2, vol_str);           // third line
-}
-
 /* ---------- +/- buttons adjust target flow ----------------------------- */
 void HandleTargetAdjustment(void)
 {
@@ -767,35 +749,15 @@ void HandleTargetAdjustment(void)
     lastMinus = nowMinus;
 }
 
-/* ---------- MODE-button drop simulator --------------------------------- */
-void HandleSimulatedDrop(void)
+/* ---------- MODE-button handler --------------------------------------- */
+void HandleModeButton(void)
 {
     static uint8_t lastBtnMode = GPIO_PIN_SET;      // unpressed
     uint8_t nowMode = HAL_GPIO_ReadPin(GPIOB, BTN_MODE_Pin);
 
     if (nowMode == GPIO_PIN_RESET && lastBtnMode == GPIO_PIN_SET)
     {
-        /* Simulated drop */
-        uint32_t now = HAL_GetTick();
-
-        if (drop_count > 0) {
-            dt_ms = now - last_drop_ms;
-            inst_flow_mlh = (3600.0f * 1000.0f) /
-                            ((float)dt_ms * DRIP_FACTOR_GTT_PER_ML);
-            flow_avg_mlh  = MovingAvg_Add(inst_flow_mlh);
-            flow_mlh      = flow_avg_mlh;            // update exported flow
-        }
-
-        last_drop_ms = now;
-        drop_count++;
-        total_volume_ml = (float)drop_count / DRIP_FACTOR_GTT_PER_ML;
-
-        char rate_str[17];
-        snprintf(rate_str, sizeof(rate_str), "Rate: %4.0f mL/h", inst_flow_mlh);
-        //LCD_Print(1, rate_str);       // middle line
-
-        UpdateStatsDisplay();         // update time + volume
-
+        ui_on_button(BTN_MODE, false);
         Buzzer_PlayFreq(3000, 30);    // audible feedback
         HAL_Delay(200);               // debounce
     }

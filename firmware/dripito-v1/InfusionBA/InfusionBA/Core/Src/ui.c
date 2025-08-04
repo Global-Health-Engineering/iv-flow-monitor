@@ -51,6 +51,7 @@ static bool     blink_phase      = false;
 static bool     alarm_blink      = false;
 static char     lcd_shadow[4][LCD_CHARS+1]; /* hold last text to minimise SPI */
 static uint32_t last_hold_ms     = 0;   /* auto-repeat timer for BTN +/-    */
+static bool     show_time        = false; /* false=show infused, true=time   */
 
 /*---------------------------------------------------------------------------
  *  Helpers – format fixed‑width fields as per spec
@@ -107,17 +108,19 @@ static void ui_render_run(void)
         strcat(l1, " mL/h");
     }
 
-    /* L2: Infused####.# mL (one decimal place) */
-    char l2[LCD_CHARS+1]="Infused";
-    sprintf(l2+7, "%5.1f mL", total_volume_ml);
+    char l2[LCD_CHARS+1];
+    if (show_time) {
+        uint32_t s = HAL_GetTick()/1000;
+        uint32_t hh=s/3600; uint32_t mm=(s/60)%60; uint32_t ss=s%60;
+        sprintf(l2, "Time  %02lu:%02lu:%02lu", hh%24, mm, ss);
+        int len = strlen(l2);
+        while (len < LCD_CHARS) l2[len++] = ' ';
+        l2[len] = '\0';
+    } else {
+        sprintf(l2, "Infused%5.1f mL", total_volume_ml);
+    }
 
-    /* L3: Time HH:MM:SS (HAL tick based) */
-    uint32_t s = HAL_GetTick()/1000;
-    uint32_t hh=s/3600; uint32_t mm=(s/60)%60; uint32_t ss=s%60;
-    char l3[LCD_CHARS+1];
-    sprintf(l3, "Time  %02lu:%02lu:%02lu", hh%24, mm, ss);
-
-    lcd_line(0,l0); lcd_line(1,l1); lcd_line(2,l2); lcd_line(3,l3);
+    lcd_line(0,l0); lcd_line(1,l1); lcd_line(2,l2); lcd_line(3,"                ");
 }
 
 /*---------------------------------------------------------------------------
@@ -248,9 +251,7 @@ void ui_on_button(enum ui_button_e btn, bool long_press)
     /*-------------------------------------------------- RUN -------------*/
     case UI_RUN:
         if (btn == BTN_MODE) {
-            ui_state = UI_SET;
-            edit_rate = target_rate_mlh ? target_rate_mlh : 1;
-            lcd_clear_shadow();
+            show_time = !show_time;
         } else if (btn == BTN_MUTE) {
             alarm_mute();             /* silence active alarm */
         }
