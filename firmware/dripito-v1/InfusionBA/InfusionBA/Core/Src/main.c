@@ -727,7 +727,7 @@ void HandleTargetAdjustment(void)
     static uint8_t lastMinus = GPIO_PIN_SET;
     static uint32_t plusHeldMs  = 0;
     static uint32_t minusHeldMs = 0;
-    const uint32_t repeatMs = 200; /* repeat interval similar to old delay */
+    const uint32_t repeatMs = 400;
 
     uint32_t now = HAL_GetTick();
     uint8_t nowPlus  = HAL_GPIO_ReadPin(BTN_PLUS_GPIO_Port,  BTN_PLUS_Pin);
@@ -736,10 +736,13 @@ void HandleTargetAdjustment(void)
     /* handle PLUS button */
     if (nowPlus == GPIO_PIN_RESET) {
         if (lastPlus == GPIO_PIN_SET || (now - plusHeldMs) >= repeatMs) {
-            if (target_rate_mlh < 999) {
+        	Buzzer_PlayFreq(4000, 10);
+            if (target_rate_mlh < 999 && plusHeldMs < repeatMs) {
                 target_rate_mlh++;
             }
-            Buzzer_PlayFreq(4000, 30);
+            if (target_rate_mlh < 999 && plusHeldMs >= repeatMs) {
+            	target_rate_mlh = ((target_rate_mlh / 5) + 1) * 5;
+            }
             plusHeldMs = now;
         }
     } else {
@@ -749,14 +752,17 @@ void HandleTargetAdjustment(void)
     /* handle MINUS button */
     if (nowMinus == GPIO_PIN_RESET) {
         if (lastMinus == GPIO_PIN_SET || (now - minusHeldMs) >= repeatMs) {
-            if (target_rate_mlh > 0) {
+            Buzzer_PlayFreq(3800, 10);
+            if (target_rate_mlh > 0 && minusHeldMs < repeatMs) {
                 target_rate_mlh--;
             }
-            Buzzer_PlayFreq(3800, 30);
+            if (target_rate_mlh > 0 && minusHeldMs >= repeatMs) {
+                target_rate_mlh = ((target_rate_mlh - 1) / 5) * 5;
+            }
             minusHeldMs = now;
         }
     } else {
-        minusHeldMs = 0;
+        minusHeldMs = 0; /* reset when released */
     }
 
     lastPlus  = nowPlus;

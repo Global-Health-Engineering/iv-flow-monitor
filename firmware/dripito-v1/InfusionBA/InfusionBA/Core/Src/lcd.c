@@ -144,7 +144,7 @@ void LCD_Init(void)
     LCD_WriteCmd(0x79); HAL_Delay(1);  // Contrast set (C3–C0 = 0x0A)
 
     LCD_WriteCmd(0x38); HAL_Delay(1);  // Function set (RE=0, IS=0)
-    LCD_WriteCmd(0x0F); HAL_Delay(1);  // Display ON, cursor OFF, blink OFF
+    LCD_WriteCmd(0x0C); HAL_Delay(1);  // Display ON, cursor OFF, blink OFF
 }
 void LCD_Clear(void)
 {
