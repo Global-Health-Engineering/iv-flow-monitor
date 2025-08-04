@@ -87,9 +87,13 @@ static void lcd_clear_shadow(void)
 
 static void battery_icon(char *dst, uint8_t pct)
 {
+    LCD_WriteCmd(0x3A);      // Function set (RE=1)
+    LCD_WriteCmd(0x72);      // ROM selection
+    LCD_WriteCmd(0x00);      // ROM A
+    LCD_WriteCmd(0x38);      // Function set (RE=0)
     dst[0] = '[';
     for (int i = 0; i < 4; i++)
-        dst[i+1] = (pct >= (i+1)*25) ? '#' : ' ';
+        dst[i+1] = (pct >= (i+1)*25) ? 0x1F : ' ';
     dst[5] = ']';
     dst[6] = '\0';
 }
