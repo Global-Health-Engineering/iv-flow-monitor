@@ -154,6 +154,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
+  setvbuf(stdout, NULL, _IONBF, 0);
   // After MX_TIM1_Init()
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); //Boost Mode ON
@@ -165,9 +166,9 @@ int main(void)
        HAL_Delay(20);
    }
 
-   printf("BEGIN LCD INITIALIZATION");
+   printf("BEGIN LCD INITIALIZATION\r\n");
    LCD_Init();
-   printf("FINISHED LCD INITIALIZATION");
+   printf("FINISHED LCD INITIALIZATION\r\n");
 
    LCD_Clear();
    LCD_SplashScreen();
@@ -194,7 +195,7 @@ int main(void)
           HandleMuteButton();
           ui_task();
           alarm_task();
-
+          Monitor_ADC_Drop_Spikes();
           uint32_t batt_mv = Read_Battery_mV();
           uint8_t  batt_pct = Battery_mV_to_percent(batt_mv);
           LCD_ShowBatteryPercentage(batt_pct);
