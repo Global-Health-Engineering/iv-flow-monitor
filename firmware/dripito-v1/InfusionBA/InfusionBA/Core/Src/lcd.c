@@ -1,5 +1,5 @@
 #include "lcd.h"
-#include <stdio.h>
+#include <string.h>
 
 extern SPI_HandleTypeDef hspi1;
 
@@ -34,19 +34,6 @@ void LCD_SplashScreen(void)
     LCD_Print(1, "   DRIPITO v1");
     //LCD_Print(2, "Leandro Catarci");
     //LCD_Print(3, "   GHE - ETHZ ");
-}
-
-void LCD_ShowBatteryPercentage(uint8_t percent)
-{
-    char buf[6];  // Enough for "100%"
-    snprintf(buf, sizeof(buf), "%3u%%", percent);
-
-    // Set cursor to top-right corner
-    // Line 0, column 16 – 4 chars from the end (0-based index)
-    LCD_WriteCmd(0x80 | (16 - strlen(buf)));  // Line 0 starts at 0x00
-
-    for (size_t i = 0; i < strlen(buf); ++i)
-        LCD_WriteData(buf[i]);
 }
 
 static void LCD_Write(uint8_t startByte, uint8_t val)
