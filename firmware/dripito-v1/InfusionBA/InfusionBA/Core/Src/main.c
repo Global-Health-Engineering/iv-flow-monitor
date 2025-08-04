@@ -646,7 +646,7 @@ void Monitor_ADC_Drop_Spikes(void)
             dt_ms = now - last_drop_ms;
             /* convert dt to instantaneous flow: 3600 s/h × 1000 ms/s */
             inst_flow_mlh = (3600.0f * 1000.0f) / ((float)dt_ms * DRIP_FACTOR_GTT_PER_ML);
-            flow_avg_mlh  = MovingAvg_Add(inst_flow_mlh);
+            flow_mlh  = MovingAvg_Add(inst_flow_mlh);
         }
         last_drop_ms = now;
         drop_count++;
@@ -675,7 +675,7 @@ void Monitor_ADC_Drop_Spikes(void)
 
     char flow_str[17];  // 16 chars + null terminator
     snprintf(flow_str, sizeof(flow_str), "Rate: %4.0f mL/h", inst_flow_mlh);
-    //LCD_Print(1, flow_str);  // Show on line 1 (second line)
+    //LCD_Print(3, flow_str);  // Show on line 1 (second line)
 
 
     // Store current measurement as previous for next iteration

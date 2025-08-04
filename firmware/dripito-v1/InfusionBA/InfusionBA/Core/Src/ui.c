@@ -96,7 +96,7 @@ static void ui_render_run(void)
     strcat(l0, " mL/h ");
     uint8_t batt = Battery_mV_to_percent(Read_Battery_mV());
     char batt_buf[5];
-    sprintf(batt_buf, "%3u%%", batt);
+    //sprintf(batt_buf, "%3u%%", batt);
     int pad = LCD_CHARS - strlen(l0) - strlen(batt_buf);
     while(pad-->0) strcat(l0, " ");
     strcat(l0, batt_buf);
@@ -179,7 +179,7 @@ static void ui_render_alarm(bool blink)
     print_rjust(l2+6,3,target_rate_mlh,NULL);
     const char *l3="Mute=Silence     ";
 
-    lcd_line(0,l0); lcd_line(1,l1); lcd_line(2,l2); lcd_line(3,l3);
+    lcd_line(0,l0); lcd_line(1,l1); lcd_line(2,l2); //lcd_line(3,l3);
 }
 
 /*---------------------------------------------------------------------------
