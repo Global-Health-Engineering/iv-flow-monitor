@@ -92,7 +92,6 @@ static void MX_SPI1_Init(void);
 uint32_t  Read_Battery_mV(void);
 uint32_t Read_VDDA_mV(void);
 uint8_t Battery_mV_to_percent(uint32_t mv);
-void LCD_ShowBatteryPercentage(uint8_t percent);
 
 void Monitor_ADC_Drop_Spikes();
 void HandleModeButton(void);
@@ -196,9 +195,6 @@ int main(void)
           ui_task();
           alarm_task();
           Monitor_ADC_Drop_Spikes();
-          uint32_t batt_mv = Read_Battery_mV();
-          uint8_t  batt_pct = Battery_mV_to_percent(batt_mv);
-          LCD_ShowBatteryPercentage(batt_pct);
 
     /* USER CODE END WHILE */
 
@@ -652,10 +648,6 @@ void Monitor_ADC_Drop_Spikes(void)
         drop_count++;
 
         total_volume_ml = (float)drop_count / DRIP_FACTOR_GTT_PER_ML;
-
-        /* Battery */
-        uint32_t batt_mv  = Read_Battery_mV();
-        uint8_t  batt_pct = Battery_mV_to_percent(batt_mv);
 
         /* Time since power-up */
         uint32_t elapsed_ms = now;                       // HAL_GetTick base = boot

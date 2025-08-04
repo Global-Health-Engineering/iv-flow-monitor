@@ -85,18 +85,6 @@ static void lcd_clear_shadow(void)
     for (int i=0;i<4;i++) memset(lcd_shadow[i], 0, sizeof(lcd_shadow[i]));
 }
 
-static void battery_icon(char *dst, uint8_t pct)
-{
-    LCD_WriteCmd(0x3A);      // Function set (RE=1)
-    LCD_WriteCmd(0x72);      // ROM selection
-    LCD_WriteCmd(0x00);      // ROM A
-    LCD_WriteCmd(0x38);      // Function set (RE=0)
-    dst[0] = '[';
-    for (int i = 0; i < 4; i++)
-        dst[i+1] = (pct >= (i+1)*25) ? 0x1F : ' ';
-    dst[5] = ']';
-    dst[6] = '\0';
-}
 
 /*---------------------------------------------------------------------------
  *  RUN screen rendering
@@ -135,8 +123,8 @@ static void ui_render_run(void)
     char l3[LCD_CHARS+1];
     memset(l3, ' ', LCD_CHARS);
     l3[LCD_CHARS] = '\0';
-    char batt_buf[7];
-    battery_icon(batt_buf, batt);
+    char batt_buf[5];
+    snprintf(batt_buf, sizeof(batt_buf), "%3u%%", batt);
     strcpy(l3 + LCD_CHARS - strlen(batt_buf), batt_buf);
 
     lcd_line(0,l0); lcd_line(1,l1); lcd_line(2,l2); lcd_line(3,l3);

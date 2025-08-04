@@ -14,7 +14,6 @@ void LCD_Init(void);                         /* power‑on sequence + clear    *
 void LCD_Clear(void);                        /* clear display, home cursor   */
 void LCD_SetCursor(uint8_t line);            /* 0‑based line select (0‑3)    */
 void LCD_Print(uint8_t line, const char *s); /* writes up to 16 chars        */
-void LCD_ShowBatteryPercentage(uint8_t pct); /* draws right‑aligned “99%”    */
 
 /*----------------------------------------------------------------------
  *  Low-level primitives (used internally or by LCD driver)
