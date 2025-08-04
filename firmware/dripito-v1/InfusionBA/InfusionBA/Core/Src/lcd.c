@@ -32,8 +32,8 @@ void LCD_SplashScreen(void)
 {
     //LCD_Print(0, " IV Flow Meter");
     LCD_Print(1, "   DRIPITO v1");
-    LCD_Print(2, "Leandro Catarci");
-    LCD_Print(3, "   GHE - ETHZ ");
+    //LCD_Print(2, "Leandro Catarci");
+    //LCD_Print(3, "   GHE - ETHZ ");
 }
 
 void LCD_ShowBatteryPercentage(uint8_t percent)
