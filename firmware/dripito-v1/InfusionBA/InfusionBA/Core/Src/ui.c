@@ -37,6 +37,7 @@
 extern volatile uint16_t            target_rate_mlh;   /* user target (0 => unset) */
 extern volatile float               flow_mlh;          /* rate from last drop      */
 extern volatile float               total_volume_ml;   /* accumulated volume       */
+extern volatile uint32_t            drop_count;       /* total drops detected     */
 extern uint8_t                      Battery_mV_to_percent(uint32_t mv);
 extern uint32_t                     Read_Battery_mV(void);
 
@@ -123,9 +124,15 @@ static void ui_render_run(void)
     char l3[LCD_CHARS+1];
     memset(l3, ' ', LCD_CHARS);
     l3[LCD_CHARS] = '\0';
+    char drop_buf[12];
     char batt_buf[5];
+    snprintf(drop_buf, sizeof(drop_buf), "Drops: %lu", (unsigned long)drop_count);
     snprintf(batt_buf, sizeof(batt_buf), "%3u%%", batt);
-    strcpy(l3 + LCD_CHARS - strlen(batt_buf), batt_buf);
+    size_t batt_len = strlen(batt_buf);
+    size_t drop_len = strlen(drop_buf);
+    if (drop_len > LCD_CHARS - batt_len) drop_len = LCD_CHARS - batt_len;
+    memcpy(l3, drop_buf, drop_len);
+    strcpy(l3 + LCD_CHARS - batt_len, batt_buf);
 
     lcd_line(0,l0); lcd_line(1,l1); lcd_line(2,l2); lcd_line(3,l3);
 }
