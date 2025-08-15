@@ -19,7 +19,7 @@ Dripito is developed as part of a Bachelor's thesis at ETH Zurich in collaborati
 - ✅ Full system integration and casing assembly  
 - ✅ Calibration and experimental validation
 - ✅ Presentation
-- ☐ Final documentation and ETH submission  
+- ✅ Final documentation and ETH submission  
 - ☐ Optional open hardware release
 
 ## Authors
