@@ -9,10 +9,7 @@ Dripito is developed as part of a Bachelor's thesis at ETH Zurich in collaborati
 ## Structure
 
 - `/firmware/` — STM32 firmware source code and configuration (CubeMX `.ioc` file)
-- `/hardware/` — PCB schematics, layouts (Altium files), and BoM
-- `/data/` — Experimental logs (no raw data if private)
-- `/docs/` — System architecture, design rationale, photos
-- `/testing/` — Test scripts and evaluation notes
+- `/hardware/` — PCB schematics, layouts (Altium files), BoM, and stp/stl/3mf files.
 
 ## Milestones
 
