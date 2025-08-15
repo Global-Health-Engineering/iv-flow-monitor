@@ -20,7 +20,8 @@ Dripito is developed as part of a Bachelor's thesis at ETH Zurich in collaborati
 - ✅ Initial firmware structure and button interface  
 - ✅ Basic drop sensing and IR LED control  
 - ✅ Full system integration and casing assembly  
-- ☐ Calibration and experimental validation  
+- ✅ Calibration and experimental validation
+- ✅ Presentation
 - ☐ Final documentation and ETH submission  
 - ☐ Optional open hardware release
 
@@ -30,7 +31,7 @@ Dripito is developed as part of a Bachelor's thesis at ETH Zurich in collaborati
 - **Rebecca Jean Alcock** – Co-Supervisor, Global Health Engineering  
 - **Dr. Jakub Tkaczuk** – Co-Supervisor, Global Health Engineering  
 - **Prof. Elizabeth Tilley** – Thesis Advisor, ETH Zürich
-- **Dr. Michelle Niescierenko (Harvard)
+- **Dr. Michelle Niescierenko** (Harvard Humanitarian Institute)
 
 ## License
 
