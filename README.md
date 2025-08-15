@@ -20,7 +20,6 @@ Dripito is developed as part of a Bachelor's thesis at ETH Zurich in collaborati
 - ✅ Calibration and experimental validation
 - ✅ Presentation
 - ✅ Final documentation and ETH submission  
-- ☐ Optional open hardware release
 
 ## Authors
 
