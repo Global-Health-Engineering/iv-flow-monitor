@@ -27,7 +27,7 @@ Dripito is developed as part of a Bachelor's thesis at ETH Zurich in collaborati
 - **Rebecca Jean Alcock** – Co-Supervisor, Global Health Engineering  
 - **Dr. Jakub Tkaczuk** – Co-Supervisor, Global Health Engineering  
 - **Prof. Elizabeth Tilley** – Thesis Advisor, ETH Zürich
-- **Dr. Michelle Niescierenko** (Harvard Humanitarian Institute)
+- **Dr. Michelle Niescierenko** (Harvard Humanitarian Initiative)
 
 ## License
 
