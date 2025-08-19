@@ -193,7 +193,7 @@ int main(void)
           HandleModeButton();
           HandleMuteButton();
           ui_task();
-          //alarm_task();
+          alarm_task();
           Monitor_ADC_Drop_Spikes();
 
     /* USER CODE END WHILE */
