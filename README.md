@@ -7,7 +7,7 @@ This repository contains the firmware and altium files for the development of **
 Dripito is developed as part of a Bachelor's thesis at ETH Zurich in collaboration with the Global Health Engineering group. The project aims to create a reliable, low-cost device capable of accurately detecting IV flow rates using drop sensing and IR technology.
 
 ## Structure
-
+- `/drive/` — Written thesis, presentations, images, videos, and supplementary project information 
 - `/firmware/` — STM32 firmware source code and configuration (CubeMX `.ioc` file)
 - `/hardware/` — PCB schematics, layouts (Altium files), BoM, and stp/stl/3mf files.
 
