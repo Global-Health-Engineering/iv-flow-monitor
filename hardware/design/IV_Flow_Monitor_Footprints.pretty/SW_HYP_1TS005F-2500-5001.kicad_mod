@@ -1,0 +1,241 @@
+(footprint "SW_HYP_1TS005F-2500-5001"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 0.3 -1.7 0)
+		(layer "F.SilkS")
+		(uuid "c7952308-2267-43ee-9e3f-01d86f48c867")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "HYP 1TS005F-2500-5001"
+		(at 0 4.8 0)
+		(layer "F.Fab")
+		(uuid "1fae8d19-0643-4158-bbe9-87727594d393")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" "https://www.lcsc.com/datasheet/C255812.pdf"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "9903eab6-67b8-4dee-8283-1030a6f09c4c")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" "Tactile Switch SPST 250gf 5mm Gull Wing 6mm x 6mm Surface Mount"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "234e5462-b4db-4e5e-bd43-8eae3af3ee81")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start -3.3 -3.3)
+		(end -3.3 -3.1)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "73872485-2865-4288-90a5-693321cf98bf")
+	)
+	(fp_line
+		(start -3.3 -3.3)
+		(end -2.3 -3.3)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "c9738b4b-2403-41c9-b6fb-5f85f9f39d29")
+	)
+	(fp_line
+		(start -3.1 -3.1)
+		(end -3.1 -1.1)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "71b03bdb-bb0b-4449-99f7-b63907eb70b3")
+	)
+	(fp_line
+		(start -3.1 -3.1)
+		(end -0.1 -3.1)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "ee8469ff-f35c-4798-a9cb-938206a8c852")
+	)
+	(fp_line
+		(start -3.1 3.1)
+		(end -3.1 1.1)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "9318786f-ac67-402f-841b-697c42e5f649")
+	)
+	(fp_line
+		(start -3.1 3.1)
+		(end 0.1 3.1)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "a64c7f8a-ec95-43db-916a-1eba5615fa6a")
+	)
+	(fp_line
+		(start 3.1 -3.1)
+		(end 3.1 -1.1)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "d2915e46-dcfc-4574-8a9c-f8de86fd014e")
+	)
+	(fp_line
+		(start 3.1 3.1)
+		(end 3.1 1.1)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "01b72082-9f62-4248-8114-d6d4c64bec82")
+	)
+	(fp_rect
+		(start -4.95 -3.2)
+		(end 4.95 3.2)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "fc7d0870-c3a5-41b7-b4eb-091437c379cc")
+	)
+	(fp_line
+		(start -3 3)
+		(end -3 -2)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "709daa92-eba0-4c68-801c-075afbf6c97e")
+	)
+	(fp_line
+		(start -2 -3)
+		(end -3 -2)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "b25bbfd0-4417-43de-a3b3-8d6f28b74319")
+	)
+	(fp_line
+		(start -2 -3)
+		(end 3 -3)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "c96bff70-c98e-4240-91cb-c2db95d593a6")
+	)
+	(fp_line
+		(start 3 -3)
+		(end 3 3)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "5ab9b7cd-8d99-49a3-941a-b3578e9035a2")
+	)
+	(fp_line
+		(start 3 3)
+		(end -3 3)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "d524665b-64c5-4c5b-860a-d768a68879bb")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 0 180)
+		(layer "F.Fab")
+		(uuid "0be2145e-7835-43de-977d-b02453bc9ea3")
+		(effects
+			(font
+				(size 0.8 0.8)
+				(thickness 0.12)
+			)
+		)
+	)
+	(pad "1" smd rect
+		(at -4 -2.5 180)
+		(size 1.5 1)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "618e839c-cca8-4e5a-9988-aac9f0eddd45")
+	)
+	(pad "2" smd rect
+		(at 4 -2.5 180)
+		(size 1.5 1)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "a34f30d2-8e36-41f0-af02-abde856113e5")
+	)
+	(pad "3" smd rect
+		(at -4 2.5 180)
+		(size 1.5 1)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "d870671f-cf8f-4cd8-bd74-58515be980dd")
+	)
+	(pad "4" smd rect
+		(at 4 2.5 180)
+		(size 1.5 1)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "4e57d332-b932-4996-a405-7afbde10d3de")
+	)
+	(embedded_fonts no)
+	(model "${KICAD9_3DMODEL_DIR}/Button_Switch_SMD.3dshapes/SW_DIP_SPSTx02_Slide_9.78x7.26mm_W8.61mm_P2.54mm.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 90)
+		)
+	)
+)
