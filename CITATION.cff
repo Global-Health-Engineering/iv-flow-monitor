@@ -3,7 +3,7 @@ message: "To cite this repository, use:"
 license: CERN-OHL-2.0
 title: "Open-Source Intravenous Infusion Flow Rate Monitor for Pediatric Care"
 date-released: "2025-03-06"
-doi: XXX
+doi: 10.5281/zenodo.16902366
 type: software
 authors:
   - family-names: Fionn
