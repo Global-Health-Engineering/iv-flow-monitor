@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "To cite this repository, use:"
+license: CERN-OHL-2.0
+title: "Open-Source Intravenous Infusion Flow Rate Monitor for Pediatric Care"
+date-released: "2025-03-06"
+doi: XXX
+type: software
+authors:
+  - family-names: Fionn
+    given-names: Smith
+    email: fsmith@ethz.ch
+  - family-names: Tkaczuk
+    given-names: Jakub
+    email: jtkaczuk@ethz.ch
+    orcid: https://orcid.org/0000-0001-7997-9423
+  - family-names: Alcock
+    given-names: Rebecca
+    email: r.alcock@utoronto.ca
+  - family-names: Tilley
+    given-names: Elizabeth
+    email: tilleye@ethz.ch
+    orcid: https://orcid.org/0000-0002-2095-9724
+contact:
+  - family-names: Tkaczuk
+    given-names: Jakub
+    email: jtkaczuk@ethz.ch
+    orcid: https://orcid.org/0000-0001-7997-9423
+version: 0.0.1
