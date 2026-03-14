@@ -1,0 +1,277 @@
+ {src => STM32CubeIDE}/.mxproject                   |      0
+ STM32CubeIDE/Core/Inc/font.h                       |    200 [32m+[m
+ STM32CubeIDE/Core/Inc/font6x8.h                    |    270 [32m+[m
+ STM32CubeIDE/Core/Inc/main.h                       |    101 [32m+[m
+ .../Core/Inc/stm32g0xx_hal_conf.h                  |      0
+ {src => STM32CubeIDE}/Core/Inc/stm32g0xx_it.h      |      0
+ STM32CubeIDE/Core/Src/main.c                       |    579 [32m+[m
+ STM32CubeIDE/Core/Src/stm32g0xx_hal_msp.c          |    419 [32m+[m
+ {src => STM32CubeIDE}/Core/Src/stm32g0xx_it.c      |      0
+ STM32CubeIDE/Core/Src/syscalls.c                   |    176 [32m+[m
+ {src => STM32CubeIDE}/Core/Src/sysmem.c            |      0
+ STM32CubeIDE/Core/Src/system_stm32g0xx.c           |    302 [32m+[m
+ STM32CubeIDE/Core/Startup/startup_stm32g030c8tx.s  |    271 [32m+[m
+ .../Device/ST/STM32G0xx/Include/stm32g030xx.h      |      0
+ .../CMSIS/Device/ST/STM32G0xx/Include/stm32g0xx.h  |      0
+ .../Device/ST/STM32G0xx/Include/system_stm32g0xx.h |      0
+ .../Drivers/CMSIS/Device/ST/STM32G0xx/LICENSE.txt  |      0
+ .../Drivers/CMSIS/Include/cmsis_armcc.h            |      0
+ .../Drivers/CMSIS/Include/cmsis_armclang.h         |      0
+ .../Drivers/CMSIS/Include/cmsis_armclang_ltm.h     |      0
+ .../Drivers/CMSIS/Include/cmsis_compiler.h         |      0
+ .../Drivers/CMSIS/Include/cmsis_gcc.h              |      0
+ .../Drivers/CMSIS/Include/cmsis_iccarm.h           |      0
+ .../Drivers/CMSIS/Include/cmsis_version.h          |      0
+ .../Drivers/CMSIS/Include/core_armv81mml.h         |      0
+ .../Drivers/CMSIS/Include/core_armv8mbl.h          |      0
+ .../Drivers/CMSIS/Include/core_armv8mml.h          |      0
+ .../Drivers/CMSIS/Include/core_cm0.h               |      0
+ .../Drivers/CMSIS/Include/core_cm0plus.h           |      0
+ .../Drivers/CMSIS/Include/core_cm1.h               |      0
+ .../Drivers/CMSIS/Include/core_cm23.h              |      0
+ .../Drivers/CMSIS/Include/core_cm3.h               |      0
+ .../Drivers/CMSIS/Include/core_cm33.h              |      0
+ .../Drivers/CMSIS/Include/core_cm35p.h             |      0
+ .../Drivers/CMSIS/Include/core_cm4.h               |      0
+ .../Drivers/CMSIS/Include/core_cm7.h               |      0
+ .../Drivers/CMSIS/Include/core_sc000.h             |      0
+ .../Drivers/CMSIS/Include/core_sc300.h             |      0
+ .../Drivers/CMSIS/Include/mpu_armv7.h              |      0
+ .../Drivers/CMSIS/Include/mpu_armv8.h              |      0
+ .../Drivers/CMSIS/Include/tz_context.h             |      0
+ {src => STM32CubeIDE}/Drivers/CMSIS/LICENSE.txt    |      0
+ .../Inc/Legacy/stm32_hal_legacy.h                  |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal.h       |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_adc.h   |      0
+ .../Inc/stm32g0xx_hal_adc_ex.h                     |      0
+ .../Inc/stm32g0xx_hal_cortex.h                     |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_def.h   |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_dma.h   |      0
+ .../Inc/stm32g0xx_hal_dma_ex.h                     |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_exti.h  |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_flash.h |      0
+ .../Inc/stm32g0xx_hal_flash_ex.h                   |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_gpio.h  |      0
+ .../Inc/stm32g0xx_hal_gpio_ex.h                    |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_pwr.h   |      0
+ .../Inc/stm32g0xx_hal_pwr_ex.h                     |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_rcc.h   |      0
+ .../Inc/stm32g0xx_hal_rcc_ex.h                     |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_rtc.h   |      0
+ .../Inc/stm32g0xx_hal_rtc_ex.h                     |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_spi.h   |      0
+ .../Inc/stm32g0xx_hal_spi_ex.h                     |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_tim.h   |      0
+ .../Inc/stm32g0xx_hal_tim_ex.h                     |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_uart.h  |      0
+ .../Inc/stm32g0xx_hal_uart_ex.h                    |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_adc.h    |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_bus.h    |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_cortex.h |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_dma.h    |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_dmamux.h |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_exti.h   |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_gpio.h   |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_lpuart.h |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_pwr.h    |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_rcc.h    |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_rtc.h    |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_spi.h    |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_system.h |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_tim.h    |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_usart.h  |      0
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_utils.h  |      0
+ .../Drivers/STM32G0xx_HAL_Driver/LICENSE.txt       |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal.c       |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_adc.c   |      0
+ .../Src/stm32g0xx_hal_adc_ex.c                     |      0
+ .../Src/stm32g0xx_hal_cortex.c                     |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_dma.c   |      0
+ .../Src/stm32g0xx_hal_dma_ex.c                     |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_exti.c  |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_flash.c |      0
+ .../Src/stm32g0xx_hal_flash_ex.c                   |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_gpio.c  |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_pwr.c   |      0
+ .../Src/stm32g0xx_hal_pwr_ex.c                     |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_rcc.c   |      0
+ .../Src/stm32g0xx_hal_rcc_ex.c                     |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_rtc.c   |      0
+ .../Src/stm32g0xx_hal_rtc_ex.c                     |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_spi.c   |      0
+ .../Src/stm32g0xx_hal_spi_ex.c                     |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_tim.c   |      0
+ .../Src/stm32g0xx_hal_tim_ex.c                     |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_uart.c  |      0
+ .../Src/stm32g0xx_hal_uart_ex.c                    |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_ll_adc.c    |      0
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_ll_rcc.c    |      0
+ STM32CubeIDE/InfusionBA.ioc                        |    236 [32m+[m
+ STM32CubeIDE/InfusionBA.launch                     |     85 [32m+[m
+ STM32CubeIDE/InfusionBA/.mxproject                 |     25 [32m+[m
+ {src => STM32CubeIDE/InfusionBA}/Core/Inc/alarm.h  |      0
+ {src => STM32CubeIDE/InfusionBA}/Core/Inc/buzzer.h |      0
+ {src => STM32CubeIDE/InfusionBA}/Core/Inc/lcd.h    |      0
+ {src => STM32CubeIDE/InfusionBA}/Core/Inc/main.h   |     12 [32m+[m[31m-[m
+ .../InfusionBA/Core/Inc/stm32g0xx_hal_conf.h       |    351 [32m+[m
+ STM32CubeIDE/InfusionBA/Core/Inc/stm32g0xx_it.h    |     62 [32m+[m
+ {src => STM32CubeIDE/InfusionBA}/Core/Inc/ui.h     |      0
+ {src => STM32CubeIDE/InfusionBA}/Core/Src/alarm.c  |      0
+ {src => STM32CubeIDE/InfusionBA}/Core/Src/buzzer.c |      0
+ .../InfusionBA}/Core/Src/dripito_app.c             |      7 [32m+[m[31m-[m
+ {src => STM32CubeIDE/InfusionBA}/Core/Src/lcd.c    |      0
+ {src => STM32CubeIDE/InfusionBA}/Core/Src/main.c   |     56 [32m+[m[31m-[m
+ .../InfusionBA}/Core/Src/retarget.c                |      0
+ .../InfusionBA}/Core/Src/stm32g0xx_hal_msp.c       |      0
+ STM32CubeIDE/InfusionBA/Core/Src/stm32g0xx_it.c    |    145 [32m+[m
+ .../InfusionBA}/Core/Src/syscalls.c                |      0
+ STM32CubeIDE/InfusionBA/Core/Src/sysmem.c          |     79 [32m+[m
+ .../InfusionBA}/Core/Src/system_stm32g0xx.c        |      0
+ {src => STM32CubeIDE/InfusionBA}/Core/Src/ui.c     |     21 [32m+[m[31m-[m
+ .../Core/Startup/startup_stm32g030c8tx.s           |      0
+ .../Device/ST/STM32G0xx/Include/stm32g030xx.h      |   7445 [32m++[m
+ .../CMSIS/Device/ST/STM32G0xx/Include/stm32g0xx.h  |    244 [32m+[m
+ .../Device/ST/STM32G0xx/Include/system_stm32g0xx.h |    103 [32m+[m
+ .../Drivers/CMSIS/Device/ST/STM32G0xx/LICENSE.txt  |      6 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/cmsis_armcc.h |    894 [32m+[m
+ .../Drivers/CMSIS/Include/cmsis_armclang.h         |   1444 [32m+[m
+ .../Drivers/CMSIS/Include/cmsis_armclang_ltm.h     |   1891 [32m+[m
+ .../Drivers/CMSIS/Include/cmsis_compiler.h         |    283 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/cmsis_gcc.h   |   2168 [32m+[m
+ .../Drivers/CMSIS/Include/cmsis_iccarm.h           |    964 [32m+[m
+ .../Drivers/CMSIS/Include/cmsis_version.h          |     39 [32m+[m
+ .../Drivers/CMSIS/Include/core_armv81mml.h         |   2968 [32m+[m
+ .../Drivers/CMSIS/Include/core_armv8mbl.h          |   1921 [32m+[m
+ .../Drivers/CMSIS/Include/core_armv8mml.h          |   2835 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/core_cm0.h    |    952 [32m+[m
+ .../Drivers/CMSIS/Include/core_cm0plus.h           |   1085 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/core_cm1.h    |    979 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/core_cm23.h   |   1996 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/core_cm3.h    |   1937 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/core_cm33.h   |   2910 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/core_cm35p.h  |   2910 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/core_cm4.h    |   2124 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/core_cm7.h    |   2725 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/core_sc000.h  |   1025 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/core_sc300.h  |   1912 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/mpu_armv7.h   |    272 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/mpu_armv8.h   |    346 [32m+[m
+ .../InfusionBA/Drivers/CMSIS/Include/tz_context.h  |     70 [32m+[m
+ STM32CubeIDE/InfusionBA/Drivers/CMSIS/LICENSE.txt  |    201 [32m+[m
+ .../Inc/Legacy/stm32_hal_legacy.h                  |   3919 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal.h       |    838 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_adc.h   |   1943 [32m+[m
+ .../Inc/stm32g0xx_hal_adc_ex.h                     |    186 [32m+[m
+ .../Inc/stm32g0xx_hal_cortex.h                     |    387 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_def.h   |    215 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_dma.h   |    803 [32m+[m
+ .../Inc/stm32g0xx_hal_dma_ex.h                     |    278 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_exti.h  |    387 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_flash.h |   1033 [32m+[m
+ .../Inc/stm32g0xx_hal_flash_ex.h                   |    116 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_gpio.h  |    362 [32m+[m
+ .../Inc/stm32g0xx_hal_gpio_ex.h                    |    836 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_pwr.h   |    325 [32m+[m
+ .../Inc/stm32g0xx_hal_pwr_ex.h                     |    641 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_rcc.h   |   3169 [32m+[m
+ .../Inc/stm32g0xx_hal_rcc_ex.h                     |   1590 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_rtc.h   |    989 [32m+[m
+ .../Inc/stm32g0xx_hal_rtc_ex.h                     |   1162 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_spi.h   |    851 [32m+[m
+ .../Inc/stm32g0xx_hal_spi_ex.h                     |     73 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_tim.h   |   2469 [32m+[m
+ .../Inc/stm32g0xx_hal_tim_ex.h                     |    494 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_uart.h  |   1745 [32m+[m
+ .../Inc/stm32g0xx_hal_uart_ex.h                    |    771 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_adc.h    |   5496 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_bus.h    |   1306 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_cortex.h |    585 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_dma.h    |   2270 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_dmamux.h |   1838 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_exti.h   |   1557 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_gpio.h   |    958 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_lpuart.h |   2643 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_pwr.h    |   1528 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_rcc.h    |   3977 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_rtc.h    |   4215 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_spi.h    |   2284 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_system.h |   2085 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_tim.h    |   5272 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_usart.h  |   4399 [32m+[m
+ .../STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_utils.h  |    343 [32m+[m
+ .../Drivers/STM32G0xx_HAL_Driver/LICENSE.txt       |      6 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal.c       |    760 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_adc.c   |   2987 [32m+[m
+ .../Src/stm32g0xx_hal_adc_ex.c                     |    409 [32m+[m
+ .../Src/stm32g0xx_hal_cortex.c                     |    443 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_dma.c   |   1193 [32m+[m
+ .../Src/stm32g0xx_hal_dma_ex.c                     |    320 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_exti.c  |    670 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_flash.c |    730 [32m+[m
+ .../Src/stm32g0xx_hal_flash_ex.c                   |   1309 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_gpio.c  |    550 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_pwr.c   |    542 [32m+[m
+ .../Src/stm32g0xx_hal_pwr_ex.c                     |   1016 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_rcc.c   |   1472 [32m+[m
+ .../Src/stm32g0xx_hal_rcc_ex.c                     |   1678 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_rtc.c   |   1922 [32m+[m
+ .../Src/stm32g0xx_hal_rtc_ex.c                     |   1982 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_spi.c   |   4429 [32m+[m
+ .../Src/stm32g0xx_hal_spi_ex.c                     |    112 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_tim.c   |   7931 [32m++[m
+ .../Src/stm32g0xx_hal_tim_ex.c                     |   2857 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_uart.c  |   4762 [32m+[m
+ .../Src/stm32g0xx_hal_uart_ex.c                    |   1090 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_ll_adc.c    |    778 [32m+[m
+ .../STM32G0xx_HAL_Driver/Src/stm32g0xx_ll_rcc.c    |   1380 [32m+[m
+ .../InfusionBA}/InfusionBA Debug.launch            |      0
+ {src => STM32CubeIDE/InfusionBA}/InfusionBA.ioc    |      0
+ .../InfusionBA}/STM32G030C8TX_FLASH.ld             |      0
+ .../InfusionBA}/User/Config/DEV_Config.c           |      0
+ .../InfusionBA}/User/Config/DEV_Config.h           |      0
+ .../InfusionBA}/User/Config/Debug.h                |      0
+ .../InfusionBA}/User/Fonts/font12.c                |      0
+ .../InfusionBA}/User/Fonts/font12CN.c              |      0
+ .../InfusionBA}/User/Fonts/font16.c                |      0
+ .../InfusionBA}/User/Fonts/font20.c                |      0
+ .../InfusionBA}/User/Fonts/font24.c                |      0
+ .../InfusionBA}/User/Fonts/font24CN.c              |      0
+ .../InfusionBA}/User/Fonts/font8.c                 |      0
+ .../InfusionBA}/User/Fonts/fonts.h                 |      0
+ .../InfusionBA}/User/GUI_DEV/GUI_Paint.c           |      0
+ .../InfusionBA}/User/GUI_DEV/GUI_Paint.h           |      0
+ .../InfusionBA}/User/LCD/LCD_0in96.c               |      0
+ .../InfusionBA}/User/LCD/LCD_0in96.h               |      0
+ .../InfusionBA}/User/LCD/LCD_1in14.c               |      0
+ .../InfusionBA}/User/LCD/LCD_1in14.h               |      0
+ .../InfusionBA}/User/LCD/LCD_1in28.h               |      0
+ .../InfusionBA}/User/LCD/LCD_1in3.c                |      0
+ .../InfusionBA}/User/LCD/LCD_1in3.h                |      0
+ .../InfusionBA}/User/LCD/LCD_1in54.c               |      0
+ .../InfusionBA}/User/LCD/LCD_1in54.h               |      0
+ .../InfusionBA}/User/LCD/LCD_1in8.c                |      0
+ .../InfusionBA}/User/LCD/LCD_1in8.h                |      0
+ .../InfusionBA}/User/LCD/LCD_1inch28.c             |      0
+ .../InfusionBA}/User/LCD/LCD_2inch.c               |      0
+ .../InfusionBA}/User/LCD/LCD_2inch.h               |      0
+ .../InfusionBA}/User/LCD/LCD_2inch4.c              |      0
+ .../InfusionBA}/User/LCD/LCD_2inch4.h              |      0
+ .../InfusionBA}/User/example/LCD_0inch96_test.c    |      0
+ .../InfusionBA}/User/example/LCD_1inch14_test.c    |      0
+ .../InfusionBA}/User/example/LCD_1inch28_test.c    |      0
+ .../InfusionBA}/User/example/LCD_1inch3_test.c     |      0
+ .../InfusionBA}/User/example/LCD_1inch54_test.c    |      0
+ .../InfusionBA}/User/example/LCD_1inch8_test.c     |      0
+ .../InfusionBA}/User/example/LCD_2inch4_test.c     |      0
+ .../InfusionBA}/User/example/LCD_2inch_test.c      |      0
+ .../InfusionBA}/User/example/LCD_Test.h            |      0
+ .../InfusionBA}/User/image/image.c                 |      0
+ .../InfusionBA}/User/image/image.h                 |      0
+ STM32CubeIDE/STM32G030C8TX_FLASH.ld                |    187 [32m+[m
+ hardware/#auto_saved_files#                        |      1 [32m+[m
+ hardware/_autosave-flow_monitor.kicad_sch          | 123911 [32m++++++++++++++++++[m
+ .../flow_monitor-2026-03-06_234413.zip             |    Bin [31m0[m -> [32m307906[m bytes
+ hardware/fp-info-cache                             |      1 [32m+[m
+ src/Core/Inc/dripito_app.h                         |     10 [31m-[m
+ src/README.md                                      |      6 [31m-[m
+ 276 files changed, 279752 insertions(+), 76 deletions(-)
