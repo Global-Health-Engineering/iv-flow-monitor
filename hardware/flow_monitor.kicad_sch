@@ -8290,10 +8290,6 @@
 		(uuid "56dec190-72e4-48a2-9d82-932e3ddad301")
 	)
 	(no_connect
-		(at 300.99 92.71)
-		(uuid "637d6654-b72a-4096-9be5-0cfc505f9bf4")
-	)
-	(no_connect
 		(at 265.43 95.25)
 		(uuid "64646604-ce70-466e-abf6-efbef4936071")
 	)
@@ -8324,10 +8320,6 @@
 	(no_connect
 		(at 300.99 120.65)
 		(uuid "94da9c26-6a6e-41fc-b572-9dbd5ad36225")
-	)
-	(no_connect
-		(at 339.09 124.46)
-		(uuid "a2a573fd-4c1a-476c-b9d5-6c571cfd766c")
 	)
 	(no_connect
 		(at 297.18 195.58)
@@ -9943,6 +9935,16 @@
 	)
 	(wire
 		(pts
+			(xy 303.53 92.71) (xy 300.99 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8eeff00c-690a-414d-ab05-6bf88916d430")
+	)
+	(wire
+		(pts
 			(xy 241.3 123.19) (xy 252.73 123.19)
 		)
 		(stroke
@@ -10853,6 +10855,16 @@
 	)
 	(wire
 		(pts
+			(xy 328.93 124.46) (xy 339.09 124.46)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "eb768ad6-0a10-4c05-84ff-60eff1b48ae5")
+	)
+	(wire
+		(pts
 			(xy 349.25 109.22) (xy 349.25 116.84)
 		)
 		(stroke
@@ -11001,6 +11013,16 @@
 		)
 		(uuid "037319db-9179-4d8a-bbf9-c81415e8a64a")
 	)
+	(label "LCD_MISO"
+		(at 328.93 124.46 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "246c2233-5df8-4fdc-b777-8f0d25efe588")
+	)
 	(label "LCD_VOUT"
 		(at 360.68 125.73 0)
 		(effects
@@ -11010,6 +11032,16 @@
 			(justify left bottom)
 		)
 		(uuid "53511456-94b0-4758-a951-d7e2a3e4271b")
+	)
+	(label "LCD_MISO"
+		(at 303.53 92.71 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "5de901bb-1608-4608-ac2d-6e9b43d4f422")
 	)
 	(label "OSC32_OUT"
 		(at 252.73 120.65 0)
