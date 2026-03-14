@@ -8014,10 +8014,22 @@
 		(uuid "560ef96d-d8d7-438e-ad27-5b79d825ff9b")
 	)
 	(junction
+		(at 337.82 45.72)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "5730b55b-04f8-44f3-8685-fcb6040f8b38")
+	)
+	(junction
 		(at 189.23 207.01)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "59fa7bbc-a209-4895-b902-35224a98fe8d")
+	)
+	(junction
+		(at 337.82 54.61)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "5eb461dd-8025-4366-b52e-e96b4d658939")
 	)
 	(junction
 		(at 229.87 116.84)
@@ -8525,6 +8537,16 @@
 	)
 	(wire
 		(pts
+			(xy 337.82 45.72) (xy 342.9 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0ad5bf94-b291-4394-abf0-0b3da9b8def9")
+	)
+	(wire
+		(pts
 			(xy 238.76 123.19) (xy 241.3 123.19)
 		)
 		(stroke
@@ -8775,6 +8797,16 @@
 	)
 	(wire
 		(pts
+			(xy 337.82 45.72) (xy 331.47 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "21b2dcb6-fff4-4d46-9f84-168daeb6b06e")
+	)
+	(wire
+		(pts
 			(xy 106.68 191.77) (xy 106.68 195.58)
 		)
 		(stroke
@@ -8955,7 +8987,7 @@
 	)
 	(wire
 		(pts
-			(xy 340.36 52.07) (xy 346.71 52.07)
+			(xy 331.47 54.61) (xy 337.82 54.61)
 		)
 		(stroke
 			(width 0)
@@ -9345,6 +9377,16 @@
 	)
 	(wire
 		(pts
+			(xy 331.47 54.61) (xy 331.47 52.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "560050e9-ee4b-4ef1-8eaf-b0fffa37d55a")
+	)
+	(wire
+		(pts
 			(xy 349.25 101.6) (xy 349.25 109.22)
 		)
 		(stroke
@@ -9382,6 +9424,16 @@
 			(type default)
 		)
 		(uuid "58cf3d24-4bf3-471a-9d16-5a6b483f2d25")
+	)
+	(wire
+		(pts
+			(xy 337.82 45.72) (xy 337.82 46.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "59c9d284-f13f-4f65-bb33-b0030fd19da1")
 	)
 	(wire
 		(pts
@@ -9805,6 +9857,16 @@
 	)
 	(wire
 		(pts
+			(xy 337.82 54.61) (xy 345.44 54.61)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8496b7d9-5752-4ece-9c16-4cf7e7141642")
+	)
+	(wire
+		(pts
 			(xy 349.25 101.6) (xy 351.79 101.6)
 		)
 		(stroke
@@ -9852,6 +9914,16 @@
 			(type default)
 		)
 		(uuid "8670cfab-9e23-44cd-a64e-81c6434c9820")
+	)
+	(wire
+		(pts
+			(xy 331.47 45.72) (xy 331.47 46.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "87275e55-b77f-48ec-b858-1a77b4884ce1")
 	)
 	(wire
 		(pts
@@ -10085,16 +10157,6 @@
 	)
 	(wire
 		(pts
-			(xy 340.36 46.99) (xy 342.9 46.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9dd22a79-059d-451c-b947-ebae68222cf8")
-	)
-	(wire
-		(pts
 			(xy 189.23 161.29) (xy 200.66 161.29)
 		)
 		(stroke
@@ -10142,6 +10204,16 @@
 			(type default)
 		)
 		(uuid "a18fe60d-c360-4a83-b66c-e838ee4665b1")
+	)
+	(wire
+		(pts
+			(xy 345.44 54.61) (xy 345.44 52.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a2d0acb4-2ceb-4726-99d9-2d555db2f66e")
 	)
 	(wire
 		(pts
@@ -10432,6 +10504,16 @@
 			(type default)
 		)
 		(uuid "bc29fd0b-9445-4c0a-bfc2-f5dc91550e98")
+	)
+	(wire
+		(pts
+			(xy 345.44 52.07) (xy 346.71 52.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bccf03bd-97b6-465a-a083-3fac0b9e685d")
 	)
 	(wire
 		(pts
@@ -24505,7 +24587,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 342.9 46.99 0)
+		(at 342.9 45.72 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -24513,7 +24595,7 @@
 		(dnp no)
 		(uuid "1a2c9217-0e72-49e2-acc7-764d4d2381a3")
 		(property "Reference" "#PWR055"
-			(at 342.9 50.8 0)
+			(at 342.9 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -24522,7 +24604,7 @@
 			)
 		)
 		(property "Value" "+3.3V"
-			(at 342.9 43.18 0)
+			(at 346.456 43.688 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -24530,7 +24612,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 342.9 46.99 0)
+			(at 342.9 45.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -24539,7 +24621,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 342.9 46.99 0)
+			(at 342.9 45.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -24548,7 +24630,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
-			(at 342.9 46.99 0)
+			(at 342.9 45.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53682,7 +53764,7 @@
 	)
 	(symbol
 		(lib_id "Device:Buzzer")
-		(at 337.82 49.53 0)
+		(at 328.93 49.53 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -53691,7 +53773,7 @@
 		(dnp no)
 		(uuid "5c27e37b-ca61-4ace-90b8-c0bf5daa2980")
 		(property "Reference" "BZ1"
-			(at 336.804 54.356 0)
+			(at 327.914 54.356 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53699,7 +53781,7 @@
 			)
 		)
 		(property "Value" "SFN-1407PA7.6"
-			(at 336.804 56.896 0)
+			(at 327.914 56.896 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53707,7 +53789,7 @@
 			)
 		)
 		(property "Footprint" "IV_Flow_Monitor_Footprints:Buzzer_S&S_SFN-1407PA7.6"
-			(at 338.455 46.99 90)
+			(at 329.565 46.99 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53716,7 +53798,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/C360603.pdf"
-			(at 338.455 46.99 90)
+			(at 329.565 46.99 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53725,7 +53807,7 @@
 			)
 		)
 		(property "Description" "Buzzer, polarized"
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53734,7 +53816,7 @@
 			)
 		)
 		(property "ALTIUM_VALUE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53743,7 +53825,7 @@
 			)
 		)
 		(property "ARROW PART NUMBER" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53752,7 +53834,7 @@
 			)
 		)
 		(property "ARROW PRICE/STOCK" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53761,7 +53843,7 @@
 			)
 		)
 		(property "AUTOMOTIVE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53770,7 +53852,7 @@
 			)
 		)
 		(property "AUTOMOTIVE QUALIFICATION STANDARD" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53779,7 +53861,7 @@
 			)
 		)
 		(property "CAPACITANCE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53788,7 +53870,7 @@
 			)
 		)
 		(property "CASE CODE (IMPERIAL)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53797,7 +53879,7 @@
 			)
 		)
 		(property "CASE CODE (METRIC)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53806,7 +53888,7 @@
 			)
 		)
 		(property "CASE-EIA" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53815,7 +53897,7 @@
 			)
 		)
 		(property "CASE-METRIC" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53824,7 +53906,7 @@
 			)
 		)
 		(property "CASE/PACKAGE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53833,7 +53915,7 @@
 			)
 		)
 		(property "CAS~{E}PACKAGE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53842,7 +53924,7 @@
 			)
 		)
 		(property "CATEGORY" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53851,7 +53933,7 @@
 			)
 		)
 		(property "CHANNEL MODE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53860,7 +53942,7 @@
 			)
 		)
 		(property "CHANNEL TYPE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53869,7 +53951,7 @@
 			)
 		)
 		(property "CISS [TYP] (PF)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53878,7 +53960,7 @@
 			)
 		)
 		(property "CODE_JEDEC" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53887,7 +53969,7 @@
 			)
 		)
 		(property "COMPONENTLINK1DESCRIPTION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53896,7 +53978,7 @@
 			)
 		)
 		(property "COMPONENTLINK1URL" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53905,7 +53987,7 @@
 			)
 		)
 		(property "COMPONENTLINK2DESCRIPTION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53914,7 +53996,7 @@
 			)
 		)
 		(property "COMPONENTLINK2URL" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53923,7 +54005,7 @@
 			)
 		)
 		(property "COMPONENTLINK3DESCRIPTION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53932,7 +54014,7 @@
 			)
 		)
 		(property "COMPONENTLINK3URL" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53941,7 +54023,7 @@
 			)
 		)
 		(property "COMPOSITION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53950,7 +54032,7 @@
 			)
 		)
 		(property "CONSTRUCTION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53959,7 +54041,7 @@
 			)
 		)
 		(property "CONTACT PLATING" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53968,7 +54050,7 @@
 			)
 		)
 		(property "CONTINUOUS DRAIN CURRENT" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53977,7 +54059,7 @@
 			)
 		)
 		(property "COSS [TYP] (PF)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53986,7 +54068,7 @@
 			)
 		)
 		(property "DATASHEET LINK" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53995,7 +54077,7 @@
 			)
 		)
 		(property "DATASHEET URL" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54004,7 +54086,7 @@
 			)
 		)
 		(property "DATASHEET VERSION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54013,7 +54095,7 @@
 			)
 		)
 		(property "DATASHEETVERSION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54022,7 +54104,7 @@
 			)
 		)
 		(property "DEPTH" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54031,7 +54113,7 @@
 			)
 		)
 		(property "DEVICE CLASS L1" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54040,7 +54122,7 @@
 			)
 		)
 		(property "DEVICE CLASS L2" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54049,7 +54131,7 @@
 			)
 		)
 		(property "DEVICE CLASS L3" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54058,7 +54140,7 @@
 			)
 		)
 		(property "DIAMETER" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54067,7 +54149,7 @@
 			)
 		)
 		(property "DIELECTRIC" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54076,7 +54158,7 @@
 			)
 		)
 		(property "DIGIKEY DESCRIPTION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54085,7 +54167,7 @@
 			)
 		)
 		(property "DRAIN CURRENT (MAX)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54094,7 +54176,7 @@
 			)
 		)
 		(property "DRAIN EFFICIENCY" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54103,7 +54185,7 @@
 			)
 		)
 		(property "DRAIN-SOURCE ON-RES" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54112,7 +54194,7 @@
 			)
 		)
 		(property "DRAIN-SOURCE ON-VOLT" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54121,7 +54203,7 @@
 			)
 		)
 		(property "ESR (EQUIVALENT SERIES RESISTANCE)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54130,7 +54212,7 @@
 			)
 		)
 		(property "FEATURES" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54139,7 +54221,7 @@
 			)
 		)
 		(property "FREQUENCY" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54148,7 +54230,7 @@
 			)
 		)
 		(property "FREQUENCY (MAX)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54157,7 +54239,7 @@
 			)
 		)
 		(property "FREQUENCY TOLERANCE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54166,7 +54248,7 @@
 			)
 		)
 		(property "GATE-SOURCE VOLTAGE (MAX)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54175,7 +54257,7 @@
 			)
 		)
 		(property "HEIGHT" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54184,7 +54266,7 @@
 			)
 		)
 		(property "ICC TYP (MA)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54193,7 +54275,7 @@
 			)
 		)
 		(property "ID [MAX] (A)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54202,7 +54284,7 @@
 			)
 		)
 		(property "IO TYP (MA)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54211,7 +54293,7 @@
 			)
 		)
 		(property "IPC LAND PATTERN NAME" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54220,7 +54302,7 @@
 			)
 		)
 		(property "LEAD FREE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54229,7 +54311,7 @@
 			)
 		)
 		(property "LEAD PITCH" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54238,7 +54320,7 @@
 			)
 		)
 		(property "LENGTH" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54247,7 +54329,7 @@
 			)
 		)
 		(property "LOAD CAPACITANCE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54256,7 +54338,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54265,7 +54347,7 @@
 			)
 		)
 		(property "MANUFACTURER PART NUMBER" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54274,7 +54356,7 @@
 			)
 		)
 		(property "MANUFACTURER URL" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54283,7 +54365,7 @@
 			)
 		)
 		(property "MANUFACTURER_NAME" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54292,7 +54374,7 @@
 			)
 		)
 		(property "MANUFACTURER_PART_NUMBER" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54301,7 +54383,7 @@
 			)
 		)
 		(property "MATERIAL" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54310,7 +54392,7 @@
 			)
 		)
 		(property "MAX OPERATING TEMPERATURE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54319,7 +54401,7 @@
 			)
 		)
 		(property "MAX POWER DISSIPATION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54328,7 +54410,7 @@
 			)
 		)
 		(property "MILITARY STANDARD" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54337,7 +54419,7 @@
 			)
 		)
 		(property "MIN OPERATING TEMPERATURE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54346,7 +54428,7 @@
 			)
 		)
 		(property "MOUNT" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54355,7 +54437,7 @@
 			)
 		)
 		(property "MOUNTING" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54364,7 +54446,7 @@
 			)
 		)
 		(property "MOUNTING TECHNOLOGY" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54373,7 +54455,7 @@
 			)
 		)
 		(property "MOUSER DESCRIPTION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54382,7 +54464,7 @@
 			)
 		)
 		(property "MOUSER PART NUMBER" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54391,7 +54473,7 @@
 			)
 		)
 		(property "MOUSER PRICE/STOCK" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54400,7 +54482,7 @@
 			)
 		)
 		(property "MSL" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54409,7 +54491,7 @@
 			)
 		)
 		(property "NEXARPARTID" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54418,7 +54500,7 @@
 			)
 		)
 		(property "NOISE FIGURE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54427,7 +54509,7 @@
 			)
 		)
 		(property "NUMBER OF  ELEMENTS" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54436,7 +54518,7 @@
 			)
 		)
 		(property "NUMBER OF PINS" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54445,7 +54527,7 @@
 			)
 		)
 		(property "NUMBER OF TERMINATIONS" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54454,7 +54536,7 @@
 			)
 		)
 		(property "OCTOPART" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54463,7 +54545,7 @@
 			)
 		)
 		(property "OPERATING FREQUENCY" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54472,7 +54554,7 @@
 			)
 		)
 		(property "OPERATING TEMP RANGE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54481,7 +54563,7 @@
 			)
 		)
 		(property "OPERATING TEMPERATURE CLASSIFICATION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54490,7 +54572,7 @@
 			)
 		)
 		(property "OUTPUT POWER (MAX)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54499,7 +54581,7 @@
 			)
 		)
 		(property "PACKAGE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54508,7 +54590,7 @@
 			)
 		)
 		(property "PACKAGE DESCRIPTION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54517,7 +54599,7 @@
 			)
 		)
 		(property "PACKAGE QUANTITY" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54526,7 +54608,7 @@
 			)
 		)
 		(property "PACKAGE REFERENCE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54535,7 +54617,7 @@
 			)
 		)
 		(property "PACKAGE TYPE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54544,7 +54626,7 @@
 			)
 		)
 		(property "PACKAGE URL" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54553,7 +54635,7 @@
 			)
 		)
 		(property "PACKAGEDESCRIPTION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54562,7 +54644,7 @@
 			)
 		)
 		(property "PACKAGEREFERENCE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54571,7 +54653,7 @@
 			)
 		)
 		(property "PACKAGEVERSION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54580,7 +54662,7 @@
 			)
 		)
 		(property "PACKAGING" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54589,7 +54671,7 @@
 			)
 		)
 		(property "PACKING" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54598,7 +54680,7 @@
 			)
 		)
 		(property "PARTNUMBER" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54607,7 +54689,7 @@
 			)
 		)
 		(property "PIN COUNT" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54616,7 +54698,7 @@
 			)
 		)
 		(property "POLARITY" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54625,7 +54707,7 @@
 			)
 		)
 		(property "POWER" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54634,7 +54716,7 @@
 			)
 		)
 		(property "POWER DISSIPATION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54643,7 +54725,7 @@
 			)
 		)
 		(property "POWER GAIN" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54652,7 +54734,7 @@
 			)
 		)
 		(property "POWER RATING" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54661,7 +54743,7 @@
 			)
 		)
 		(property "PRODUCT RANGE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54670,7 +54752,7 @@
 			)
 		)
 		(property "RAD HARDENED" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54679,7 +54761,7 @@
 			)
 		)
 		(property "RADIATION HARDENING" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54688,7 +54770,7 @@
 			)
 		)
 		(property "RATINGS" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54697,7 +54779,7 @@
 			)
 		)
 		(property "REACH SVHC" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54706,7 +54788,7 @@
 			)
 		)
 		(property "RESISTANCE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54715,7 +54797,7 @@
 			)
 		)
 		(property "RESISTANCE TOLERANCE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54724,7 +54806,7 @@
 			)
 		)
 		(property "RESISTOR CASE STYLE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54733,7 +54815,7 @@
 			)
 		)
 		(property "RESISTOR ELEMENT TYPE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54742,7 +54824,7 @@
 			)
 		)
 		(property "RESISTOR TYPE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54751,7 +54833,7 @@
 			)
 		)
 		(property "ROHS" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54760,7 +54842,7 @@
 			)
 		)
 		(property "ROHS COMPLIANT" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54769,7 +54851,7 @@
 			)
 		)
 		(property "ROHSCOMPLIANT" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54778,7 +54860,7 @@
 			)
 		)
 		(property "SCHEDULE B" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54787,7 +54869,7 @@
 			)
 		)
 		(property "SERIES" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54796,7 +54878,7 @@
 			)
 		)
 		(property "SERIES RESISTANCE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54805,7 +54887,7 @@
 			)
 		)
 		(property "SIZE CODE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54814,7 +54896,7 @@
 			)
 		)
 		(property "SVHC" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54823,7 +54905,7 @@
 			)
 		)
 		(property "TECHNOLOGY" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54832,7 +54914,7 @@
 			)
 		)
 		(property "TEMPERATURE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54841,7 +54923,7 @@
 			)
 		)
 		(property "TEMPERATURE CHARACTERISTIC" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54850,7 +54932,7 @@
 			)
 		)
 		(property "TEMPERATURE COEFFICIENT" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54859,7 +54941,7 @@
 			)
 		)
 		(property "TEMPERATURE RANGE HIGH" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54868,7 +54950,7 @@
 			)
 		)
 		(property "TEMPERATURE RANGE LOW" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54877,7 +54959,7 @@
 			)
 		)
 		(property "TERMINATION" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54886,7 +54968,7 @@
 			)
 		)
 		(property "THICKNESS" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54895,7 +54977,7 @@
 			)
 		)
 		(property "TOLERANCE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54904,7 +54986,7 @@
 			)
 		)
 		(property "TYPE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54913,7 +54995,7 @@
 			)
 		)
 		(property "VCC MAX (V)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54922,7 +55004,7 @@
 			)
 		)
 		(property "VCC MIN (V)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54931,7 +55013,7 @@
 			)
 		)
 		(property "VDS [MAX] (V)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54940,7 +55022,7 @@
 			)
 		)
 		(property "VOLTAGE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54949,7 +55031,7 @@
 			)
 		)
 		(property "VOLTAGE RATING" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54958,7 +55040,7 @@
 			)
 		)
 		(property "VOLTAGE RATING (AC)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54967,7 +55049,7 @@
 			)
 		)
 		(property "VOLTAGE RATING (DC)" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54976,7 +55058,7 @@
 			)
 		)
 		(property "WEIGHT" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54985,7 +55067,7 @@
 			)
 		)
 		(property "WIDTH" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54994,7 +55076,7 @@
 			)
 		)
 		(property "WORKING VOLTAGE" ""
-			(at 337.82 49.53 0)
+			(at 328.93 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -111230,6 +111312,75 @@
 			(project "flow_monitor"
 				(path "/d1ab2858-177a-400f-b3b2-4efb804f8e91"
 					(reference "#PWR029")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 337.82 50.8 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ecd140e3-8fa6-4e6e-bd75-0993d0a73430")
+		(property "Reference" "R30"
+			(at 339.852 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1800Ω"
+			(at 339.598 50.038 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 336.042 50.8 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 337.82 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 337.82 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "8287380e-1d1c-4433-bf28-e0cd76599f64")
+		)
+		(pin "1"
+			(uuid "64ae94cf-83a5-4ee4-93c2-911385623a35")
+		)
+		(instances
+			(project ""
+				(path "/d1ab2858-177a-400f-b3b2-4efb804f8e91"
+					(reference "R30")
 					(unit 1)
 				)
 			)
