@@ -21,3 +21,10 @@
 # OS-specific junk
 .DS_Store
 Thumbs.db
+
+# KiCad autosave and backups
+hardware/_autosave-*.kicad_sch
+hardware/_autosave-*.kicad_pcb
+hardware/flow_monitor-backups/
+hardware/fp-info-cache
+hardware/schematic_analysis*.json
