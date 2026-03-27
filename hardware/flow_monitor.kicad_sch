@@ -4733,7 +4733,7 @@
 						(hide yes)
 					)
 				)
-				(symbol "Device:L_0_1"
+				(symbol "L_0_1"
 					(arc
 						(start 0 2.54)
 						(mid 0.6323 1.905)
@@ -4783,7 +4783,7 @@
 						)
 					)
 				)
-				(symbol "Device:L_1_1"
+				(symbol "L_1_1"
 					(pin passive line
 						(at 0 3.81 270)
 						(length 1.27)
@@ -4896,7 +4896,7 @@
 						(hide yes)
 					)
 				)
-				(symbol "Transistor_FET:TP0610T_0_1"
+				(symbol "TP0610T_0_1"
 					(polyline
 						(pts
 							(xy 0.254 1.905) (xy 0.254 -1.905)
@@ -5063,7 +5063,7 @@
 						)
 					)
 				)
-				(symbol "Transistor_FET:TP0610T_1_1"
+				(symbol "TP0610T_1_1"
 					(pin input line
 						(at -5.08 0 0)
 						(length 2.54)
@@ -5250,7 +5250,7 @@
 						(hide yes)
 					)
 				)
-				(symbol "Switch:SW_SPDT_0_1"
+				(symbol "SW_SPDT_0_1"
 					(circle
 						(center -2.032 0)
 						(radius 0.4572)
@@ -5297,7 +5297,7 @@
 						)
 					)
 				)
-				(symbol "Switch:SW_SPDT_1_1"
+				(symbol "SW_SPDT_1_1"
 					(rectangle
 						(start -3.175 3.81)
 						(end 3.175 -3.81)
