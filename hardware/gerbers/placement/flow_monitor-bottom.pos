@@ -1,0 +1,10 @@
+### Footprint positions - created on 2026-04-02T21:55:43+0200 ###
+### Printed by KiCad version 9.0.7
+## Unit = mm, Angle = deg.
+## Side : bottom
+# Ref     Val                  Package                   PosX       PosY       Rot  Side
+S1        PTS647SN38SMTR2_LFS  SW_SPST_PTS647_Sx38  -178.1200  -131.7500  180.0000  bottom
+S2        PTS647SN38SMTR2_LFS  SW_SPST_PTS647_Sx38  -166.5700  -133.0000  180.0000  bottom
+S3        PTS647SN38SMTR2_LFS  SW_SPST_PTS647_Sx38  -155.0200  -131.7500  180.0000  bottom
+U3        EA_DOGS164W-A        EA_DOGS164X-A        -178.0000  -126.0000   90.0000  bottom
+## End

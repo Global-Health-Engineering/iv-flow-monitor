@@ -1,4 +1,5 @@
 (sym_lib_table
   (version 7)
   (lib (name "IV_Flow_Monitor_Symbols")(type "KiCad")(uri "${KIPRJMOD}/lib/IV_Flow_Monitor_Symbols.kicad_sym")(options "")(descr ""))
+  (lib (name "PTS647SN38SMTR2_LFS")(type "KiCad")(uri "${KIPRJMOD}/lib/PTS647SN38SMTR2_LFS.kicad_sym")(options "")(descr "C&K PTS647 4.5mm tactile switch"))
 )

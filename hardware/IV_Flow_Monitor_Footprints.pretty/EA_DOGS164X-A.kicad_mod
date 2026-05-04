@@ -3,8 +3,8 @@
 	(generator "pcbnew")
 	(generator_version "9.0")
 	(layer "F.Cu")
-	(descr "LCD 4x10 character 3.3V VDD I2C or SPI http://www.lcd-module.com/fileadmin/eng/pdf/doma/dogs104e.pdf")
-	(tags "LCD 4x10 character 3.3V VDD I2C or SPI")
+	(descr "LCD 4x16 character 3.3V VDD I2C or SPI http://www.lcd-module.com/fileadmin/eng/pdf/doma/dogs164e.pdf")
+	(tags "LCD 4x16 character 3.3V VDD I2C or SPI")
 	(property "Reference" "REF**"
 		(at 2.7 -7.3 0)
 		(layer "F.SilkS")
