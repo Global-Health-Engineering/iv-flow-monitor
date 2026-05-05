@@ -17,11 +17,11 @@
 *.log
 
 # STM32CubeIDE debug launch / OpenOCD configs (machine-specific paths)
-STM32CubeIDE/**/*.launch
-STM32CubeIDE/**/*.cfg
+firmware/STM32CubeIDE/**/*.launch
+firmware/STM32CubeIDE/**/*.cfg
 
 # Scratch / preview files
-STM32CubeIDE/boot_sound_preview.html
+firmware/STM32CubeIDE/boot_sound_preview.html
 
 # Hidden IDE caches
 **/.plugins/
