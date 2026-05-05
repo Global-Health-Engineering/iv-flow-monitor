@@ -13,6 +13,7 @@ outside the repo). Anything that should accompany the artefact lives here.
 | File | Status | Purpose |
 |------|--------|---------|
 | `testing-and-validation.md` | ✅ committed | Pre-registered validation protocol (EXP-0 → EXP-6). Timestamp = pre-registration evidence. |
+| `enclosure-requirements.md` | ✅ committed | Hand-off spec for follow-up theses iterating on the 3D-printed casing. Numbered REQ-x.y requirements, verification mapping, out-of-scope rationale. |
 | `design-requirements.md` | planned | Requirements derived from clinical interviews, humanitarian context, IEC 60601-2-24, NICE CG174. |
 | `state-of-the-art.md` | planned | Photoelectric drop detection, IV drip physiology, prior-art comparison. |
 | `architecture.md` | planned | Dual-beam Phase 1 / LPTIM1 Phase 2 — first-principles derivation. The novel contribution. |
