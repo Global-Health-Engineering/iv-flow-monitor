@@ -11,6 +11,7 @@ Approach:
 
 import sys
 import uuid
+from pathlib import Path
 from PIL import Image
 import numpy as np
 
@@ -233,8 +234,11 @@ def generate_kicad_mod(rects, pixel_size_mm, img_h, img_w, name="ETH_Zurich_Logo
 
 
 def main():
-    input_path = sys.argv[1] if len(sys.argv) > 1 else r"<redacted-input-path>"
-    output_path = sys.argv[2] if len(sys.argv) > 2 else r"<redacted-output-path>"
+    script_dir = Path(__file__).resolve().parent
+    default_input = script_dir / "eth_logo.png"
+    default_output = script_dir.parent / "IV_Flow_Monitor_Footprints.pretty" / "ETH_Zurich_Logo.kicad_mod"
+    input_path = sys.argv[1] if len(sys.argv) > 1 else str(default_input)
+    output_path = sys.argv[2] if len(sys.argv) > 2 else str(default_output)
     target_width_mm = float(sys.argv[3]) if len(sys.argv) > 3 else 12.0
     threshold = int(sys.argv[4]) if len(sys.argv) > 4 else 128
     min_feature_mm = 0.20  # JLCPCB silkscreen minimum (0.15mm spec, 0.2mm recommended)
