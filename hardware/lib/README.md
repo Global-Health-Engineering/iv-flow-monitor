@@ -25,10 +25,9 @@ automatically — no per-machine library setup required.
    re-open, and the failure mode is silent reference de-linking on the
    schematic.
 3. Inner `lib_symbols` unit names must **not** carry the library prefix
-   (a recurring KiCad gotcha — see commit `2a3bc9e` for an instance).
+   (a recurring KiCad gotcha).
 4. Avoid `extends` inheritance across hierarchical `lib_symbols`
-   blocks — flatten unit definitions instead (commit `c8f57b5` fixed
-   the AO3401A regression caused by this).
+   blocks — flatten unit definitions instead.
 
 ## What does not belong here
 

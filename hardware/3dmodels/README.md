@@ -9,7 +9,9 @@ reference these models.
 | File | What it is |
 |------|------------|
 | `PTS647SN38SMTR2_LFS.stp` | 3D model for the PTS647 tactile switch |
-| `Neuer Ordner/` | **Stray third-party folder, gitignored** — not part of this project. Will be deleted in a future cleanup; do not add files to it. |
+| `flow_monitor.step` | Assembled-board STEP export from KiCad (board only) |
+| `flow_monitor_full.step` | Assembled-board STEP export including 3D component models |
+| `Neuer Ordner/` | Stray third-party folder, gitignored — not part of this project |
 
 ## Conventions
 
