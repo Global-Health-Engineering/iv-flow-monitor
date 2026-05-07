@@ -116,22 +116,26 @@ void LCD_Init(void)
     HAL_Delay(200);
     LCD_Reset();
 
-    LCD_WriteCmd(0x3A); HAL_Delay(1);   // Function set (RE=1)
-    LCD_WriteCmd(0x09); HAL_Delay(1);   // 4-line display
-    LCD_WriteCmd(0x06); HAL_Delay(1);   // Entry mode
-    LCD_WriteCmd(0x1E); HAL_Delay(1);   // Bias set BS1=1
+    /* Enable BF polling immediately after reset so every init command waits
+       for the controller to be ready. Without this, the blind HAL_Delay(1)
+       between commands can be too short and commands get dropped silently.  */
+    lcd_initialized = 1;
 
-    LCD_WriteCmd(0x39); HAL_Delay(1);   // Function set (RE=0, IS=1)
-    LCD_WriteCmd(0x1B); HAL_Delay(1);   // Internal OSC
-    LCD_WriteCmd(0x6C); HAL_Delay(500); // Follower control
+    LCD_WriteCmd(0x3A);               // Function set (RE=1)
+    LCD_WriteCmd(0x09);               // 4-line display
+    LCD_WriteCmd(0x06);               // Entry mode
+    LCD_WriteCmd(0x1E);               // Bias set BS1=1
 
-    LCD_WriteCmd(0x54); HAL_Delay(1);   // Power control
-    LCD_WriteCmd(0x79); HAL_Delay(1);   // Contrast set
+    LCD_WriteCmd(0x39);               // Function set (RE=0, IS=1)
+    LCD_WriteCmd(0x1B);               // Internal OSC
+    LCD_WriteCmd(0x6C);               // Follower control
+    HAL_Delay(500);                   // V5 cap charge — BF cannot substitute for this
 
-    LCD_WriteCmd(0x38); HAL_Delay(1);   // Function set (RE=0, IS=0)
-    LCD_WriteCmd(0x0C); HAL_Delay(1);   // Display ON, cursor OFF, blink OFF
+    LCD_WriteCmd(0x54);               // Power control
+    LCD_WriteCmd(0x79);               // Contrast set
 
-    lcd_initialized = 1;                /* enable BF polling for all subsequent writes */
+    LCD_WriteCmd(0x38);               // Function set (RE=0, IS=0)
+    LCD_WriteCmd(0x0C);               // Display ON, cursor OFF, blink OFF
 }
 
 void LCD_Clear(void)
