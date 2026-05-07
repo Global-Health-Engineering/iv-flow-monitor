@@ -176,69 +176,57 @@ int main(void)
   LCD_Clear();
   /* USER CODE END 2 */
 
+  LCD_Print(2, "Block beam->    ");
+  LCD_Print(3, "watch val shift ");
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint32_t dash_last = 0;
+  uint32_t dash_last   = 0;
+  uint32_t popup_until = 0;
+  uint8_t  prev_mute   = 1;
+  uint8_t  prev_mode   = 1;
   while (1)
   {
     /* USER CODE END WHILE */
     Buttons_Poll();
     /* USER CODE BEGIN 3 */
     uint32_t now = HAL_GetTick();
+
+    /* Button edge detection — active low (0 = pressed) */
+    extern volatile uint8_t Buttons_MuteState;
+    extern volatile uint8_t Buttons_ModeState;
+
+    if (prev_mute == 1 && Buttons_MuteState == 0) {
+      LCD_Print(2, "[MUTE] pressed  ");
+      LCD_Print(3, "                ");
+      popup_until = now + 800;
+    }
+    if (prev_mode == 1 && Buttons_ModeState == 0) {
+      LCD_Print(2, "[MODE] pressed  ");
+      LCD_Print(3, "                ");
+      popup_until = now + 800;
+    }
+    prev_mute = Buttons_MuteState;
+    prev_mode = Buttons_ModeState;
+
+    /* Restore hint lines when popup expires */
+    if (popup_until && now >= popup_until) {
+      popup_until = 0;
+      LCD_Print(2, "Block beam->    ");
+      LCD_Print(3, "watch val shift ");
+    }
+
     if (now - dash_last >= 200) {
       dash_last = now;
 
-      /* Raw conversions */
-      uint16_t vrefint_raw = adc_read(ADC_CHANNEL_VREFINT);
-      uint16_t vbat_raw    = adc_read(ADC_CHANNEL_10);
-      uint16_t ts_raw      = adc_read(ADC_CHANNEL_TEMPSENSOR);
-
-      /* Factory calibration constants (STM32G071 system memory) */
-      uint16_t vrefint_cal = *(volatile uint16_t *)0x1FFF75AAUL;  /* @ VDDA = 3.0 V */
-      uint16_t ts_cal1     = *(volatile uint16_t *)0x1FFF75A8UL;  /*  30 C @ 3.0 V  */
-      uint16_t ts_cal2     = *(volatile uint16_t *)0x1FFF75CAUL;  /* 130 C @ 3.0 V  */
-
-      /* VDDA = 3.0 V * VREFINT_CAL / VREFINT_data  (in mV) */
-      uint32_t vdda_mv = vrefint_raw
-          ? (3000UL * (uint32_t)vrefint_cal) / (uint32_t)vrefint_raw
-          : 3300UL;
-
-      /* VBAT scaled to actual VDDA */
-      uint32_t vbat_mv = ((uint32_t)vbat_raw * vdda_mv) / 4096UL;
-
-      /* Temperature: scale TS_data to 3.0 V reference, then linear interp.
-         Result in tenths of a degree C (e.g. 245 = 24.5 C).               */
-      int32_t ts_at_3v = ((int32_t)ts_raw * (int32_t)vdda_mv) / 3000;
-      int32_t span = (int32_t)ts_cal2 - (int32_t)ts_cal1;
-      int32_t temp_dC = span
-          ? ((1000 * (ts_at_3v - (int32_t)ts_cal1)) / span) + 300
-          : 0;
-      if (temp_dC < 0)    temp_dC = 0;
-      if (temp_dC > 999)  temp_dC = 999;
+      uint16_t top_raw = adc_read(ADC_CHANNEL_1);   /* PA1 — TOP photodiode */
+      uint16_t bot_raw = adc_read(ADC_CHANNEL_4);   /* PA4 — BOT photodiode */
 
       char line[17];
-
-      snprintf(line, sizeof(line), "VBAT: %lu.%02lu V    ",
-               (unsigned long)(vbat_mv / 1000),
-               (unsigned long)((vbat_mv / 10) % 100));
+      snprintf(line, sizeof(line), "TOP: %4u        ", top_raw);
       LCD_Print(0, line);
-
-      snprintf(line, sizeof(line), "VDDA: %lu.%02lu V    ",
-               (unsigned long)(vdda_mv / 1000),
-               (unsigned long)((vdda_mv / 10) % 100));
+      snprintf(line, sizeof(line), "BOT: %4u        ", bot_raw);
       LCD_Print(1, line);
-
-      snprintf(line, sizeof(line), "TEMP: %2lu.%lu C    ",
-               (unsigned long)(temp_dC / 10),
-               (unsigned long)(temp_dC % 10));
-      LCD_Print(2, line);
-
-      uint32_t s = now / 1000;
-      snprintf(line, sizeof(line), "RUN:  %02lu:%02lu:%02lu  ",
-               (unsigned long)(s / 3600),
-               (unsigned long)((s / 60) % 60),
-               (unsigned long)(s % 60));
-      LCD_Print(3, line);
     }
   }
   /* USER CODE END 3 */
