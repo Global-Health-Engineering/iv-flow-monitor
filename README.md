@@ -7,7 +7,7 @@
 A single-AA-cell IV drip monitor for resource-constrained clinical
 environments. Custom STM32G0 PCB, optical dual-beam drop detection,
 monochrome graphic LCD, piezo alarm, ASA-printed enclosure with
-hinged-clamshell chamber holder.
+gear-driven broom-holder chamber clamp.
 
 ## At a glance
 
@@ -17,8 +17,8 @@ hinged-clamshell chamber holder.
 | **Hardware** | Rev-B PCB, KiCad 8.x, hand-assembled |
 | **Detection** | Dual-beam optical, sphere-model volume calibration |
 | **Power** | Single AA Li-ion via FFC, TPS610982 boost converter |
-| **Enclosure** | ASA white FDM, hinged-clamshell chamber holder, 14–24 mm OD |
-| **Validation** | Rev-B at 20 / 50 / 100 / 200 mL/hr; Rev-A reference from prior bachelor thesis |
+| **Enclosure** | ASA white FDM, gear-driven broom-holder chamber clamp, 14–24 mm OD |
+| **Validation** | - |
 | **Submission** | 2026-05-14 |
 
 ## Repository layout
@@ -109,5 +109,6 @@ submission *(populated at submission)*.
 **Leandro Catarci** — MSc Mechanical Engineering, ETH Zürich.
 Semester project at ETH Global Health Engineering, 2026.
 
-Supervisor: Jakub Tkaczuk. Group head: Prof. Elizabeth Tilley
-(Chair of Global Health Engineering, ETH Zürich).
+**Jakub Tkaczuk** — Supervisor.
+
+**Prof. Elizabeth Tilley** — Group head, Chair of Global Health Engineering, ETH Zürich.
