@@ -72,6 +72,21 @@ Hardware fasteners: M2 brass heat-set inserts. M2 button-head screws.
 Calibrate the printer for ASA before running the parts (enclosed
 chamber, 100 °C bed, 250 °C nozzle nominally — varies by spool).
 
+## Button stack-up
+
+![Button cross-section](../media/button-stackup-cross-section.png)
+
+Cross-section through a front-plate button. From bottom to top:
+
+- **PCB** (yellow strip)
+- **Tactile switch** (PTS647 series, centre — ribbed black SMD body)
+- **Front-plate housing** (cross-hatched) with a chamfered bore that captures the cap
+- **Button cap** (blue) with a chamfered guide that limits lateral travel
+
+The cap presses the tactile switch directly through the housing bore. No
+separate light pipe or actuator pin — travel is bounded by the housing
+chamfer above and the switch dome below.
+
 ## Compatibility (drip chamber size)
 
 Designed for ISO 8536-4-compliant drip chambers, **14–24 mm outer
