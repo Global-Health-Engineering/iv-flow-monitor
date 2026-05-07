@@ -1,11 +1,14 @@
 # Testing and Validation — Dripito Rev-B
 
-Pre-registered validation protocol. This document is committed **before** any
-official data collection (see commit history for the registration timestamp)
-and is the bench-side reference for every experiment from first power-on
-through the final validation dataset. Each entry states what is needed
-physically, what firmware state is required, what the output looks like, and
-why it is being run.
+Validation protocol for the Dripito Rev-B device. This document is the
+bench-side reference for every experiment from first power-on through the
+final validation dataset. Each entry states what is needed physically, what
+firmware state is required, what the output looks like, and why it is being
+run.
+
+Discard rules, output formats, and analysis methods defined in this document
+are fixed before data collection starts and are not edited after — so the
+Discussion section is not shaped post-hoc by what happened on the bench.
 
 **Validation window:** 2026-05-07 → 2026-05-10 (compressed from original
 2026-05-05 → 2026-05-10 due to enclosure schedule slip; compression
@@ -253,11 +256,11 @@ before official data.
 
 ### Why
 
-These runs are **not** in the pre-registered dataset — they are debugging
-runs. Running them separately protects the integrity of the official
-campaign. Saving them to `data/shakeout/` rather than discarding provides
-an audit trail. The exit criteria define a measurable quality gate rather
-than a subjective judgement call.
+These runs are **not** part of the official campaign dataset — they are
+debugging runs. Running them separately protects the integrity of the
+official campaign. Saving them to `data/shakeout/` rather than discarding
+provides an audit trail. The exit criteria define a measurable quality
+gate rather than a subjective judgement call.
 
 ---
 
@@ -337,7 +340,7 @@ after 90 s, log the delay and wait.
    (density of Ringer's lactate: 1.005 g/mL — Lacy et al., *Drug
    Information Handbook*, 2009).
 
-### Pre-registered discard rule
+### Discard rule
 
 A run is discarded and repeated if:
 
@@ -348,8 +351,8 @@ A run is discarded and repeated if:
 - Flow stabilisation criterion was not met before the timer started and
   this was not logged
 
-Discard reason must be logged in `data/session_log.csv`. This rule was
-defined before data collection (pre-registered).
+Discard reason must be logged in `data/session_log.csv`. This rule is
+fixed before data collection starts and not edited after.
 
 ### Expected CSV output (one run)
 
@@ -452,8 +455,8 @@ For each test, record in `data/edge_cases/EC_XX_YYYY-MM-DD.md`:
 Scenario | False events in 60 s | Observed LCD behaviour | Root cause hypothesis | Proposed Rev-C mitigation
 ```
 
-This format is defined here (pre-registered) so the Discussion section is
-not shaped post-hoc by what happened.
+This format is defined here, before data collection, so the Discussion
+section is not shaped post-hoc by what happened.
 
 ### Test matrix
 
