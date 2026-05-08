@@ -119,7 +119,7 @@ int main(void)
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);   /* buzzer on PA8   */
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);   /* LED_TOP on PB3  */
   HAL_GPIO_WritePin(LED_CTRL_BOT_GPIO_Port, LED_CTRL_BOT_Pin, GPIO_PIN_SET);
-  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 125);  /* ~50% duty LED_TOP */
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 250);  /* 100% duty LED_TOP (compare > ARR=249) */
 
   HAL_ADCEx_Calibration_Start(&hadc1);
   /* Bump common sampling time to 160.5 cycles (~5 µs) so VREFINT and
