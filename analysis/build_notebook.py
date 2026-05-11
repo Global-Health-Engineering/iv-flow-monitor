@@ -1,0 +1,290 @@
+"""One-shot builder for validation.ipynb. Run this once locally.
+
+This script is NOT committed; it's a build helper. The notebook
+itself is the artifact. Re-run if you need to regenerate the
+notebook from scratch.
+"""
+import nbformat as nbf
+from pathlib import Path
+
+OUT = Path(__file__).resolve().parent / "notebooks" / "validation.ipynb"
+OUT.parent.mkdir(parents=True, exist_ok=True)
+
+nb = nbf.v4.new_notebook()
+cells = []
+
+cells.append(nbf.v4.new_markdown_cell(
+    "# Dripito Rev-B — Validation Analysis\n\n"
+    "Reproducible pipeline that processes raw EXP-3 run CSVs and ground-truth\n"
+    "gravimetric measurements into the validation figures cited in\n"
+    "`docs/results.md`. Designed to run headless via `papermill` from\n"
+    "`docker compose up regenerate-figures` (or `regenerate-figures-sample`).\n\n"
+    "**Inputs**\n\n"
+    "- per-run device CSVs (in DATA_DIR or DATA_DIR/raw depending on SAMPLE_MODE)\n"
+    "- `geometry.json` from EXP-1\n"
+    "- `gravimetric_log.csv` from bench logging\n\n"
+    "**Outputs**\n\n"
+    "- `fig_bland_altman_combined.png`\n"
+    "- `fig_bland_altman_per_rate.png`\n"
+    "- `fig_mape_table.png`\n"
+    "- `fig_error_vs_flow.png`\n"
+    "- `fig_drop_volume_distribution.png`\n"
+    "- `results_summary.csv`, `mape_summary.csv`"
+))
+
+params = nbf.v4.new_code_cell(
+    "# Parameters (overridable by papermill -p)\n"
+    'DATA_DIR = "../../data/sample"\n'
+    'FIGURES_DIR = "../figures"\n'
+    "SAMPLE_MODE = True  # True -> CSVs in DATA_DIR; False -> CSVs in DATA_DIR/raw\n"
+    "TRAIN_PER_RATE = 4  # falls back to fit-on-all if any rate has fewer\n"
+    "BOOTSTRAP_ITER = 10000\n"
+    "RANDOM_SEED = 23"
+)
+params.metadata["tags"] = ["parameters"]
+cells.append(params)
+
+cells.append(nbf.v4.new_code_cell(
+    "import json\n"
+    "import sys\n"
+    "from pathlib import Path\n"
+    "\n"
+    "import matplotlib.pyplot as plt\n"
+    "import numpy as np\n"
+    "import pandas as pd\n"
+    "\n"
+    "# Make scripts importable whether running from notebooks/ or analysis/\n"
+    "ANALYSIS_ROOT = Path.cwd().resolve()\n"
+    'if (ANALYSIS_ROOT / "scripts").is_dir():\n'
+    "    sys.path.insert(0, str(ANALYSIS_ROOT))\n"
+    "else:\n"
+    "    sys.path.insert(0, str(ANALYSIS_ROOT.parent))\n"
+    "\n"
+    "from scripts.load_run import load_run, summarise_run\n"
+    "from scripts.calibration_fit import (\n"
+    "    apply_correction, fit_correction_factor,\n"
+    "    gravimetric_flow_mlh, stratified_split,\n"
+    ")\n"
+    "from scripts.bland_altman import bland_altman_combined, bland_altman_per_rate\n"
+    "from scripts.bootstrap_mape import bootstrap_mape, mape\n"
+    "\n"
+    "DATA_DIR_P = Path(DATA_DIR).resolve()\n"
+    "FIGURES_DIR_P = Path(FIGURES_DIR).resolve()\n"
+    "FIGURES_DIR_P.mkdir(parents=True, exist_ok=True)\n"
+    'print(f"DATA_DIR    = {DATA_DIR_P}")\n'
+    'print(f"FIGURES_DIR = {FIGURES_DIR_P}")\n'
+    'print(f"SAMPLE_MODE = {SAMPLE_MODE}")'
+))
+
+cells.append(nbf.v4.new_markdown_cell("## 1. Load geometry and ground-truth log"))
+cells.append(nbf.v4.new_code_cell(
+    'geometry = json.loads((DATA_DIR_P / "geometry.json").read_text())\n'
+    'beam_mm = geometry["beam_separation_mm"]["mean"]\n'
+    'print(f"Beam separation: {beam_mm} mm (sd={geometry[\'beam_separation_mm\'][\'sd\']} mm)")\n'
+    "\n"
+    'grav = pd.read_csv(DATA_DIR_P / "gravimetric_log.csv")\n'
+    'grav["gravimetric_flow_mlh"] = grav.apply(\n'
+    '    lambda r: gravimetric_flow_mlh(r["gravimetric_mass_g"], r["run_duration_s"]),\n'
+    "    axis=1,\n"
+    ")\n"
+    'print(f"\\n{len(grav)} runs in gravimetric_log.csv")\n'
+    "grav"
+))
+
+cells.append(nbf.v4.new_markdown_cell("## 2. Process each run CSV"))
+cells.append(nbf.v4.new_code_cell(
+    'runs_dir = DATA_DIR_P if SAMPLE_MODE else (DATA_DIR_P / "raw")\n'
+    "\n"
+    "run_records = []\n"
+    "all_drops = []  # per-drop rows across all runs for distribution plots\n"
+    "for _, g in grav.iterrows():\n"
+    '    csv_path = runs_dir / g["csv_filename"]\n'
+    "    if not csv_path.exists():\n"
+    '        print(f"  SKIP {g[\'run_id\']}: {csv_path.name} not found")\n'
+    "        continue\n"
+    "    drops_df = load_run(csv_path, beam_mm)\n"
+    '    summary = summarise_run(drops_df, g["run_duration_s"])\n'
+    "    run_records.append({\n"
+    '        "run_id": g["run_id"],\n'
+    '        "flow_rate_target_mlh": g["flow_rate_target_mlh"],\n'
+    '        "duration_s": g["run_duration_s"],\n'
+    '        "drop_count_device": summary["drop_count"],\n'
+    '        "drop_count_log": g["drop_count_device"],\n'
+    '        "mean_drop_volume_uL": summary["mean_drop_volume_uL"],\n'
+    '        "mean_velocity_m_s": summary["mean_velocity_m_s"],\n'
+    '        "transit_us_cv": summary["transit_us_cv"],\n'
+    '        "device_flow_mlh": summary["device_flow_mlh"],\n'
+    '        "gravimetric_flow_mlh": g["gravimetric_flow_mlh"],\n'
+    "    })\n"
+    '    drops_df["run_id"] = g["run_id"]\n'
+    '    drops_df["flow_rate_target_mlh"] = g["flow_rate_target_mlh"]\n'
+    "    all_drops.append(drops_df)\n"
+    "\n"
+    "runs_df = pd.DataFrame(run_records)\n"
+    "drops_df = pd.concat(all_drops, ignore_index=True) if all_drops else pd.DataFrame()\n"
+    'print(f"Processed {len(runs_df)} runs, {len(drops_df)} total drops")\n'
+    "runs_df"
+))
+
+cells.append(nbf.v4.new_markdown_cell(
+    "## 3. Fit scalar correction factor k\n\n"
+    "The dual-beam volume model has a systematic bias (chord length ≠ drop\n"
+    "diameter; beam-width effects). One scalar `k` absorbs this bias.\n\n"
+    "If N per flow rate >= TRAIN_PER_RATE we do a stratified train/test split\n"
+    "and report out-of-sample MAPE. Otherwise (sparse sample data) fit on\n"
+    "all runs and flag it explicitly."
+))
+cells.append(nbf.v4.new_code_cell(
+    'min_per_rate = runs_df.groupby("flow_rate_target_mlh").size().min()\n'
+    "use_split = min_per_rate >= TRAIN_PER_RATE\n"
+    'print(f"Min runs per rate: {min_per_rate}; TRAIN_PER_RATE: {TRAIN_PER_RATE}; using split: {use_split}")\n'
+    "\n"
+    "if use_split:\n"
+    "    train_df, test_df = stratified_split(runs_df, train_per_rate=TRAIN_PER_RATE, seed=RANDOM_SEED)\n"
+    "    k = fit_correction_factor(train_df)\n"
+    '    print(f"\\nFit k = {k:.4f} on {len(train_df)} TRAIN runs ({len(test_df)} TEST runs held out)")\n'
+    "    runs_df = apply_correction(runs_df, k)\n"
+    "    train_df = apply_correction(train_df, k)\n"
+    "    test_df = apply_correction(test_df, k)\n"
+    "else:\n"
+    "    k = fit_correction_factor(runs_df)\n"
+    '    print(f"\\nFit k = {k:.4f} on all {len(runs_df)} runs (sparse data — no train/test split)")\n'
+    "    runs_df = apply_correction(runs_df, k)\n"
+    "    train_df, test_df = runs_df, runs_df\n"
+    "\n"
+    '    runs_df["error_mlh"] = runs_df["device_flow_corrected_mlh"] - runs_df["gravimetric_flow_mlh"]\n'
+    'runs_df["error_mlh"] = runs_df["device_flow_corrected_mlh"] - runs_df["gravimetric_flow_mlh"]\n'
+    'runs_df["error_pct"] = runs_df["error_mlh"] / runs_df["gravimetric_flow_mlh"] * 100\n'
+    'runs_df[["run_id", "flow_rate_target_mlh", "device_flow_corrected_mlh", "gravimetric_flow_mlh", "error_pct"]]'
+))
+
+cells.append(nbf.v4.new_markdown_cell("## 4. Bland-Altman plots"))
+cells.append(nbf.v4.new_code_cell(
+    'fig = bland_altman_combined(runs_df, "device_flow_corrected_mlh", "gravimetric_flow_mlh")\n'
+    'fig.savefig(FIGURES_DIR_P / "fig_bland_altman_combined.png", dpi=140, bbox_inches="tight")\n'
+    "plt.show()"
+))
+cells.append(nbf.v4.new_code_cell(
+    'fig = bland_altman_per_rate(runs_df, "device_flow_corrected_mlh", "gravimetric_flow_mlh")\n'
+    'fig.savefig(FIGURES_DIR_P / "fig_bland_altman_per_rate.png", dpi=140, bbox_inches="tight")\n'
+    "plt.show()"
+))
+
+cells.append(nbf.v4.new_markdown_cell("## 5. MAPE with 95% bootstrap CI per flow rate"))
+cells.append(nbf.v4.new_code_cell(
+    "mape_rows = []\n"
+    'for rate, sub in runs_df.groupby("flow_rate_target_mlh"):\n'
+    "    if len(sub) >= 1:\n"
+    "        result = bootstrap_mape(\n"
+    '            sub["device_flow_corrected_mlh"].to_numpy(),\n'
+    '            sub["gravimetric_flow_mlh"].to_numpy(),\n'
+    "            n_iter=BOOTSTRAP_ITER, seed=RANDOM_SEED,\n"
+    "        )\n"
+    '        mape_rows.append({"flow_rate_mlh": rate, "n": result["n"],\n'
+    '                          "mape_pct": result["mape"],\n'
+    '                          "ci_low_pct": result["ci_lower"],\n'
+    '                          "ci_high_pct": result["ci_upper"]})\n'
+    "combined_result = bootstrap_mape(\n"
+    '    runs_df["device_flow_corrected_mlh"].to_numpy(),\n'
+    '    runs_df["gravimetric_flow_mlh"].to_numpy(),\n'
+    "    n_iter=BOOTSTRAP_ITER, seed=RANDOM_SEED,\n"
+    ")\n"
+    'mape_rows.append({"flow_rate_mlh": "ALL", "n": combined_result["n"],\n'
+    '                  "mape_pct": combined_result["mape"],\n'
+    '                  "ci_low_pct": combined_result["ci_lower"],\n'
+    '                  "ci_high_pct": combined_result["ci_upper"]})\n'
+    "mape_df = pd.DataFrame(mape_rows)\n"
+    "mape_df"
+))
+cells.append(nbf.v4.new_code_cell(
+    "fig, ax = plt.subplots(figsize=(7, 0.5 + 0.4 * len(mape_df)), dpi=140)\n"
+    'ax.axis("off")\n'
+    'cell_text = [[str(r["flow_rate_mlh"]), str(r["n"]),\n'
+    '              f"{r[\'mape_pct\']:.2f}",\n'
+    '              f"[{r[\'ci_low_pct\']:.2f}, {r[\'ci_high_pct\']:.2f}]"]\n'
+    "             for _, r in mape_df.iterrows()]\n"
+    "table = ax.table(cellText=cell_text,\n"
+    '                 colLabels=["Flow rate (mL/hr)", "N", "MAPE (%)", "95% CI"],\n'
+    '                 loc="center", cellLoc="center", colLoc="center")\n'
+    "table.auto_set_font_size(False); table.set_fontsize(11); table.scale(1, 1.5)\n"
+    'ax.set_title(f"MAPE with 95% bootstrap CI (n_iter={BOOTSTRAP_ITER})", pad=12)\n'
+    'fig.savefig(FIGURES_DIR_P / "fig_mape_table.png", dpi=140, bbox_inches="tight")\n'
+    "plt.show()"
+))
+
+cells.append(nbf.v4.new_markdown_cell("## 6. Error vs flow rate"))
+cells.append(nbf.v4.new_code_cell(
+    "fig, ax = plt.subplots(figsize=(7, 5), dpi=140)\n"
+    'ax.scatter(runs_df["flow_rate_target_mlh"], runs_df["error_pct"],\n'
+    '           s=55, alpha=0.8, color="steelblue", edgecolor="black", linewidth=0.5)\n'
+    "if len(runs_df) >= 3:\n"
+    '    z = np.polyfit(runs_df["flow_rate_target_mlh"], runs_df["error_pct"], 1)\n'
+    '    xs = np.linspace(runs_df["flow_rate_target_mlh"].min(), runs_df["flow_rate_target_mlh"].max(), 50)\n'
+    '    ax.plot(xs, np.polyval(z, xs), color="firebrick", lw=1.2,\n'
+    '            label=f"trend: {z[0]:+.2f}% per mL/hr")\n'
+    'ax.axhline(0, color="lightgrey", lw=0.7)\n'
+    'ax.set_xlabel("Target flow rate (mL/hr)")\n'
+    'ax.set_ylabel("Error (%)  =  100 × (device − truth) / truth")\n'
+    'ax.set_title("Per-run error vs flow rate")\n'
+    "ax.legend()\n"
+    "ax.grid(True, alpha=0.25)\n"
+    "fig.tight_layout()\n"
+    'fig.savefig(FIGURES_DIR_P / "fig_error_vs_flow.png", dpi=140, bbox_inches="tight")\n'
+    "plt.show()"
+))
+
+cells.append(nbf.v4.new_markdown_cell("## 7. Drop volume distribution per flow rate"))
+cells.append(nbf.v4.new_code_cell(
+    "fig, ax = plt.subplots(figsize=(7, 5), dpi=140)\n"
+    'rates = sorted(drops_df["flow_rate_target_mlh"].unique())\n'
+    'data = [drops_df[drops_df["flow_rate_target_mlh"] == r]["drop_volume_uL"].to_numpy() for r in rates]\n'
+    'bp = ax.boxplot(data, tick_labels=[f"{r}" for r in rates],\n'
+    '                patch_artist=True, showmeans=True, medianprops={"color": "black"})\n'
+    'for patch, color in zip(bp["boxes"], plt.cm.viridis(np.linspace(0.3, 0.85, len(rates)))):\n'
+    "    patch.set_facecolor(color); patch.set_alpha(0.65)\n"
+    'ax.set_xlabel("Target flow rate (mL/hr)")\n'
+    'ax.set_ylabel("Computed drop volume (µL, sphere model, pre-correction)")\n'
+    'ax.set_title("Drop volume distribution per flow rate")\n'
+    'ax.grid(True, alpha=0.25, axis="y")\n'
+    "fig.tight_layout()\n"
+    'fig.savefig(FIGURES_DIR_P / "fig_drop_volume_distribution.png", dpi=140, bbox_inches="tight")\n'
+    "plt.show()"
+))
+
+cells.append(nbf.v4.new_markdown_cell("## 8. Persist tabular summary"))
+cells.append(nbf.v4.new_code_cell(
+    'summary_cols = ["run_id", "flow_rate_target_mlh", "drop_count_device", "duration_s",\n'
+    '                "mean_drop_volume_uL", "device_flow_mlh", "device_flow_corrected_mlh",\n'
+    '                "gravimetric_flow_mlh", "error_mlh", "error_pct"]\n'
+    'runs_df[summary_cols].to_csv(FIGURES_DIR_P / "results_summary.csv", index=False)\n'
+    'mape_df.to_csv(FIGURES_DIR_P / "mape_summary.csv", index=False)\n'
+    'print(f"Wrote {FIGURES_DIR_P / \'results_summary.csv\'}")\n'
+    'print(f"Wrote {FIGURES_DIR_P / \'mape_summary.csv\'}")\n'
+    'print(f"\\nCorrection factor k = {k:.4f}")\n'
+    'print(f"Pipeline complete.")'
+))
+
+cells.append(nbf.v4.new_markdown_cell(
+    "---\n\n"
+    "## Provenance\n\n"
+    "This notebook is the **source of truth** for every validation number\n"
+    "in `docs/results.md` and the top-level `README.md`. Regenerate via:\n\n"
+    "```bash\n"
+    "cd analysis\n"
+    "docker compose up regenerate-figures-sample   # sample data\n"
+    "docker compose up regenerate-figures          # real campaign data\n"
+    "```\n\n"
+    "Both invocations execute this notebook headlessly via `papermill`\n"
+    "with pinned dependencies. RANDOM_SEED is fixed so re-runs are\n"
+    "byte-identical."
+))
+
+nb["cells"] = cells
+nb["metadata"]["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
+nb["metadata"]["language_info"] = {"name": "python", "version": "3.12"}
+
+with OUT.open("w", encoding="utf-8") as f:
+    nbf.write(nb, f)
+
+print(f"Wrote {OUT}")
+print(f"  {len(cells)} cells, {OUT.stat().st_size} bytes")
