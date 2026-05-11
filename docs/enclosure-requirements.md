@@ -94,7 +94,7 @@ requirements: violating any of REQ-3.x produces silently bad data.
   irrespective of chamber outer diameter.
 - **REQ-3.2** The sensor arm **shall** present two horizontal infrared
   optical paths through the drip chamber, separated vertically by a
-  nominal `d` of 14.0 mm (CAD nominal). This separation is the basis of
+  nominal `d` of 10.0 mm (CAD nominal). This separation is the basis of
   the dual-beam velocity model (see EXP-1 in `testing-and-validation.md`).
 - **REQ-3.3** The board-to-board standard deviation of measured beam
   separation across an assembled batch **shall** be ≤ 1.0 mm. Higher

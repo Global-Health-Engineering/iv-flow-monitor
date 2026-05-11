@@ -173,7 +173,7 @@ None — this is a physical measurement.
 
 ```json
 {
-  "beam_separation_mm":        {"mean": 14.2, "sd": 0.3, "n_boards_measured": 5, "cad_nominal_mm": 14.0},
+  "beam_separation_mm":        {"mean": 10.2, "sd": 0.3, "n_boards_measured": 5, "cad_nominal_mm": 10.0},
   "caliper_resolution_mm":     0.05,
   "positioning_uncertainty_mm": 0.5,
   "measured_by":               "digital calipers",
