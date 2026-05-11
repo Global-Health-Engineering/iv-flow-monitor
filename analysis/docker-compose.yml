@@ -1,0 +1,59 @@
+# One-command reproducibility for the validation analysis pipeline.
+#
+# Sample data (the cold-clone reproducibility test):
+#   docker compose up regenerate-figures-sample
+#
+# Real campaign data (after EXP-3 runs are in data/raw/):
+#   docker compose up regenerate-figures
+#
+# Both services execute notebooks/validation.ipynb headlessly via
+# papermill, regenerating all PNGs in analysis/figures/.
+
+services:
+  regenerate-figures-sample:
+    build: .
+    image: dripito-analysis:latest
+    volumes:
+      - ../data/sample:/work/data:ro
+      - ./figures:/work/figures
+    command:
+      - python
+      - -m
+      - papermill
+      - /work/notebooks/validation.ipynb
+      - /work/notebooks/validation_executed.ipynb
+      - --cwd
+      - /work/notebooks
+      - -p
+      - DATA_DIR
+      - /work/data
+      - -p
+      - FIGURES_DIR
+      - /work/figures
+      - -p
+      - SAMPLE_MODE
+      - "True"
+
+  regenerate-figures:
+    build: .
+    image: dripito-analysis:latest
+    volumes:
+      - ../data:/work/data:ro
+      - ./figures:/work/figures
+    command:
+      - python
+      - -m
+      - papermill
+      - /work/notebooks/validation.ipynb
+      - /work/notebooks/validation_executed.ipynb
+      - --cwd
+      - /work/notebooks
+      - -p
+      - DATA_DIR
+      - /work/data
+      - -p
+      - FIGURES_DIR
+      - /work/figures
+      - -p
+      - SAMPLE_MODE
+      - "False"

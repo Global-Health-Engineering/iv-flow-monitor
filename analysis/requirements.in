@@ -1,0 +1,23 @@
+# Top-level Python dependencies for the Dripito validation analysis pipeline.
+#
+# Hand-edit this file. Regenerate the hash-locked requirements.txt by running
+# pip-compile inside a Linux container (matching the Docker base image) so
+# platform-conditional deps like pexpect get pinned:
+#
+#     docker run --rm -v "$PWD:/work" -w /work python:3.12.7-slim-bookworm \
+#         bash -c "pip install -q pip-tools && \
+#                  pip-compile --generate-hashes --strip-extras --allow-unsafe \
+#                              --output-file=requirements.txt requirements.in"
+#
+# Do NOT run pip-compile on Windows — ipython's pexpect dep is Unix-only,
+# pip-compile skips it on Windows, and the Linux Docker build then fails
+# under --require-hashes. Always compile on Linux.
+#
+# Do NOT hand-edit requirements.txt — it is generated and would lose hashes.
+
+papermill>=2.4,<3
+pandas>=2.0,<3
+numpy>=1.26,<3
+matplotlib>=3.8,<4
+jupyter>=1.0,<2
+ipykernel>=6.0,<7

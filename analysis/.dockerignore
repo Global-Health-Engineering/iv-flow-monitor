@@ -1,0 +1,24 @@
+# Keep the Docker build context small and deterministic.
+# Anything mounted at runtime (data, figures) is excluded;
+# anything generated locally is excluded.
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Local-only build helpers
+build_notebook.py
+
+# Generated outputs (rebuilt by container, not baked in)
+figures/
+notebooks/validation_executed.ipynb
+
+# Editor cruft
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
