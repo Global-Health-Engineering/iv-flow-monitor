@@ -1,0 +1,2 @@
+date,board_id,mode,thresh_top,thresh_bot,baseline_top_mean,baseline_bot_mean,false_pos_60s,notes
+2026-05-13,board1,manual,2400,2350,3105,3092,0,sample EXP-0 calibration

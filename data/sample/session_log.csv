@@ -1,0 +1,2 @@
+date,board_id,head_height_cm,room_temp_c,light_condition,notes
+2026-05-13,board1,95,21,indoor_fluorescent_blinds_closed,sample session for cold-clone repro test

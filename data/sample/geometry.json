@@ -1,0 +1,13 @@
+{
+  "beam_separation_mm": {
+    "mean": 14.2,
+    "sd": 0.3,
+    "n_boards_measured": 5,
+    "cad_nominal_mm": 14.0
+  },
+  "caliper_resolution_mm": 0.05,
+  "positioning_uncertainty_mm": 0.5,
+  "measured_by": "digital calipers",
+  "measurement_date": "2026-05-13",
+  "notes": "positioning uncertainty estimated from repeated placement; dominates over caliper resolution"
+}

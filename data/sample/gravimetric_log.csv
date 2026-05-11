@@ -1,0 +1,4 @@
+run_id,csv_filename,flow_rate_target_mlh,gravimetric_mass_g,run_duration_s,drop_count_device,notes
+V_20_sample,sample_macro20_20mlh.csv,20,0.8551,136.8,15,sample run (subset of full 5-min campaign)
+V_50_sample,sample_macro20_50mlh.csv,50,0.7533,55.5,15,sample run (subset of full 5-min campaign)
+V_100_sample,sample_macro20_100mlh.csv,100,0.6957,27.3,15,sample run (subset of full 5-min campaign)
