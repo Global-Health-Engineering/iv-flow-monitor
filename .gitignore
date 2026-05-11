@@ -40,6 +40,14 @@ __pycache__/
 *.pyo
 .ipynb_checkpoints/
 
+# Papermill execution artefacts (output notebooks; source is validation.ipynb)
+analysis/notebooks/*_executed.ipynb
+
+# Generated figures (regenerated from the notebook on every run; final
+# versions committed manually before the submission tag once campaign
+# data is in data/raw/).
+analysis/figures/
+
 # KiCad autosave and backups
 hardware/_autosave-*.kicad_sch
 hardware/_autosave-*.kicad_pcb
