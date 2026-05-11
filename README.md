@@ -9,6 +9,37 @@ environments. Custom STM32G0 PCB, optical dual-beam drop detection,
 monochrome graphic LCD, piezo alarm, ASA-printed enclosure with
 gear-driven broom-holder chamber clamp.
 
+## Architecture
+
+**Detection — dual-beam optical, two-phase.** A drop falling through
+the drip chamber occludes two stacked IR beams. ADC polling on Phase 1
+captures the leading edge; LPTIM1 input capture on Phase 2 records
+sub-millisecond transit time between beams. Velocity → drop diameter
+(chord-length approximation) → sphere-model volume → flow rate.
+
+```mermaid
+flowchart LR
+    IV[IV bag] --> DC[Drip chamber]
+    DC --> B1[IR beam TOP<br/>ADC polling]
+    B1 --> B2[IR beam BOT<br/>LPTIM1 capture]
+    B2 --> CALC[transit time → velocity<br/>velocity × pulse → drop diameter<br/>sphere model → drop volume<br/>Σ volume / duration → flow rate]
+    CALC --> UI[4×16 LCD<br/>piezo alarm]
+```
+
+**State machine — IEC 60601-2-24 compliant.**
+
+```mermaid
+stateDiagram-v2
+    [*] --> Boot
+    Boot --> Measuring : init complete
+    Measuring --> Normal : ≥5 drops counted
+    Normal --> Armed : target rate SET
+    Armed --> Warning : ±15% deviation
+    Warning --> Armed : within ±15%
+    Warning --> Alarm : ±25% deviation
+    Alarm --> Armed : MUTE + recover
+```
+
 ## At a glance
 
 | | |
@@ -18,7 +49,8 @@ gear-driven broom-holder chamber clamp.
 | **Detection** | Dual-beam optical, sphere-model volume calibration |
 | **Power** | Single AA Li-ion via FFC, TPS610982 boost converter |
 | **Enclosure** | ASA white FDM, gear-driven broom-holder chamber clamp, 14–24 mm OD |
-| **Validation** | - |
+| **Validation** | 21 runs vs gravimetric ground truth, 3 flow rates × macro-20 drip set |
+| **Reproducibility** | `docker compose up regenerate-figures-sample` regenerates every plot from raw CSVs ([`analysis/`](analysis/README.md)) |
 | **Submission** | 2026-05-14 |
 
 ## Repository layout
@@ -71,9 +103,33 @@ Pin maps in [`firmware/README.md`](firmware/README.md).
 
 ## Validation
 
-Pre-registered protocol — committed before data collection. See
+Bench protocol fixed before data collection — discard rules, output
+schemas, and analysis methods stated in advance so the Discussion is
+not shaped by what happened on the bench. Campaign at ETH Hangar,
+gravimetric ground truth (precision scale ±0.0001 g) against
+macro-20 drip-set runs at 20, 50, 100 mL/hr. Full protocol in
 [`docs/testing-and-validation.md`](docs/testing-and-validation.md).
-Campaign runs 2026-05-07 → 2026-05-14.
+
+## Reproducible analysis
+
+Every validation figure is regenerated from raw CSVs by one command
+on a clean machine with Docker:
+
+```bash
+cd analysis/
+docker compose up regenerate-figures-sample   # cold-clone repro test
+docker compose up regenerate-figures          # real campaign data
+```
+
+The pipeline executes [`analysis/notebooks/validation.ipynb`](analysis/notebooks/validation.ipynb)
+headlessly via papermill and writes Bland-Altman plots, bootstrap
+MAPE tables, error-vs-flow scatters, and drop-volume distributions
+to [`analysis/figures/`](analysis/README.md). Dependencies pinned in
+[`analysis/requirements.txt`](analysis/requirements.txt) (hash-locked,
+installed with `pip install --require-hashes`). Deterministic random
+seeds — re-runs are byte-identical.
+
+Pipeline contract and figure inventory: [`analysis/README.md`](analysis/README.md).
 
 ## Hardware fabrication
 
