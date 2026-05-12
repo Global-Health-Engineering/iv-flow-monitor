@@ -1,0 +1,23 @@
+---
+const links = [
+  { href: '#problem', label: 'Problem' },
+  { href: '#dual-beam', label: 'Dual-beam' },
+  { href: '#pcb', label: 'PCB' },
+  { href: '#state', label: 'State machine' },
+  { href: '#validation', label: 'Validation' },
+  { href: '#build', label: 'Build' },
+  { href: '#assembly', label: 'Assembly' },
+  { href: '#decisions', label: 'Decisions' },
+  { href: '#open-questions', label: 'Open questions' },
+];
+const repoUrl = 'https://github.com/Gluflex/iv-flow-monitor-v2';
+---
+<nav class="top">
+  <div class="row">
+    <a href="#" class="brand"><span class="dot"></span>Dripito</a>
+    <div class="links">
+      {links.map((l) => <a href={l.href}>{l.label}</a>)}
+    </div>
+    <a href={repoUrl} class="cta">View repo →</a>
+  </div>
+</nav>

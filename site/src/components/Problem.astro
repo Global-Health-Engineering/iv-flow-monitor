@@ -1,0 +1,35 @@
+---
+const stats = [
+  {
+    num: 'CHF 50',
+    label: 'target BOM for a deployable unit, vendor-agnostic across macro (10 / 15 / 20 gtt·mL⁻¹) and micro (60 gtt·mL⁻¹) drip sets.',
+  },
+  {
+    num: '67 g',
+    label: 'device weight aboard the chamber. Clips on without modifying the giving set, reusable across patients, sterilisable in 70 % IPA.',
+  },
+  {
+    num: '10 mm',
+    label: 'IR beam separation. Two beams give two independent measurements per drop — diameter from shadow duration, velocity from inter-beam transit — making the device drip-set-agnostic.',
+  },
+];
+---
+<section id="problem">
+  <div class="eyebrow">The problem</div>
+  <h2>Pediatric IV delivery is silently dangerous in low-resource settings.</h2>
+  <p class="lead">
+    Gravity-fed IV drips are the default in humanitarian and rural healthcare.
+    Without an infusion pump, flow rate is set by hand-counted drops — and a
+    single missed adjustment can deliver a fatal volume to a child in under an
+    hour.
+  </p>
+
+  <div class="problem-stats">
+    {stats.map((s) => (
+      <div class="stat">
+        <div class="num">{s.num}</div>
+        <div class="label">{s.label}</div>
+      </div>
+    ))}
+  </div>
+</section>

@@ -1,0 +1,67 @@
+---
+const REPO_DOCS = 'https://github.com/Gluflex/iv-flow-monitor-v2/blob/main/docs/decisions';
+
+const decisions = [
+  {
+    slug: 'optical-architecture',
+    title: 'Optical Architecture',
+    text: 'Two-phase detection: dual-beam Phase 1 calibrates per-drop volume from velocity + pulse-width over ~10 drops, then LPTIM1 + COMP1 single-beam stop-mode for low-power continuous monitoring.',
+  },
+  {
+    slug: 'comparator-simplification',
+    title: 'Comparator Simplification',
+    text: 'External LMV331 comparator removed; STM32G030 internal COMP1 + DAC threshold replaces it. One IC dropped from the BOM, identified independently during schematic review.',
+  },
+  {
+    slug: 'power-architecture',
+    title: 'Power Architecture',
+    text: '1× Li-ion AA + TPS610981 boost + a "Care Package" deployment model (alkaline fallback + external USB solar charger). Rejected 18650 cells, on-board charging, and integrated solar after thermal analysis.',
+  },
+  {
+    slug: 'sensor-arm-alignment',
+    title: 'Sensor Arm Alignment',
+    text: 'Steel dowel-pin press-fit identified as the highest-leverage alignment mechanism (~40× tighter than FDM tolerance). Rev-B uses direct FDM geometry; press-fit deferred to Rev-C.',
+  },
+  {
+    slug: 'led-duty-cycle',
+    title: 'LED Duty Cycle',
+    text: 'Phase 2 IR target 0.3 % (5 µs ON / 1.8 ms period). The earlier 0.1 % target was dropped — not physically achievable with deterministic drop detection across all drip sets.',
+  },
+  {
+    slug: 'enclosure-material',
+    title: 'Enclosure Material',
+    text: 'ASA white, FDM-printed, snap-fit, IP54 design target. Chosen over PETG for UV resistance and over ABS for reduced FDM warping.',
+  },
+  {
+    slug: 'battery-indicator',
+    title: 'Battery Indicator',
+    text: 'Low-battery symbol instead of a percentage. The Paleblue Li-ion AA’s flat 1.5 V discharge curve makes percentage misleading; a threshold flag at ~1.35 V is technically honest and clinically sufficient.',
+  },
+  {
+    slug: 'usb-interface-removal',
+    title: 'USB Interface Removal',
+    text: 'USB replaced with a 5-pin UART debug header. USB lost its purpose when the BQ25185 + TPS631000 power stack was deferred; UART is sufficient for prototype-stage debug, BOOT0 preserves DFU access via a USB-UART bridge.',
+  },
+];
+---
+<section id="decisions">
+  <div class="eyebrow">Architecture decisions</div>
+  <h2>The choices behind the board.</h2>
+  <p class="lead">
+    Every non-trivial design choice is captured as a separate ADR in
+    <code>docs/decisions/</code>. The cards below summarise the eight that
+    matter most for the Rev-B submission. Click any card for the full record —
+    context, alternatives considered, and the open risks at the time the
+    decision was made.
+  </p>
+
+  <div class="decisions-grid">
+    {decisions.map((d) => (
+      <a class="decision-card" href={`${REPO_DOCS}/${d.slug}.md`}>
+        <h3>{d.title}</h3>
+        <p>{d.text}</p>
+        <span class="read-more">Read full ADR ↗</span>
+      </a>
+    ))}
+  </div>
+</section>

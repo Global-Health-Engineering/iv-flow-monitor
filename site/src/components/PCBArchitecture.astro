@@ -1,0 +1,200 @@
+---
+import PowerTree from './PowerTree.astro';
+
+const rawBase = import.meta.env.BASE_URL;
+const baseUrl = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+
+// Hotspot anchors at component centres (% of pcb-stage).
+// Generated from D:/Dripito/github/hardware/flow_monitor.kicad_pcb (50 × 45 mm)
+// then nudged to land on the rendered image (which has a ~4 % inset around
+// the PCB, matching the .pcb-stage padding).
+// .hotspot CSS uses translate(-50%,-50%) so these are CENTRE coords.
+const hotspots = [
+  { id: 'mcu',     n: 1, x: 50.3, y: 43.9 },
+  { id: 'boost',   n: 2, x: 21.4, y: 26.8 },
+  { id: 'ir',      n: 3, x: 70.7, y: 90.0 },
+  { id: 'pd',      n: 4, x: 84.5, y: 42.0 },
+  { id: 'led_bat', n: 5, x: 87.7, y: 85.6 },
+  { id: 'buzzer',  n: 6, x: 16.8, y: 50.6 },
+  { id: 'swd',     n: 7, x: 50.3, y: 67.8 },
+];
+---
+<section id="pcb">
+  <div class="eyebrow">Hardware</div>
+  <h2>Board architecture.</h2>
+  <p class="lead">
+    A 50 × 45 mm 2-layer board, hand-solderable for low-volume humanitarian
+    assembly. Front side (STM-side) shown. Click any numbered callout for the
+    schematic snippet, the rationale, and the ADR that locked the decision.
+  </p>
+
+  <div class="pcb-grid">
+    <div class="pcb-stage" id="pcb-stage">
+      <img class="pcb-render" data-view="3d"      id="pcb-img-3d"
+           src={`${baseUrl}pcb/dripito-v2-top.png`}
+           alt="Dripito V2 PCB · top side · KiCad 3D render" />
+      <img class="pcb-render" data-view="routing" id="pcb-img-routing" hidden
+           src={`${baseUrl}pcb/dripito-v2-routing.png`}
+           alt="Dripito V2 PCB · F.Cu copper layer routing" />
+
+      <div class="view-toggle">
+        <button class="view-btn active" data-view="3d">3D render</button>
+        <button class="view-btn"        data-view="routing">Routing</button>
+      </div>
+
+      <button class="true-size-btn" id="true-size-btn" aria-pressed="false">True size</button>
+
+      <div class="legend">
+        <span id="pcb-legend-text">50 × 45 mm · 2-layer · F.Cu shown · 3× display scale</span>
+      </div>
+
+      {hotspots.map((h) => (
+        <button class="hotspot" data-id={h.id} style={`top:${h.y}%; left:${h.x}%;`}>{h.n}</button>
+      ))}
+
+      <div class="hotspot-callout" id="hotspot-callout" aria-hidden="true">click me!</div>
+    </div>
+
+    <div class="pcb-detail" id="pcb-detail">
+      <span class="tag" id="d-tag">Hotspot 1 · MCU</span>
+      <h3 id="d-title">STM32G071C8T6 · core + decoupling</h3>
+      <div class="schematic" id="d-schematic">[ KiCad schematic snippet ]</div>
+      <p id="d-text">
+        48-pin LQFP, single 3.3 V rail with 4× 100 nF decoupling. Migrated from
+        STM32G030 → G031 → G071 because G030/G031 lack COMP1 and the DAC required
+        for the threshold reference. Pin-compatible swap, no layout cost.
+      </p>
+      <div class="adr-link" id="d-adr">↪ <a href="#">ADR 03 · MCU selection (G030 → G071)</a></div>
+    </div>
+  </div>
+
+  <PowerTree />
+</section>
+
+<script>
+  type Detail = { tag: string; title: string; text: string; adr: string; schematic?: string };
+  const SCH_BASE = document.documentElement.dataset.baseUrl || '/';
+  const data: Record<string, Detail> = {
+    mcu: {
+      tag: 'Hotspot 1 · MCU',
+      title: 'STM32G071C8T6 · core + decoupling',
+      text: '48-pin LQFP, single 3.3 V rail with 4× 100 nF decoupling on VBAT/VDD/VREF+ (C9–C12) and a 32.768 kHz LSE (Y1, C6/C7 = 20 pF) for the RTC. Migrated from STM32G030 → G031 → G071 because G030/G031 lack COMP1 and the DAC required for the threshold reference. Pin-compatible swap, no layout cost.',
+      adr: 'ADR 03 · MCU selection (G030 → G071)',
+      schematic: 'schematic-mcu.png',
+    },
+    boost: {
+      tag: 'Hotspot 2 · Power',
+      title: 'TPS610981 boost · 1× Li-ion AA',
+      text: 'Single-cell boost from 1.5 V (down to 0.9 V end-of-discharge) to 3.3 V. Validated 3.297 V no-load, ±0.09 % from target. End-of-discharge sweep and full-load regulation pending under §1.4 Limitations.',
+      adr: 'ADR 06 · Power architecture (Li-ion AA + Care Package)',
+      schematic: 'schematic-boost.png',
+    },
+    ir: {
+      tag: 'Hotspot 3 · IR drive train',
+      title: 'Q1/Q2 · 2N7002 N-MOSFET pair',
+      text: 'On-board low-side switches (Q1, Q2) for the two 940 nm IR LEDs, with R1/R4 = 100 Ω current-limit, R2/R6 = 100 kΩ gate pull-down (silences the LEDs during MCU reset/boot), R3/R7 = 100 Ω gate series. The LEDs themselves live on a satellite breakout, reached via the J4 FFC ribbon (see hotspot 5). Phase 1 schedule: 150 µs ON / 1.80 ms period (8.3 % duty, ~1.5 mA average per LED). Phase 2 stop-mode: 5 µs ON / 1.80 ms period (~0.3 % duty).',
+      adr: 'ADR 09 · LED duty cycle',
+      schematic: 'schematic-ir.png',
+    },
+    pd: {
+      tag: 'Hotspot 4 · Photodiode FFCs',
+      title: 'J2 / J3 · 2-pin satellite sockets',
+      text: 'Two 2-pin sockets, one per photodiode. Each photodiode is biased through a 3.3 kΩ pull-up (R13/R15) with a 100 Ω series (R14/R16) and a 100 pF AC-coupling cap (C8/C13) to feed the ADC and COMP1. Threshold set by the internal DAC, calibrated at boot from ambient. The full on-chip analog chain replaced the discrete LMV331 comparator + external RC network of Rev-A.',
+      adr: 'ADR 02 · Comparator simplification',
+      schematic: 'schematic-pd.png',
+    },
+    led_bat: {
+      tag: 'Hotspot 5 · LED + Battery',
+      title: 'J4 · 6-pin satellite socket',
+      text: 'Single FFC ribbon to the satellite breakout. Pin map: 1 = GND, 2 = BAT+, 3 = IR_LED_BOT−, 4 = IR_LED_BOT+, 5 = IR_LED_TOP−, 6 = IR_LED_TOP+. Combining battery feed (pins 1–2) and IR-LED drives (pins 3–6) on one ribbon simplifies enclosure routing — the satellite board sits next to the drip chamber and holds both the IR emitters above the beam path and the AA cell.',
+      adr: 'ADR 09 · LED duty cycle',
+      schematic: 'schematic-led_bat.png',
+    },
+    buzzer: {
+      tag: 'Hotspot 6 · Audible alarm',
+      title: 'BZ1 SFN-1407PA7.6 piezo buzzer',
+      text: 'Driven by Q4 2N7002 N-MOSFET. R17 1.8 kΩ pull-up holds the buzzer drain at +3.3 V when Q4 is off (no DC bias on the piezo element). R19 10 kΩ pull-down on BUZZER_CTRL keeps the gate low during MCU reset and boot — a non-trivial safety detail for a clinical alarm device, since accidental beeps during power cycles erode user trust. R18 100 Ω is the gate series resistor.',
+      adr: 'ADR · Audible alarm circuit',
+      schematic: 'schematic-buzzer.png',
+    },
+    swd: {
+      tag: 'Hotspot 7 · Debug',
+      title: 'J1 · 7-pin SWD + USART1 header',
+      text: 'Pin map: 1 = NRST (with C5 100 nF noise cap to GND), 2 = UART1_TX, 3 = UART1_RX, 4 = SWDIO (10 kΩ pull-up), 5 = SWCLK (10 kΩ pull-down), 6 = +3.3 V, 7 = GND. UART pins require SYSCFG_CFGR1.PA11_PA12_RMP=1 in early init — without the remap, USART1 is silent. ADR documents the USB-PD removal that made USART debug the path forward.',
+      adr: 'ADR 07 · USB interface removal',
+      schematic: 'schematic-swd.png',
+    },
+  };
+
+  const tagEl = document.getElementById('d-tag')!;
+  const titEl = document.getElementById('d-title')!;
+  const txtEl = document.getElementById('d-text')!;
+  const adrEl = document.getElementById('d-adr')!;
+  const schEl = document.getElementById('d-schematic')!;
+  const grid  = document.querySelector('.pcb-grid')!;
+
+  function renderSchematic(d: Detail) {
+    if (d.schematic) {
+      schEl.classList.add('has-image');
+      schEl.innerHTML = `<img src="${SCH_BASE}pcb/${d.schematic}" alt="Schematic snippet · ${d.title}" />`;
+    } else {
+      schEl.classList.remove('has-image');
+      schEl.textContent = '[ schematic snippet · pending ]';
+    }
+  }
+
+  const callout = document.getElementById('hotspot-callout');
+  const stageScroll = document.getElementById('pcb-stage');
+  document.querySelectorAll<HTMLButtonElement>('.hotspot').forEach((h) => {
+    h.addEventListener('click', () => {
+      document.querySelectorAll('.hotspot').forEach((x) => x.classList.remove('active'));
+      h.classList.add('active');
+      const d = data[h.dataset.id!];
+      if (!d) return;
+      tagEl.textContent = d.tag;
+      titEl.textContent = d.title;
+      txtEl.textContent = d.text;
+      adrEl.innerHTML = '↪ <a href="#">' + d.adr + '</a>';
+      renderSchematic(d);
+      grid.classList.add('has-detail');   // reveal the side panel on first click
+      callout?.classList.add('dismissed'); // hide the "click me!" hint
+      // Centre the PCB stage vertically in the viewport (defer to next frame so
+      // the layout has settled from `has-detail` before measuring).
+      setTimeout(() => {
+        if (!stageScroll) return;
+        const rect = stageScroll.getBoundingClientRect();
+        const targetY = Math.max(0, rect.top + window.scrollY + rect.height / 2 - window.innerHeight / 2);
+        console.log('[hotspot] scroll', { rectTop: rect.top, scrollY: window.scrollY, innerH: window.innerHeight, targetY });
+        window.scrollTo({ top: targetY, behavior: 'smooth' });
+      }, 60);
+    });
+  });
+
+  // 3D render ↔ routing view toggle
+  const renders = document.querySelectorAll<HTMLImageElement>('.pcb-render');
+  const viewBtns = document.querySelectorAll<HTMLButtonElement>('.view-btn');
+  viewBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.view!;
+      viewBtns.forEach((b) => b.classList.toggle('active', b.dataset.view === target));
+      renders.forEach((img) => {
+        if (img.dataset.view === target) img.removeAttribute('hidden');
+        else img.setAttribute('hidden', '');
+      });
+    });
+  });
+
+  // True-size toggle — default is the 4× display; pressing shrinks to physical 50 × 45 mm.
+  const stageEl  = document.getElementById('pcb-stage');
+  const trueBtn  = document.getElementById('true-size-btn');
+  const legendEl = document.getElementById('pcb-legend-text');
+  if (stageEl && trueBtn && legendEl) {
+    const SCALED_LEGEND = '50 × 45 mm · 2-layer · F.Cu shown · 3× display scale';
+    const TRUE_LEGEND   = '50 × 45 mm · 2-layer · F.Cu shown · rendered at physical size';
+    trueBtn.addEventListener('click', () => {
+      const isTrue = stageEl.classList.toggle('true-size');
+      trueBtn.setAttribute('aria-pressed', String(isTrue));
+      legendEl.textContent = isTrue ? TRUE_LEGEND : SCALED_LEGEND;
+    });
+  }
+</script>

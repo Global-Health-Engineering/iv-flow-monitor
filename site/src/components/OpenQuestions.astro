@@ -1,0 +1,54 @@
+---
+const items = [
+  {
+    cat: 'Bench',
+    title: 'TPS610981 end-of-discharge under load',
+    next: 'Sweep boost-input voltage 1.6 → 0.7 V on the bench supply with the full firmware load (MCU + LCD + IR LEDs at Phase-1 duty), log V_out and I_in per 0.1 V step. The 3.297 V no-load measurement is on file; the loaded EOD curve is not.',
+  },
+  {
+    cat: 'Bench',
+    title: 'Phase-2 IR LED ageing margin',
+    next: 'Datasheet predicts ~10 % output loss over device lifetime; the 150 µs / 1.80 ms schedule has ~18 % optical headroom on paper. Validate on the bench with attenuated LED drive (simulating end-of-life output) before claiming the multi-week single-AA runtime.',
+  },
+  {
+    cat: 'Field',
+    title: 'Clinician input on Rev-C deployment model',
+    next: 'Till Haeussner and Gian Teufen (3-month deployment across 20 health centres in Malawi) named as field informants. Outreach not yet sent. Their grounded operational input — how devices die in real clinics — would shape the Rev-C battery / repair / spares story.',
+  },
+  {
+    cat: 'Field',
+    title: 'Clip stability on worn drip sets',
+    next: 'Current chamber-clip force tested on new, factory-spec drip chambers. Re-used or worn-thin chambers are softer and may not hold the 95–105 g device. Test on one or two used sets from a teaching hospital before claiming field reliability.',
+  },
+  {
+    cat: 'Product',
+    title: 'Multi-channel paediatric care',
+    next: 'A real PICU patient often has multiple parallel infusions per line. Rev-B is single-channel by design. A multi-channel architecture — one MCU, several satellite breakouts — is the obvious Rev-C lift but expands the safety case considerably.',
+  },
+  {
+    cat: 'Product',
+    title: 'Regulatory pathway',
+    next: 'Rev-B is a documented baseline, not a regulated device. Reaching CE-marked or FDA-cleared status requires IEC 60601-1 testing, ISO 13485 QMS, and a clinical-investigation plan. Out of scope for the semester project; flagged here as the gap between this work and clinical use.',
+  },
+];
+---
+<section id="open-questions">
+  <div class="eyebrow">Honest gaps</div>
+  <h2>Open questions.</h2>
+  <p class="lead">
+    The list of things Rev-B does <em>not</em> resolve. Each item has a defined
+    next step that would close it — bench measurements that didn't fit the
+    sprint, field input that hasn't returned, and the Rev-C lifts that need
+    silicon, firmware, or a clinical investigation to attempt seriously.
+  </p>
+
+  <div class="open-questions-grid">
+    {items.map((q) => (
+      <div class="oq-card">
+        <span class={`oq-cat oq-cat-${q.cat.toLowerCase()}`}>{q.cat}</span>
+        <h3>{q.title}</h3>
+        <p>{q.next}</p>
+      </div>
+    ))}
+  </div>
+</section>

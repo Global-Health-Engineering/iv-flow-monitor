@@ -1,0 +1,64 @@
+---
+const states = [
+  { id: 'boot',  label: 'Boot',      cx: 80,  stroke: '#2a323d' },
+  { id: 'meas',  label: 'Measuring', cx: 240, stroke: '#2a323d' },
+  { id: 'norm',  label: 'Normal',    cx: 400, stroke: '#34d399' },
+  { id: 'armed', label: 'Armed',     cx: 560, stroke: '#06b6d4' },
+  { id: 'warn',  label: 'Warning',   cx: 720, stroke: '#fbbf24' },
+  { id: 'alarm', label: 'Alarm',     cx: 880, stroke: '#f87171' },
+];
+
+const transitions = [
+  { from: 80,  to: 240, label: 'power on'      },
+  { from: 240, to: 400, label: '≥5 drops'      },
+  { from: 400, to: 560, label: 'user arm'      },
+  { from: 560, to: 720, label: '±15%'          },
+  { from: 720, to: 880, label: '±25%, >30 s'   },
+];
+---
+<section id="state">
+  <div class="eyebrow">Firmware</div>
+  <h2>Alarm state machine.</h2>
+  <p class="lead">
+    Six states, two thresholds (±15% warning, ±25% alarm — per IEC 60601-2-24
+    §201.12). A nurse cannot disarm into Normal without explicitly Arming the
+    device, preventing accidental silencing.
+  </p>
+
+  <div class="sm-stage">
+    <svg class="sm-svg" viewBox="0 0 1000 220" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="ar" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 z" fill="#6b7480" />
+        </marker>
+      </defs>
+
+      {states.map((s) => (
+        <g class="state-node" data-state={s.id}>
+          <circle cx={s.cx} cy={110} r={46} fill="#161b22" stroke={s.stroke} stroke-width="1.5" />
+          <text x={s.cx} y={115} text-anchor="middle" fill="#e6e8eb" font-family="ui-sans-serif" font-size="13" font-weight="600">{s.label}</text>
+        </g>
+      ))}
+
+      {transitions.map((t) => (
+        <>
+          <line x1={t.from + 46} y1={110} x2={t.to - 54} y2={110} stroke="#6b7480" stroke-width="1.5" marker-end="url(#ar)" />
+          <text x={(t.from + t.to) / 2} y={100} text-anchor="middle" fill="#9aa3ad" font-family="ui-monospace,monospace" font-size="10">{t.label}</text>
+        </>
+      ))}
+
+      <!-- recovery edge alarm → armed -->
+      <path d="M 880 156 Q 720 200 560 156" fill="none" stroke="#6b7480" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#ar)" />
+      <text x="720" y="200" text-anchor="middle" fill="#9aa3ad" font-family="ui-monospace,monospace" font-size="10">recovery within tolerance</text>
+    </svg>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll('.state-node').forEach((n) => {
+    n.addEventListener('click', () => {
+      document.querySelectorAll('.state-node').forEach((x) => x.classList.remove('active'));
+      n.classList.add('active');
+    });
+  });
+</script>

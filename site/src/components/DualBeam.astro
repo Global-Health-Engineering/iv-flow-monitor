@@ -1,0 +1,1408 @@
+---
+const docsUrl = '/docs/architecture/';
+
+const FLUIDS = [
+  { id: 'saline',   name: 'Saline 0.9%',  gamma: 73, rho: 1005, dropVolUl: 55.8 },
+  { id: 'dextrose', name: 'Dextrose 10%', gamma: 72, rho: 1040, dropVolUl: 53.2 },
+  { id: 'blood',    name: 'Whole blood',  gamma: 58, rho: 1060, dropVolUl: 42.0 },
+  { id: 'lipid',    name: 'Lipid 20%',    gamma: 35, rho: 920,  dropVolUl: 29.2 },
+];
+
+const SETS = [
+  { id: 'macro10', name: 'Macro 10 gtt·mL⁻¹', gttPerMl: 10 },
+  { id: 'macro15', name: 'Macro 15 gtt·mL⁻¹', gttPerMl: 15 },
+  { id: 'macro20', name: 'Macro 20 gtt·mL⁻¹', gttPerMl: 20 },
+  { id: 'micro60', name: 'Micro 60 gtt·mL⁻¹', gttPerMl: 60 },
+];
+
+const SPEEDS = [
+  { value: 3000, label: 'Slow' },
+  { value: 1500, label: 'Default' },
+  { value: 600,  label: 'Fast' },
+  { value: 200,  label: 'Real-time' },
+];
+---
+<section id="dual-beam">
+  <div class="eyebrow">Architecture</div>
+  <h2>Dual-beam optical drop detection.</h2>
+  <p class="lead">
+    Two IR beams, vertically separated by 10.0 mm, straddle the drip chamber.
+    Each drop yields two independent measurements per crossing: the
+    <strong>shadow duration</strong> τ — how long the drop occludes a beam —
+    sets the drop's diameter, and the <strong>inter-beam transit</strong> Δt
+    sets its velocity. Volume follows from a sphere model; flow rate is the
+    product of per-drop volume and drip cadence — independent of the drip-set's
+    nominal gtt·mL⁻¹ rating.
+  </p>
+
+  <div class="dual-grid">
+    <div class="anim-col">
+      <div class="anim-controls anim-controls-grid">
+        <div class="ctrl">
+          <label for="dpm">Drip rate</label>
+          <input id="dpm" type="range" min="5" max="120" value="30" step="1" />
+          <span class="val" id="dpm-val">30 dpm</span>
+        </div>
+        <div class="ctrl">
+          <label for="drip-set">Set</label>
+          <select id="drip-set">
+            {SETS.map(s => (
+              <option value={s.id} selected={s.id === 'macro20'}>{s.name}</option>
+            ))}
+          </select>
+        </div>
+        <div class="ctrl">
+          <label for="fluid">Fluid</label>
+          <select id="fluid">
+            {FLUIDS.map(f => (
+              <option value={f.id} selected={f.id === 'saline'}>{f.name}</option>
+            ))}
+          </select>
+          <span class="placeholder-inline" title="Per-fluid drop volumes are Tate's-Law predictions, not measured at the bench.">Tate</span>
+        </div>
+
+        <div class="ctrl seg-ctrl">
+          <label>Beams</label>
+          <div class="seg-group" data-group="beam-mode">
+            <button type="button" class="seg-btn active" data-value="dual">Dual</button>
+            <button type="button" class="seg-btn" data-value="single">Single</button>
+          </div>
+        </div>
+        <div class="ctrl seg-ctrl">
+          <label>Power</label>
+          <div class="seg-group" data-group="phase-mode">
+            <button type="button" class="seg-btn active" data-value="active">P1 · Always on</button>
+            <button type="button" class="seg-btn" data-value="stop">P2 · Duty cycled</button>
+          </div>
+        </div>
+        <div class="ctrl seg-ctrl">
+          <label>Speed</label>
+          <div class="seg-group" data-group="speed">
+            {SPEEDS.map(sp => (
+              <button type="button" class={`seg-btn ${sp.value === 1500 ? 'active' : ''}`} data-value={String(sp.value)}>{sp.label}</button>
+            ))}
+          </div>
+        </div>
+        <div class="ctrl btn-ctrl">
+          <button type="button" id="pause-btn" class="mini-btn">⏸ Pause</button>
+          <button type="button" id="step-btn" class="mini-btn" disabled>⏭ Step</button>
+        </div>
+        <div class="ctrl">
+          <input id="scope-toggle" type="checkbox" />
+          <label for="scope-toggle">Scope</label>
+        </div>
+      </div>
+
+      <div class="anim-stage stage-rebuild">
+        <div class="stage-top">
+          <svg class="chamber-svg" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="chamber-wall" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%"   stop-color="rgba(255,255,255,.05)" />
+                <stop offset="50%"  stop-color="rgba(255,255,255,0)" />
+                <stop offset="100%" stop-color="rgba(255,255,255,.04)" />
+              </linearGradient>
+              <linearGradient id="chamber-fluid" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"  stop-color="rgba(6,182,212,.22)" />
+                <stop offset="100%" stop-color="rgba(6,182,212,.12)" />
+              </linearGradient>
+              <radialGradient id="drop-shade" cx="38%" cy="33%" r="65%">
+                <stop offset="0%"  stop-color="#a5f3fc" stop-opacity="0.95" />
+                <stop offset="55%" stop-color="#06b6d4" stop-opacity="0.95" />
+                <stop offset="100%" stop-color="#083344" stop-opacity="0.85" />
+              </radialGradient>
+              <clipPath id="chamber-clip">
+                <path d="M 70 20 Q 70 10 80 10 L 120 10 Q 130 10 130 20 L 130 380 Q 130 390 120 390 L 80 390 Q 70 390 70 380 Z" />
+              </clipPath>
+            </defs>
+
+            <!-- chamber body / wall highlight / fluid pool -->
+            <path
+              d="M 70 20 Q 70 10 80 10 L 120 10 Q 130 10 130 20 L 130 380 Q 130 390 120 390 L 80 390 Q 70 390 70 380 Z"
+              fill="rgba(6,182,212,.04)"
+            />
+            <path
+              d="M 70 20 Q 70 10 80 10 L 120 10 Q 130 10 130 20 L 130 380 Q 130 390 120 390 L 80 390 Q 70 390 70 380 Z"
+              fill="url(#chamber-wall)"
+              clip-path="url(#chamber-clip)"
+            />
+            <g clip-path="url(#chamber-clip)" opacity="0.18">
+              <path d="M 70 305 Q 85 299 100 305 T 130 305 L 130 390 L 70 390 Z" fill="url(#chamber-fluid)" />
+              <path d="M 70 305 Q 85 299 100 305 T 130 305" fill="none" stroke="#06b6d4" stroke-width="0.6" opacity="0.7" />
+            </g>
+
+            <!-- drip-tube spike -->
+            <line x1="100" y1="0" x2="100" y2="18" stroke="#2a323d" stroke-width="6" stroke-linecap="round" opacity="0.85" />
+            <line x1="100" y1="2" x2="100" y2="16" stroke="#11151b" stroke-width="3" stroke-linecap="round" />
+            <circle cx="100" cy="20" r="1.6" fill="#06b6d4" opacity="0.6" />
+
+            <!-- chamber outline (on top of fill) -->
+            <path
+              d="M 70 20 Q 70 10 80 10 L 120 10 Q 130 10 130 20 L 130 380 Q 130 390 120 390 L 80 390 Q 70 390 70 380 Z"
+              fill="none"
+              stroke="#2a323d"
+              stroke-width="1.2"
+            />
+
+            <!-- IR LEDs (left side, energise the beams) -->
+            <circle id="led-top" class="ir-led" cx="50" cy="140" r="3.4" />
+            <circle id="led-bot" class="ir-led" cx="50" cy="280" r="3.4" />
+
+            <line id="beam-top" class="beam-line" x1="55" y1="140" x2="145" y2="140" />
+            <text x="36" y="144" fill="#9aa3ad" font-family="ui-monospace,monospace" font-size="10" text-anchor="end">D1</text>
+            <circle id="diode-top" class="photodiode" cx="150" cy="140" r="5" />
+
+            <line id="beam-bot" class="beam-line" x1="55" y1="280" x2="145" y2="280" />
+            <text x="36" y="284" fill="#9aa3ad" font-family="ui-monospace,monospace" font-size="10" text-anchor="end">D2</text>
+            <circle id="diode-bot" class="photodiode" cx="150" cy="280" r="5" />
+
+            <!-- 10 mm caliper -->
+            <line x1="160" y1="140" x2="160" y2="280" stroke="#2a323d" stroke-width="1" />
+            <line x1="156" y1="140" x2="164" y2="140" stroke="#2a323d" stroke-width="1" />
+            <line x1="156" y1="280" x2="164" y2="280" stroke="#2a323d" stroke-width="1" />
+            <text x="166" y="214" fill="#9aa3ad" font-family="ui-monospace,monospace" font-size="10">10 mm</text>
+
+            <!-- shadow cone behind drop when it occludes a beam (rendered live) -->
+            <rect id="shadow-cone-top" class="shadow-cone" x="55" y="135" width="95" height="10" rx="3" opacity="0" />
+            <rect id="shadow-cone-bot" class="shadow-cone" x="55" y="275" width="95" height="10" rx="3" opacity="0" />
+
+            <!-- drop layer — new drops are spawned per loop tick and removed on animationend.
+                 Multiple drops can co-exist in flight at high dpm × slow speed. -->
+            <g id="drop-layer"></g>
+          </svg>
+
+          <div class="readout">
+            <div class="label-mini" style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
+              <span id="r-section-label">Per-beam shadow</span>
+              <span class="placeholder-inline" id="r-section-tag" style="font-size:8px; padding:1px 5px;">simulated</span>
+            </div>
+            <div class="row"><span class="k">τ_TOP</span><span class="v" id="r-tau-top">— ms</span></div>
+            <div class="row"><span class="k">τ_BOT</span><span class="v" id="r-tau-bot">— ms</span></div>
+            <div class="row"><span class="k">Δt</span>   <span class="v" id="r-dt">— ms</span></div>
+            <div class="divider"></div>
+            <div class="label-mini">Inferred (sphere model)</div>
+            <div class="row"><span class="k">v_drop</span><span class="v" id="r-v">— m·s⁻¹</span></div>
+            <div class="row"><span class="k">d_drop</span><span class="v" id="r-d">— mm</span></div>
+            <div class="row"><span class="k">V_drop</span><span class="v" id="r-vol">— µL</span></div>
+            <div class="divider"></div>
+            <div class="row">
+              <span class="k" id="r-count-label">Calibration</span>
+              <span class="v" id="r-count-val">— / 5</span>
+            </div>
+            <div class="divider"></div>
+            <div class="label-mini">
+              Flow rate
+              <span class="rate-mode-tag" id="r-mode-tag">dual-beam</span>
+            </div>
+            <div class="row"><span class="rate" id="r-rate">— mL·hr⁻¹</span></div>
+
+            <div class="sparkline">
+              <div class="sl-title">Live trace · last 30 drops</div>
+              <svg viewBox="0 0 300 50" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="0" y1="14" x2="300" y2="14" stroke="#fbbf24" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.5" />
+                <line x1="0" y1="36" x2="300" y2="36" stroke="#fbbf24" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.5" />
+                <line x1="0" y1="25" x2="300" y2="25" stroke="#34d399" stroke-width="0.4" stroke-dasharray="2 4" opacity="0.4" />
+                <polyline id="rate-trace" points="" fill="none" stroke="#06b6d4" stroke-width="1.2" stroke-linejoin="round" />
+                <text x="298" y="11" fill="#fbbf24" font-family="ui-monospace,monospace" font-size="6" text-anchor="end" opacity="0.75">+15%</text>
+                <text x="298" y="46" fill="#fbbf24" font-family="ui-monospace,monospace" font-size="6" text-anchor="end" opacity="0.75">−15%</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline strip: τ_TOP / Δt / τ_BOT brackets growing as the drop crosses -->
+        <div class="timeline-strip">
+          <div class="tl-head">
+            <span class="tl-title">Drop event timeline · maps drop position to comparator timestamps</span>
+            <span class="tl-now" id="tl-now-label">— ms</span>
+          </div>
+          <div class="tl-track" id="tl-track">
+            <div class="tl-row tl-row-top">
+              <span class="tl-row-label">τ_TOP</span>
+              <div class="tl-bracket tl-bracket-tau" id="tl-tau-top"></div>
+            </div>
+            <div class="tl-row tl-row-dt">
+              <span class="tl-row-label">Δt</span>
+              <div class="tl-bracket tl-bracket-dt" id="tl-dt"></div>
+            </div>
+            <div class="tl-row tl-row-bot">
+              <span class="tl-row-label">τ_BOT</span>
+              <div class="tl-bracket tl-bracket-tau" id="tl-tau-bot"></div>
+            </div>
+            <div class="tl-cursor" id="tl-cursor"></div>
+          </div>
+          <div class="tl-ticks">
+            <span>spawn</span>
+            <span>D1 enter</span>
+            <span>D2 enter</span>
+            <span>D2 exit</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scope" id="scope" hidden>
+        <div class="scope-title">
+          <span>Photodiode voltage trace · real-world ms · 0 → 50 ms window</span>
+          <span>V<sub>th</sub> set by DAC</span>
+        </div>
+        <svg viewBox="0 0 600 170" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <!-- channel bands (top of dip → baseline guides) -->
+          <line x1="0" y1="22"  x2="600" y2="22"  stroke="#1f2630" stroke-width="0.5" />
+          <line x1="0" y1="58"  x2="600" y2="58"  stroke="#1f2630" stroke-width="0.5" />
+          <line x1="0" y1="92"  x2="600" y2="92"  stroke="#1f2630" stroke-width="0.5" />
+          <line x1="0" y1="128" x2="600" y2="128" stroke="#1f2630" stroke-width="0.5" />
+
+          <!-- Threshold lines (DAC-set) -->
+          <line id="scope-thresh-top" x1="0" y1="38"  x2="600" y2="38"  stroke="#ff6b35" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.55" />
+          <line id="scope-thresh-bot" x1="0" y1="108" x2="600" y2="108" stroke="#ff6b35" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.55" />
+
+          <!-- Channel labels -->
+          <text x="6"   y="16" fill="#9aa3ad" font-family="ui-monospace,monospace" font-size="9">D1 · TOP photodiode</text>
+          <text x="6"   y="86" fill="#9aa3ad" font-family="ui-monospace,monospace" font-size="9">D2 · BOT photodiode</text>
+          <text x="594" y="38" fill="#ff6b35" font-family="ui-monospace,monospace" font-size="8" text-anchor="end" opacity="0.7">V_th</text>
+          <text x="594" y="108" fill="#ff6b35" font-family="ui-monospace,monospace" font-size="8" text-anchor="end" opacity="0.7">V_th</text>
+
+          <!-- Waveforms -->
+          <polyline id="scope-d1" points="" fill="none" stroke="#06b6d4" stroke-width="1.2" />
+          <polyline id="scope-d2" points="" fill="none" stroke="#06b6d4" stroke-width="1.2" />
+
+          <!-- Comparator falling-edge ticks (solid) + rising-edge ticks (dashed) -->
+          <line id="scope-edge-d1-fall" x1="0" y1="22"  x2="0" y2="58"  stroke="#ff6b35" stroke-width="1" opacity="0" />
+          <line id="scope-edge-d1-rise" x1="0" y1="22"  x2="0" y2="58"  stroke="#ff6b35" stroke-width="1" stroke-dasharray="2 2" opacity="0" />
+          <line id="scope-edge-d2-fall" x1="0" y1="92"  x2="0" y2="128" stroke="#ff6b35" stroke-width="1" opacity="0" />
+          <line id="scope-edge-d2-rise" x1="0" y1="92"  x2="0" y2="128" stroke="#ff6b35" stroke-width="1" stroke-dasharray="2 2" opacity="0" />
+
+          <!-- Edge labels -->
+          <text id="scope-edge-d1-label" x="0" y="14" fill="#ff6b35" font-family="ui-monospace,monospace" font-size="8" text-anchor="start" opacity="0">t_T,in</text>
+          <text id="scope-edge-d2-label" x="0" y="84" fill="#ff6b35" font-family="ui-monospace,monospace" font-size="8" text-anchor="start" opacity="0">t_B,in</text>
+
+          <!-- Δt brace (between the two falling edges, sits in the channel gap) -->
+          <line id="scope-dt-line"       x1="0" y1="75" x2="0" y2="75" stroke="#ff6b35" stroke-width="1" opacity="0" />
+          <line id="scope-dt-tick-left"  x1="0" y1="72" x2="0" y2="78" stroke="#ff6b35" stroke-width="1" opacity="0" />
+          <line id="scope-dt-tick-right" x1="0" y1="72" x2="0" y2="78" stroke="#ff6b35" stroke-width="1" opacity="0" />
+          <text id="scope-dt-label" x="300" y="71" fill="#ff6b35" font-family="ui-monospace,monospace" font-size="9" text-anchor="middle" opacity="0">Δt</text>
+
+          <!-- Live cursor — sweeps with the falling drop -->
+          <line id="scope-cursor" x1="0" y1="6" x2="0" y2="140" stroke="#06b6d4" stroke-width="1.5" opacity="0.85" />
+
+          <!-- X-axis labels -->
+          <line x1="0" y1="146" x2="600" y2="146" stroke="#2a323d" stroke-width="0.5" />
+          <text x="0"   y="160" fill="#6b7480" font-family="ui-monospace,monospace" font-size="8">0</text>
+          <text x="120" y="160" fill="#6b7480" font-family="ui-monospace,monospace" font-size="8" text-anchor="middle">10 ms</text>
+          <text x="240" y="160" fill="#6b7480" font-family="ui-monospace,monospace" font-size="8" text-anchor="middle">20 ms</text>
+          <text x="360" y="160" fill="#6b7480" font-family="ui-monospace,monospace" font-size="8" text-anchor="middle">30 ms</text>
+          <text x="480" y="160" fill="#6b7480" font-family="ui-monospace,monospace" font-size="8" text-anchor="middle">40 ms</text>
+          <text x="600" y="160" fill="#6b7480" font-family="ui-monospace,monospace" font-size="8" text-anchor="end">50 ms</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="narrative-col">
+      <h3>Why two beams instead of one.</h3>
+      <p>
+        A single-beam counter equates volume with count × set-factor (gtt·mL⁻¹).
+        That assumption fails the moment fluid viscosity, surface tension, or
+        chamber wear deviate from the manufacturer specification — exactly the
+        conditions of a humanitarian deployment. By measuring drop velocity
+        directly, the device is set-agnostic.
+      </p>
+
+      <div class="compare-card">
+        <div class="compare-grid">
+          <div class="compare-cell single">
+            <div class="cmp-label">Single-beam<br/><span class="cmp-sub">count × set-factor</span></div>
+            <div class="cmp-val" id="cmp-single">—</div>
+            <div class="cmp-unit">mL·hr⁻¹</div>
+          </div>
+          <div class="compare-arrow" id="cmp-arrow">≠</div>
+          <div class="compare-cell dual">
+            <div class="cmp-label">Dual-beam<br/><span class="cmp-sub">measured V × dpm</span></div>
+            <div class="cmp-val" id="cmp-dual">—</div>
+            <div class="cmp-unit">mL·hr⁻¹</div>
+          </div>
+        </div>
+        <div class="compare-diverge">
+          <div class="cmp-d-line">
+            <span class="cmp-d-label" id="cmp-d-label">Divergence</span>
+            <span class="cmp-d-val" id="cmp-d-val">—</span>
+          </div>
+          <div class="cmp-d-bar"><div class="cmp-d-bar-fill" id="cmp-d-bar-fill"></div></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 28px;">Two-phase detection.</h3>
+      <p>
+        <strong>Phase 1 (active):</strong> ADC polling on both photodiodes;
+        threshold crossing emits a drop event with both timestamps. Used during
+        alarm-armed delivery.
+      </p>
+      <p>
+        <strong>Phase 2 (low-power):</strong> COMP1 + LPTIM1 stop-mode pairing;
+        the MCU sleeps between drops and is woken by the comparator. Idle
+        current target ~6 µA. Single-AA runtime target ≥ 14 days continuous
+        monitoring (full-load bench measurement pending — see power tree).
+      </p>
+
+      <div class="power-card">
+        <div class="power-row">
+          <span class="k">Average current</span>
+          <span class="v" id="pw-current">— mA</span>
+        </div>
+        <div class="power-bar-wrap">
+          <div class="power-bar"><div class="power-bar-fill" id="pw-bar"></div></div>
+          <div class="power-bar-axis">
+            <span>6 µA</span><span>100 µA</span><span>1 mA</span><span>5 mA</span>
+          </div>
+        </div>
+        <div class="power-row">
+          <span class="k">Single-AA projection</span>
+          <span class="v" id="pw-runtime">— days</span>
+        </div>
+        <div class="power-foot" id="pw-foot">
+          Phase 1 polls both photodiodes continuously — the readout is fast, the
+          battery is short. Phase 2 sleeps the MCU and pulses the IR LEDs at a
+          low duty cycle; the comparator wakes the core only when a drop is in
+          the beam.
+        </div>
+      </div>
+
+      <p style="margin-top: 20px;">
+        <a href={docsUrl}>Read the first-principles derivation →</a>
+      </p>
+    </div>
+  </div>
+
+  <details class="tate-card">
+    <summary>
+      <strong>Tate's Law</strong>
+      <span>why drop sizes are repeatable for a given fluid and orifice</span>
+    </summary>
+    <div class="tate-body">
+      <p>
+        A drop hangs from the chamber outlet until the gravitational force on
+        its accumulated mass exceeds the surface-tension force holding it to
+        the rim. At that instant it detaches. <em>Tate's Law</em> (Tate, 1864)
+        sets the balance:
+      </p>
+      <div class="eq"><em>m</em> · <em>g</em> = 2π · <em>r</em> · <em>γ</em></div>
+      <p>
+        where <em>m</em> is drop mass, <em>r</em> the outlet radius, and
+        <em>γ</em> the fluid's surface tension. Substituting <em>m</em> =
+        <em>ρ V</em> gives the predicted drop volume:
+      </p>
+      <div class="eq"><em>V</em> = (2π · <em>r</em> · <em>γ</em>) ⁄ (<em>ρ</em> · <em>g</em>)</div>
+      <p>
+        Real drops detach slightly before the rim, so the prediction is
+        scaled by a dimensionless Harkins–Brown factor <em>F</em> (typically
+        0.6–0.95, depending on <em>r</em>/<em>V</em><sup>1/3</sup>):
+      </p>
+      <div class="eq"><em>V</em> = <em>F</em> · (2π · <em>r</em> · <em>γ</em>) ⁄ (<em>ρ</em> · <em>g</em>)</div>
+      <p>
+        For 0.9 % saline (<em>γ</em> ≈ 73 mN·m⁻¹, <em>ρ</em> ≈ 1005 kg·m⁻³)
+        through a macro-20 outlet (<em>r</em> ≈ 1.5 mm, <em>F</em> ≈ 0.8),
+        Tate's prediction is <em>V</em> ≈ 56 µL — close to the
+        manufacturer's nominal 50 µL/drop (1 mL ÷ 20 gtt) only because the
+        outlet was engineered around water-like fluids.
+      </p>
+      <p style="border-top: 1px solid var(--line); padding-top: 14px; margin-top: 18px;">
+        <strong>Why it matters here.</strong> Tate's prediction holds for the
+        fluid and outlet the manufacturer assumed; field deployments routinely
+        violate both — blood has higher <em>γ</em>, IV medications change
+        <em>ρ</em>, and re-used sets wear. The dual-beam architecture exists
+        to <em>measure</em> the actual drop diameter from the shadow duration
+        rather than trust the gtt·mL⁻¹ rating: <em>d</em> = <em>v</em> · <em>τ</em>,
+        then <em>V</em> = (4/3)π(<em>d</em>/2)<sup>3</sup>.
+      </p>
+    </div>
+  </details>
+
+  <details class="tate-card">
+    <summary>
+      <strong>Drop-volume algorithm</strong>
+      <span>how Phase 1 turns four timestamps per drop into a calibrated volume</span>
+    </summary>
+    <div class="tate-body">
+      <p>
+        Phase 1 runs both IR beams simultaneously for the first ~10 drops of a
+        session. Each drop emits two falling/rising edge pairs at the
+        comparator, giving four timestamps per drop:
+      </p>
+      <div class="eq" style="text-align: left; padding: 16px 22px; line-height: 1.9;">
+        <em>t</em><sub>T,in</sub> — leading edge enters TOP beam (falling edge)<br/>
+        <em>t</em><sub>T,out</sub> — trailing edge exits TOP beam (rising edge)<br/>
+        <em>t</em><sub>B,in</sub> — leading edge enters BOT beam (falling edge)<br/>
+        <em>t</em><sub>B,out</sub> — trailing edge exits BOT beam (rising edge)
+      </div>
+      <p><strong>1. Inter-beam transit.</strong> Falling-edge to falling-edge:</p>
+      <div class="eq">Δ<em>t</em> = <em>t</em><sub>B,in</sub> − <em>t</em><sub>T,in</sub></div>
+      <p><strong>2. TOP-beam shadow duration.</strong> The leading edge enters then the trailing edge exits:</p>
+      <div class="eq"><em>τ</em><sub>TOP</sub> = <em>t</em><sub>T,out</sub> − <em>t</em><sub>T,in</sub></div>
+      <p>
+        <strong>3. Gravity-corrected velocity.</strong> The drop accelerates over the
+        10 mm beam pitch, so a naive <em>v</em> = <em>L</em>/Δ<em>t</em> would
+        overestimate the velocity at the TOP beam. Treat the drop in free fall and
+        solve <em>L</em> = <em>v</em><sub>TOP</sub>·Δ<em>t</em> +
+        ½<em>g</em>Δ<em>t</em><sup>2</sup> for <em>v</em><sub>TOP</sub>:
+      </p>
+      <div class="eq"><em>v</em><sub>TOP</sub> = <em>L</em>⁄Δ<em>t</em> − ½ <em>g</em> · Δ<em>t</em></div>
+      <p>
+        At Δ<em>t</em> = 19.4 ms (typical for a macro-20 set), the gravity correction
+        is ~0.10 m·s⁻¹ — a 22 % adjustment that's worth doing. <em>v</em><sub>BOT</sub>
+        = <em>v</em><sub>TOP</sub> + <em>g</em>·Δ<em>t</em> follows for free if needed.
+      </p>
+      <p><strong>4. Drop diameter from the TOP-beam shadow.</strong></p>
+      <div class="eq"><em>d</em> = <em>v</em><sub>TOP</sub> · <em>τ</em><sub>TOP</sub></div>
+      <p>
+        Using <em>τ</em><sub>TOP</sub> rather than <em>τ</em><sub>BOT</sub> locks
+        the diameter in from the drop's first beam crossing (lower noise floor —
+        the LED current is steadier earlier in the comparator-armed window).
+      </p>
+      <p><strong>5. Per-drop volume from the sphere model.</strong></p>
+      <div class="eq"><em>V</em><sub><em>i</em></sub> = (4⁄3)π · (<em>d</em>⁄2)<sup>3</sup></div>
+      <p>
+        <strong>6. Trimmed-mean calibration.</strong> After ten drops, sort the
+        ten <em>V</em><sub><em>i</em></sub> samples ascending, discard the
+        smallest and largest (protects against one bad drop — bubble, gross
+        misalignment, ringing), and average the middle eight:
+      </p>
+      <div class="eq"><em>V</em><sub>cal</sub> = (1⁄8) · Σ<sub><em>i</em>=2</sub><sup>9</sup> <em>V</em><sub>(<em>i</em>)</sub></div>
+      <p>
+        <strong>7. Phase 2 — count, don't measure.</strong> The MCU now sleeps in
+        Stop mode; LPTIM1 pulses the IR LED at 5 µs ON / 1.8 ms (~0.3 % duty),
+        and COMP1 wakes the core only when the LED is lit AND a drop is in the
+        beam. Each wake counts as one drop event. Flow rate displayed to the
+        clinician is the running rolling sum:
+      </p>
+      <div class="eq"><em>Q</em> = (drops in window) · <em>V</em><sub>cal</sub> ⁄ window</div>
+      <p style="border-top: 1px solid var(--line); padding-top: 14px; margin-top: 18px;">
+        <strong>Why this works.</strong> Tate's Law (above) guarantees that for a
+        fixed fluid and outlet, drop diameter is essentially constant — so the
+        ten Phase-1 samples are tight enough that a trimmed mean of eight is a
+        defensible session-level calibration. The dual-beam architecture's job
+        is to <em>find</em> that constant; once found, Phase 2 reduces to drop
+        counting at single-µA average current.
+      </p>
+    </div>
+  </details>
+</section>
+
+<script>
+  // ---------- DOM ----------
+  const tauTopEl = document.getElementById('r-tau-top')!;
+  const tauBotEl = document.getElementById('r-tau-bot')!;
+  const dtEl     = document.getElementById('r-dt')!;
+  const vEl      = document.getElementById('r-v')!;
+  const dEl      = document.getElementById('r-d')!;
+  const volEl    = document.getElementById('r-vol')!;
+  const rateEl   = document.getElementById('r-rate')!;
+  const modeTag  = document.getElementById('r-mode-tag')!;
+  const sectionLabel = document.getElementById('r-section-label')!;
+  const sectionTag   = document.getElementById('r-section-tag')!;
+  const countLabel   = document.getElementById('r-count-label')!;
+  const countVal     = document.getElementById('r-count-val')!;
+  const beamT    = document.getElementById('beam-top')!;
+  const beamB    = document.getElementById('beam-bot')!;
+  const dT       = document.getElementById('diode-top')!;
+  const dB       = document.getElementById('diode-bot')!;
+  const ledT     = document.getElementById('led-top')!;
+  const ledB     = document.getElementById('led-bot')!;
+  const coneT    = document.getElementById('shadow-cone-top')!;
+  const coneB    = document.getElementById('shadow-cone-bot')!;
+  const dropLayer = document.getElementById('drop-layer')!;
+
+  const dpmInput  = document.getElementById('dpm') as HTMLInputElement;
+  const dpmVal    = document.getElementById('dpm-val')!;
+  const setSel    = document.getElementById('drip-set') as HTMLSelectElement;
+  const fluidSel  = document.getElementById('fluid')    as HTMLSelectElement;
+  const pauseBtn  = document.getElementById('pause-btn') as HTMLButtonElement;
+  const stepBtn   = document.getElementById('step-btn')  as HTMLButtonElement;
+
+  const scopeChk  = document.getElementById('scope-toggle') as HTMLInputElement;
+  const scopeEl   = document.getElementById('scope')!;
+  const scopeD1   = document.getElementById('scope-d1') as unknown as SVGPolylineElement;
+  const scopeD2   = document.getElementById('scope-d2') as unknown as SVGPolylineElement;
+  const scopeCursor      = document.getElementById('scope-cursor')!;
+  const scopeEdgeD1Fall  = document.getElementById('scope-edge-d1-fall')!;
+  const scopeEdgeD1Rise  = document.getElementById('scope-edge-d1-rise')!;
+  const scopeEdgeD2Fall  = document.getElementById('scope-edge-d2-fall')!;
+  const scopeEdgeD2Rise  = document.getElementById('scope-edge-d2-rise')!;
+  const scopeEdgeD1Label = document.getElementById('scope-edge-d1-label')!;
+  const scopeEdgeD2Label = document.getElementById('scope-edge-d2-label')!;
+  const scopeDtLine      = document.getElementById('scope-dt-line')!;
+  const scopeDtTickL     = document.getElementById('scope-dt-tick-left')!;
+  const scopeDtTickR     = document.getElementById('scope-dt-tick-right')!;
+  const scopeDtLabel     = document.getElementById('scope-dt-label')!;
+
+  const traceEl   = document.getElementById('rate-trace') as unknown as SVGPolylineElement;
+
+  // timeline
+  const tlTrack    = document.getElementById('tl-track')!;
+  const tlTauTop   = document.getElementById('tl-tau-top')!;
+  const tlDt       = document.getElementById('tl-dt')!;
+  const tlTauBot   = document.getElementById('tl-tau-bot')!;
+  const tlCursor   = document.getElementById('tl-cursor')!;
+  const tlNowLabel = document.getElementById('tl-now-label')!;
+
+  // compare card
+  const cmpSingle   = document.getElementById('cmp-single')!;
+  const cmpDual     = document.getElementById('cmp-dual')!;
+  const cmpArrow    = document.getElementById('cmp-arrow')!;
+  const cmpDLabel   = document.getElementById('cmp-d-label')!;
+  const cmpDVal     = document.getElementById('cmp-d-val')!;
+  const cmpDBarFill = document.getElementById('cmp-d-bar-fill')!;
+
+  // power card
+  const pwCurrent = document.getElementById('pw-current')!;
+  const pwRuntime = document.getElementById('pw-runtime')!;
+  const pwBar     = document.getElementById('pw-bar')!;
+
+  // ---------- Data tables ----------
+  const FLUID_TABLE: Record<string, { name: string; V_uL: number }> = {
+    saline:   { name: 'Saline 0.9%',  V_uL: 55.8 },
+    dextrose: { name: 'Dextrose 10%', V_uL: 53.2 },
+    blood:    { name: 'Whole blood',  V_uL: 42.0 },
+    lipid:    { name: 'Lipid 20%',    V_uL: 29.2 },
+  };
+  const SET_TABLE: Record<string, { gttPerMl: number }> = {
+    macro10: { gttPerMl: 10 },
+    macro15: { gttPerMl: 15 },
+    macro20: { gttPerMl: 20 },
+    micro60: { gttPerMl: 60 },
+  };
+
+  // ---------- Geometry (SVG units) ----------
+  const FALL_SPAN    = 285;          // drop translateY range (nozzle → water surface)
+  const DROP_CY      = 20;           // spawn at the spike outlet
+  const TOP_BEAM_Y   = 140;
+  const BOT_BEAM_Y   = 280;
+
+  // ---------- Physics ----------
+  const G              = 9.81;                                       // m·s⁻²
+  const BEAM_PITCH_M   = 0.010;                                      // 10 mm
+  const V_TOP_MS       = 0.42;                                       // m·s⁻¹ at TOP
+  const V_BOT_MS       = Math.sqrt(V_TOP_MS ** 2 + 2 * G * BEAM_PITCH_M); // ≈ 0.6105
+  const TAU_RATIO      = V_TOP_MS / V_BOT_MS;                        // ≈ 0.688
+  const DT_NOMINAL_MS  = 1000 * (V_BOT_MS - V_TOP_MS) / G;           // ≈ 19.4 ms
+
+  // Phase-current targets (µA average)
+  const PHASE_CURRENT_UA = { active: 1500, stop: 80 };
+  const AA_CAPACITY_MAH  = 1500;
+
+  // ---------- State ----------
+  const STATE = {
+    dpm: 30,
+    setId: 'macro20',
+    fluidId: 'saline',
+    beamMode: 'dual' as 'dual' | 'single',
+    phaseMode: 'active' as 'active' | 'stop',
+    fallTimeMs: 1500,
+    paused: false,
+  };
+
+  // Cached derived constants (re-derived in recomputeGeometry)
+  let dropR_px       = 5;       // svg radius
+  let TOP_ENTER_AT   = 0;       // ms in fall window
+  let TOP_EXIT_AT    = 0;
+  let BOT_ENTER_AT   = 0;
+  let BOT_EXIT_AT    = 0;
+  let TOP_CENTER_FRAC = 0;
+  let BOT_CENTER_FRAC = 0;
+  let LOOP_MS        = 1000;
+  // Fall duration is fixed by the Speed selector (gravity is constant — it
+  // doesn't speed up at higher drip rates). At high dpm × slow speed, drops
+  // simply overlap in flight — handled by per-drop SVG elements.
+  let effectiveFallMs = 1500;
+  let assumedVolUl   = 50;
+  let trueVolUl      = 55.8;
+  let trueDmm        = 4.74;
+  let trueTauTopMs   = 11.3;
+  let dualRateNominal = 0;
+  let singleRateNominal = 0;
+
+  // Beam-occlusion counters — incremented when a drop enters, decremented on
+  // exit. Beam shadowing reflects "any drop currently in this beam," not the
+  // single static drop element from the previous design.
+  let topOcclusionCount = 0;
+  let botOcclusionCount = 0;
+
+  // Counted drops since entering the current count-only mode (P2 or single).
+  // Resets on every applyState so each P2/single session starts at 0.
+  let countedDrops = 0;
+
+  // Loop machinery
+  let timer: ReturnType<typeof setInterval> | null = null;
+  let pending: ReturnType<typeof setTimeout>[] = [];
+
+  // Sparkline
+  const HIST_LEN = 30;
+  let history: number[] = [];
+  const VOL_WINDOW = 5;
+  // Calibration buffers — populated only during Phase 1 (dual+active). Phase 2
+  // and single-beam fall back to the averages of these buffers (or to Tate
+  // predictions if no calibration has been recorded yet). Buffers persist
+  // across dpm/speed/mode changes; they only reset on fluid/set change.
+  let volBuffer:    number[] = [];
+  let tauTopBuffer: number[] = [];
+  let dtBuffer:     number[] = [];
+
+  function calibratedVol() {
+    if (volBuffer.length === 0) return trueVolUl;
+    return volBuffer.reduce((a, b) => a + b, 0) / volBuffer.length;
+  }
+  function calibratedTauTop() {
+    if (tauTopBuffer.length === 0) return trueTauTopMs;
+    return tauTopBuffer.reduce((a, b) => a + b, 0) / tauTopBuffer.length;
+  }
+  function calibratedDt() {
+    if (dtBuffer.length === 0) return DT_NOMINAL_MS;
+    return dtBuffer.reduce((a, b) => a + b, 0) / dtBuffer.length;
+  }
+  function resetCalibration() {
+    volBuffer = [];
+    tauTopBuffer = [];
+    dtBuffer = [];
+  }
+
+  // ---------- helpers ----------
+  function clearPending() { pending.forEach(clearTimeout); pending = []; }
+  function rand(min: number, max: number) { return min + Math.random() * (max - min); }
+  function fire(el: Element, ms = 400) {
+    el.classList.add('fired');
+    pending.push(setTimeout(() => el.classList.remove('fired'), ms));
+  }
+  function syncBeamShadows() {
+    const topOn = topOcclusionCount > 0;
+    const botOn = botOcclusionCount > 0;
+    beamT.classList.toggle('shadowing', topOn);
+    dT.classList.toggle('shadowing', topOn);
+    coneT.setAttribute('opacity', topOn ? '0.35' : '0');
+    beamB.classList.toggle('shadowing', botOn);
+    dB.classList.toggle('shadowing', botOn);
+    coneB.setAttribute('opacity', botOn ? '0.35' : '0');
+  }
+  // Two-phase drop:
+  //   1. Formation at the spike outlet (cy=20) — r grows from 0 → dropR_px
+  //      over formMs. Driven by rAF since SVG `r` isn't reliably CSS-animatable.
+  //   2. Detach + fall — adds .falling class and onDetach() fires (which is
+  //      where the shadow / timeline / scope pipeline is scheduled).
+  // The detach timer goes into `pending` so it gets cancelled with everything
+  // else on applyState (preventing a stale onDetach after a fluid swap).
+  function spawnDrop(formMs: number, onDetach: () => void): SVGCircleElement {
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+    const drop = document.createElementNS(SVG_NS, 'circle');
+    drop.setAttribute('class', 'drop');
+    drop.setAttribute('cx', '100');
+    drop.setAttribute('cy', String(DROP_CY));
+    drop.setAttribute('r', '0');
+    drop.setAttribute('fill', 'url(#drop-shade)');
+    dropLayer.appendChild(drop);
+
+    const t0 = performance.now();
+    const finalR = dropR_px;
+    // Ease-in: drop accumulates slowly then accelerates as it nears detachment
+    // (Tate's mass-vs-tension balance tips suddenly when r → r_critical).
+    const animateForm = () => {
+      const elapsed = performance.now() - t0;
+      if (elapsed >= formMs) return;
+      const t = Math.max(0, elapsed / formMs);
+      const eased = t * t;            // quadratic ease-in
+      const r = Math.max(0.4, finalR * eased);
+      drop.setAttribute('r', r.toFixed(2));
+      requestAnimationFrame(animateForm);
+    };
+    requestAnimationFrame(animateForm);
+
+    pending.push(setTimeout(() => {
+      drop.setAttribute('r', finalR.toFixed(2));
+      drop.classList.add('falling');
+      drop.addEventListener('animationend', () => drop.remove(), { once: true });
+      onDetach();
+    }, formMs));
+
+    return drop;
+  }
+  function resetDashes() {
+    tauTopEl.textContent = '— ms';
+    tauBotEl.textContent = '— ms';
+    dtEl.textContent     = '— ms';
+    vEl.textContent      = '— m·s⁻¹';
+    dEl.textContent      = '— mm';
+    volEl.textContent    = '— µL';
+    rateEl.textContent   = '— mL·hr⁻¹';
+  }
+
+  // ---------- Sample (physics-coherent per-drop draw) ----------
+  function sample(dpm: number) {
+    const tauTopBase = trueTauTopMs;
+    const tauTop = tauTopBase + rand(-0.15, 0.15);
+    const tauBot = tauTop * TAU_RATIO;
+    const dtMs   = DT_NOMINAL_MS + rand(-0.1, 0.1);
+    const vDrop  = (V_TOP_MS + V_BOT_MS) / 2;
+    const dMm    = V_TOP_MS * tauTop;
+    const rMm    = dMm / 2;
+    const volUl  = (4 / 3) * Math.PI * Math.pow(rMm, 3);
+
+    // Only Phase 1 (dual+active) accumulates the per-drop calibration buffers.
+    // Phase 2 / single-beam fall back to the locked-in calibrated mean (or to
+    // the Tate prediction if no calibration has been recorded yet).
+    if (STATE.beamMode === 'dual' && STATE.phaseMode === 'active') {
+      volBuffer.push(volUl);       if (volBuffer.length    > VOL_WINDOW) volBuffer.shift();
+      tauTopBuffer.push(tauTop);   if (tauTopBuffer.length > VOL_WINDOW) tauTopBuffer.shift();
+      dtBuffer.push(dtMs);         if (dtBuffer.length     > VOL_WINDOW) dtBuffer.shift();
+    }
+    const measuredVol = calibratedVol();
+
+    const dualRate   = dpm * measuredVol * 0.06;
+    const singleRate = dpm * assumedVolUl * 0.06;
+
+    return { tauTop, tauBot, dtMs, vDrop, dMm, volUl, measuredVol, dualRate, singleRate };
+  }
+
+  // ---------- Timeline ----------
+  function resetTimeline(showCursor: boolean) {
+    [tlTauTop, tlDt, tlTauBot].forEach(el => {
+      (el as HTMLElement).style.transition = 'none';
+      (el as HTMLElement).style.width = '0%';
+    });
+    (tlCursor as HTMLElement).style.transition = 'none';
+    (tlCursor as HTMLElement).style.left = '0%';
+    tlNowLabel.textContent = '0 ms';
+    // reflow
+    void (tlTrack as HTMLElement).getBoundingClientRect();
+    (tlCursor as HTMLElement).style.opacity = showCursor ? '1' : '0';
+  }
+  function drawTimeline(s: ReturnType<typeof sample>) {
+    const fall = effectiveFallMs;
+    const W = 100; // %
+
+    // x positions as fractions of the fall window
+    const tEnterTopPct = (TOP_ENTER_AT / fall) * W;
+    const tExitTopPct  = (TOP_EXIT_AT  / fall) * W;
+    const tEnterBotPct = (BOT_ENTER_AT / fall) * W;
+    const tExitBotPct  = (BOT_EXIT_AT  / fall) * W;
+
+    // Cursor sweeps 0 → 100% over the entire fall window
+    (tlCursor as HTMLElement).style.transition = `left ${fall}ms linear`;
+    (tlCursor as HTMLElement).style.left = '100%';
+
+    // τ_TOP bracket
+    pending.push(setTimeout(() => {
+      (tlTauTop as HTMLElement).style.transition = 'none';
+      (tlTauTop as HTMLElement).style.left = `${tEnterTopPct}%`;
+      (tlTauTop as HTMLElement).style.width = '0%';
+      void (tlTauTop as HTMLElement).getBoundingClientRect();
+      (tlTauTop as HTMLElement).style.transition = `width ${TOP_EXIT_AT - TOP_ENTER_AT}ms linear`;
+      (tlTauTop as HTMLElement).style.width = `${tExitTopPct - tEnterTopPct}%`;
+    }, TOP_ENTER_AT));
+
+    // Δt bracket — same start as τ_TOP, ends at BOT enter
+    pending.push(setTimeout(() => {
+      (tlDt as HTMLElement).style.transition = 'none';
+      (tlDt as HTMLElement).style.left = `${tEnterTopPct}%`;
+      (tlDt as HTMLElement).style.width = '0%';
+      void (tlDt as HTMLElement).getBoundingClientRect();
+      (tlDt as HTMLElement).style.transition = `width ${BOT_ENTER_AT - TOP_ENTER_AT}ms linear`;
+      (tlDt as HTMLElement).style.width = `${tEnterBotPct - tEnterTopPct}%`;
+    }, TOP_ENTER_AT));
+
+    // τ_BOT bracket
+    pending.push(setTimeout(() => {
+      (tlTauBot as HTMLElement).style.transition = 'none';
+      (tlTauBot as HTMLElement).style.left = `${tEnterBotPct}%`;
+      (tlTauBot as HTMLElement).style.width = '0%';
+      void (tlTauBot as HTMLElement).getBoundingClientRect();
+      (tlTauBot as HTMLElement).style.transition = `width ${BOT_EXIT_AT - BOT_ENTER_AT}ms linear`;
+      (tlTauBot as HTMLElement).style.width = `${tExitBotPct - tEnterBotPct}%`;
+    }, BOT_ENTER_AT));
+
+    // Numeric ms readout in timeline header
+    const t0 = performance.now();
+    const fallTime = fall;
+    const tickRaf = () => {
+      const elapsed = performance.now() - t0;
+      if (elapsed >= fallTime || STATE.paused) {
+        tlNowLabel.textContent = `${Math.round(displayMsFromVisual(fallTime))} ms`;
+        return;
+      }
+      tlNowLabel.textContent = `${Math.round(displayMsFromVisual(elapsed))} ms`;
+      requestAnimationFrame(tickRaf);
+    };
+    requestAnimationFrame(tickRaf);
+  }
+  // Map visual ms → real-world ms shown to the user (BOT_EXIT real ≈ τ_BOT + Δt + τ_TOP roughly,
+  // but for display we just scale the fall window down to the τ_TOP+Δt+τ_BOT regime so the cursor
+  // shows µs-correct values at the bracket boundaries).
+  function displayMsFromVisual(visualMs: number) {
+    return visualMs * (totalRealtimeMs() / effectiveFallMs);
+  }
+  function totalRealtimeMs() {
+    // approximate the real-time fall window: τ_TOP + Δt + τ_BOT-ish ≈ 35–50 ms typically
+    return trueTauTopMs + DT_NOMINAL_MS + trueTauTopMs * TAU_RATIO + 10;
+  }
+
+  // ---------- Compare card ----------
+  function updateCompareCard(singleRate: number, dualRate: number) {
+    cmpSingle.textContent = singleRate.toFixed(1);
+    cmpDual.textContent   = dualRate.toFixed(1);
+    const div = dualRate === 0 ? 0 : ((dualRate - singleRate) / dualRate) * 100;
+    const sign = div >= 0 ? '+' : '−';
+    cmpDVal.textContent = `${sign}${Math.abs(div).toFixed(1)} %`;
+    cmpDLabel.textContent = div >= 0
+      ? 'Divergence (single under-reports the truth)'
+      : 'Divergence (single over-reports the truth)';
+    cmpArrow.textContent = Math.abs(div) < 1 ? '≈' : '≠';
+    const pct = Math.min(100, Math.abs(div) * 2.5); // 40% → full bar
+    (cmpDBarFill as HTMLElement).style.width = `${pct}%`;
+  }
+
+  // ---------- Power card ----------
+  function updatePowerCard() {
+    // Single-beam is the deprecated counter — always-on LED, no Phase-2 benefit.
+    const uA = STATE.beamMode === 'single'
+      ? PHASE_CURRENT_UA.active
+      : PHASE_CURRENT_UA[STATE.phaseMode];
+    const mA = uA / 1000;
+    pwCurrent.textContent = mA >= 0.1 ? `${mA.toFixed(2)} mA` : `${uA.toFixed(0)} µA`;
+    const hours = AA_CAPACITY_MAH / mA;
+    const days = hours / 24;
+    pwRuntime.textContent = days < 1 ? `${hours.toFixed(0)} hr`
+                          : days < 1000 ? `${days.toFixed(0)} days`
+                          : `${(days / 365).toFixed(1)} yr`;
+    // Log-scale bar: 6 µA → 0%, 5 mA → 100%
+    const logMin = Math.log10(6);
+    const logMax = Math.log10(5000);
+    const pct = Math.max(0, Math.min(100,
+      ((Math.log10(uA) - logMin) / (logMax - logMin)) * 100
+    ));
+    (pwBar as HTMLElement).style.width = `${pct}%`;
+  }
+
+  // ---------- Phase 2 readout: locked at the P1 averages ----------
+  // In P2 the COMP1 wake captures only the falling-edge for counting — it
+  // can't compute τ_TOP, τ_BOT, Δt, v, d or V per drop. We display the values
+  // from the prior P1 calibration buffer instead (or Tate fallbacks if P1
+  // never ran for this fluid+set).
+  function populateP2Readout() {
+    const tauTopAvg = calibratedTauTop();
+    const tauBotAvg = tauTopAvg * TAU_RATIO;
+    const dtAvg     = calibratedDt();
+    const volAvg    = calibratedVol();
+    const dMmAvg    = V_TOP_MS * tauTopAvg;
+    const vMid      = (V_TOP_MS + V_BOT_MS) / 2;
+    tauTopEl.textContent = `${tauTopAvg.toFixed(1)} ms`;
+    tauBotEl.textContent = `${tauBotAvg.toFixed(1)} ms`;
+    dtEl.textContent     = `${dtAvg.toFixed(1)} ms`;
+    vEl.textContent      = `${vMid.toFixed(2)} m·s⁻¹`;
+    dEl.textContent      = `${dMmAvg.toFixed(2)} mm`;
+    volEl.textContent    = `${volAvg.toFixed(1)} µL`;
+  }
+
+  // ---------- Visuals: drop, beams, LEDs, shadow cones ----------
+  function applyPhaseVisuals() {
+    // TOP LED: pulses only in dual+stop (real Phase-2 LPTIM behaviour). In
+    // single-beam (deprecated counter) it's always-on, no duty-cycle benefit.
+    const topPulses = STATE.beamMode === 'dual' && STATE.phaseMode === 'stop';
+    ledT.classList.toggle('phase-stop', topPulses);
+    // BOT LED: only energised when dual+active. Single-beam = no BOT at all;
+    // Phase 2 turns BOT off (only TOP is LPTIM-pulsed in real firmware).
+    const botOn = STATE.beamMode === 'dual' && STATE.phaseMode === 'active';
+    ledB.classList.toggle('led-off', !botOn);
+    ledB.classList.remove('phase-stop');
+  }
+  function applyFluidVisuals() {
+    // Drop radius is applied at spawn time (see spawnDrop) — existing drops in
+    // flight keep their old size for the rest of their fall, which is fine.
+  }
+  function applyModeTag() {
+    modeTag.classList.remove('single', 'stop');
+    if (STATE.beamMode === 'single') {
+      modeTag.textContent = 'single-beam · count × assumed';
+      modeTag.classList.add('single');
+    } else if (STATE.phaseMode === 'stop') {
+      modeTag.textContent = 'dual-beam · calibrated';
+      modeTag.classList.add('stop');
+    } else {
+      modeTag.textContent = 'dual-beam · live';
+    }
+  }
+
+  // ---------- Readout context: section label + count row ----------
+  // Tells the user what mode the readout reflects:
+  //   P1 (dual+active): per-drop measurement; calibration progress N/5
+  //   P2 (dual+stop):   averages locked from N P1 drops; count of P2 drops so far
+  //   Single:           deprecated counter — no τ measured; count only
+  function updateReadoutMode() {
+    if (STATE.beamMode === 'single') {
+      sectionLabel.textContent = 'Single-beam · counter only';
+      sectionTag.textContent = 'no τ measured';
+      countLabel.textContent = 'Drops counted';
+      countVal.textContent = `${countedDrops}`;
+    } else if (STATE.phaseMode === 'stop') {
+      sectionLabel.textContent = 'Calibration · locked from P1';
+      sectionTag.textContent = `N=${volBuffer.length}`;
+      countLabel.textContent = 'Drops counted (P2)';
+      countVal.textContent = `${countedDrops}`;
+    } else {
+      sectionLabel.textContent = 'Per-drop measurement';
+      sectionTag.textContent = volBuffer.length < VOL_WINDOW
+        ? `filling`
+        : 'calibrated';
+      countLabel.textContent = 'Calibration';
+      countVal.textContent = `${volBuffer.length}/${VOL_WINDOW}`;
+    }
+  }
+
+  // ---------- Sparkline ----------
+  function nominalForTrace() {
+    return STATE.beamMode === 'dual' ? dualRateNominal : singleRateNominal;
+  }
+  function rateToY(r: number, nominal: number) {
+    if (!nominal) return 25;
+    const dev = (r - nominal) / nominal;
+    const y = 25 - dev * (11 / 0.15);
+    return Math.max(2, Math.min(48, y));
+  }
+  function pushHistory(r: number) {
+    history.push(r);
+    if (history.length > HIST_LEN) history.shift();
+    const step = 300 / (HIST_LEN - 1);
+    const nom = nominalForTrace();
+    const pts = history.map((rr, i) => `${(i * step).toFixed(1)},${rateToY(rr, nom).toFixed(1)}`).join(' ');
+    traceEl.setAttribute('points', pts);
+  }
+
+  // ---------- Scope: real-world ms axis, trapezoidal waveform, edge ticks ----------
+  const SCOPE_W           = 600;
+  const SCOPE_TOTAL_MS    = 50;
+  const SCOPE_PX_PER_MS   = SCOPE_W / SCOPE_TOTAL_MS;
+  const D1_BASELINE_Y     = 22;
+  const D1_DIP_Y          = 58;
+  const D2_BASELINE_Y     = 92;
+  const D2_DIP_Y          = 128;
+  const SCOPE_THRESHOLD   = 0.45;     // fraction of dip where comparator fires
+  const SCOPE_EDGE_MS     = 0.5;      // LED + photodiode rise/fall time
+  const SCOPE_T_OFFSET_MS = 2;        // left-pad so the dip doesn't start at x=0
+
+  function trapShape(t: number, tIn: number, tOut: number, edge = SCOPE_EDGE_MS) {
+    if (t <= tIn - edge * 0.2 || t >= tOut + edge * 0.2) return 0;
+    const fall = Math.max(0, Math.min(1, (t - tIn) / edge));
+    const rise = Math.max(0, Math.min(1, (tOut - t) / edge));
+    return Math.min(fall, rise);
+  }
+  function setLineX(el: Element, x: string) {
+    el.setAttribute('x1', x);
+    el.setAttribute('x2', x);
+  }
+  function hideEdges() {
+    [scopeEdgeD1Fall, scopeEdgeD1Rise, scopeEdgeD2Fall, scopeEdgeD2Rise,
+     scopeEdgeD1Label, scopeEdgeD2Label,
+     scopeDtLine, scopeDtTickL, scopeDtTickR, scopeDtLabel].forEach(el => {
+      (el as Element).setAttribute('opacity', '0');
+    });
+  }
+
+  let lastScopeS: ReturnType<typeof sample> | null = null;
+  let scopeCursorRaf = 0;
+
+  function buildScopeWaveform(s: ReturnType<typeof sample>) {
+    lastScopeS = s;
+    if (scopeEl.hasAttribute('hidden')) return;
+
+    const counterOnly = STATE.beamMode === 'single';
+    const botActive   = STATE.beamMode === 'dual' && STATE.phaseMode === 'active';
+
+    const t_D1_in  = SCOPE_T_OFFSET_MS;
+    const t_D1_out = t_D1_in + s.tauTop;
+    const t_D2_in  = botActive ? t_D1_in + s.dtMs : Number.POSITIVE_INFINITY;
+    const t_D2_out = botActive ? t_D2_in + s.tauBot : Number.POSITIVE_INFINITY;
+
+    // Waveforms
+    const d1Points: string[] = [];
+    const d2Points: string[] = [];
+    for (let t = 0; t <= SCOPE_TOTAL_MS; t += 0.25) {
+      const x = (t * SCOPE_PX_PER_MS).toFixed(1);
+      const o1 = trapShape(t, t_D1_in, t_D1_out);
+      const o2 = botActive ? trapShape(t, t_D2_in, t_D2_out) : 0;
+      d1Points.push(`${x},${(D1_BASELINE_Y + (D1_DIP_Y - D1_BASELINE_Y) * o1).toFixed(1)}`);
+      d2Points.push(`${x},${(D2_BASELINE_Y + (D2_DIP_Y - D2_BASELINE_Y) * o2).toFixed(1)}`);
+    }
+    scopeD1.setAttribute('points', d1Points.join(' '));
+    scopeD2.setAttribute('points', d2Points.join(' '));
+
+    hideEdges();
+
+    // D1 falling edge — always shown (TOP LED is energised in every mode)
+    const tFallD1 = t_D1_in  + SCOPE_EDGE_MS * SCOPE_THRESHOLD;
+    const tRiseD1 = t_D1_out - SCOPE_EDGE_MS * SCOPE_THRESHOLD;
+    const xFD1 = (tFallD1 * SCOPE_PX_PER_MS).toFixed(1);
+    const xRD1 = (tRiseD1 * SCOPE_PX_PER_MS).toFixed(1);
+
+    setLineX(scopeEdgeD1Fall, xFD1);
+    scopeEdgeD1Fall.setAttribute('opacity', '0.85');
+    scopeEdgeD1Label.setAttribute('x', (parseFloat(xFD1) + 4).toFixed(1));
+    scopeEdgeD1Label.setAttribute('opacity', '0.9');
+
+    if (counterOnly) {
+      // Deprecated counter: only the falling edge counts. No τ measured.
+      scopeEdgeD1Label.textContent = `drop counted @ ${tFallD1.toFixed(1)} ms`;
+    } else {
+      // Dual modes: both edges + τ_TOP labelled
+      setLineX(scopeEdgeD1Rise, xRD1);
+      scopeEdgeD1Rise.setAttribute('opacity', '0.5');
+      scopeEdgeD1Label.textContent = `t_T,in @ ${tFallD1.toFixed(2)} ms`;
+    }
+
+    // D2 edges + Δt brace only when BOT LED is on
+    if (botActive) {
+      const tFallD2 = t_D2_in  + SCOPE_EDGE_MS * SCOPE_THRESHOLD;
+      const tRiseD2 = t_D2_out - SCOPE_EDGE_MS * SCOPE_THRESHOLD;
+      const xFD2 = (tFallD2 * SCOPE_PX_PER_MS).toFixed(1);
+      const xRD2 = (tRiseD2 * SCOPE_PX_PER_MS).toFixed(1);
+
+      setLineX(scopeEdgeD2Fall, xFD2); scopeEdgeD2Fall.setAttribute('opacity', '0.85');
+      setLineX(scopeEdgeD2Rise, xRD2); scopeEdgeD2Rise.setAttribute('opacity', '0.5');
+
+      scopeEdgeD2Label.setAttribute('x', (parseFloat(xFD2) + 4).toFixed(1));
+      scopeEdgeD2Label.textContent = `t_B,in @ ${tFallD2.toFixed(2)} ms`;
+      scopeEdgeD2Label.setAttribute('opacity', '0.9');
+
+      scopeDtLine.setAttribute('x1', xFD1);
+      scopeDtLine.setAttribute('x2', xFD2);
+      scopeDtLine.setAttribute('opacity', '0.85');
+      scopeDtTickL.setAttribute('x1', xFD1);
+      scopeDtTickL.setAttribute('x2', xFD1);
+      scopeDtTickL.setAttribute('opacity', '0.85');
+      scopeDtTickR.setAttribute('x1', xFD2);
+      scopeDtTickR.setAttribute('x2', xFD2);
+      scopeDtTickR.setAttribute('opacity', '0.85');
+
+      const xMid = ((parseFloat(xFD1) + parseFloat(xFD2)) / 2).toFixed(1);
+      scopeDtLabel.setAttribute('x', xMid);
+      scopeDtLabel.textContent = `Δt = ${(tFallD2 - tFallD1).toFixed(1)} ms`;
+      scopeDtLabel.setAttribute('opacity', '1');
+    }
+  }
+
+  // Map visual-time → scope-time so the cursor lines up with the drop's actual
+  // chamber position: cursor enters D1 dip exactly when the drop enters TOP
+  // beam, and exits the D2 dip exactly when the drop exits BOT.
+  function visualMsToScopeMs(visualMs: number, s: ReturnType<typeof sample>) {
+    const t_D1_in_scope  = SCOPE_T_OFFSET_MS;
+    const botActive = STATE.beamMode === 'dual' && STATE.phaseMode === 'active';
+    const t_anchor_end = botActive ? SCOPE_T_OFFSET_MS + s.dtMs + s.tauBot
+                                   : SCOPE_T_OFFSET_MS + s.tauTop;
+    const visualEnd = botActive ? BOT_EXIT_AT : TOP_EXIT_AT;
+    if (visualMs <= TOP_ENTER_AT) {
+      return (visualMs / Math.max(1, TOP_ENTER_AT)) * t_D1_in_scope;
+    }
+    if (visualMs >= visualEnd) {
+      const frac = (visualMs - visualEnd) / Math.max(1, effectiveFallMs - visualEnd);
+      return t_anchor_end + frac * (SCOPE_TOTAL_MS - t_anchor_end);
+    }
+    const frac = (visualMs - TOP_ENTER_AT) / (visualEnd - TOP_ENTER_AT);
+    return t_D1_in_scope + frac * (t_anchor_end - t_D1_in_scope);
+  }
+  function animateScopeCursor() {
+    if (scopeEl.hasAttribute('hidden')) return;
+    if (scopeCursorRaf) cancelAnimationFrame(scopeCursorRaf);
+    const s = lastScopeS;
+    if (!s) return;
+    const t0 = performance.now();
+    const duration = effectiveFallMs;
+    const step = () => {
+      if (STATE.paused) { scopeCursorRaf = 0; return; }
+      const elapsed = performance.now() - t0;
+      if (elapsed >= duration) {
+        const xEnd = (SCOPE_TOTAL_MS * SCOPE_PX_PER_MS).toFixed(1);
+        setLineX(scopeCursor, xEnd);
+        scopeCursorRaf = 0;
+        return;
+      }
+      const scopeMs = visualMsToScopeMs(elapsed, s);
+      const x = Math.max(0, Math.min(SCOPE_W, scopeMs * SCOPE_PX_PER_MS));
+      setLineX(scopeCursor, x.toFixed(1));
+      scopeCursorRaf = requestAnimationFrame(step);
+    };
+    scopeCursorRaf = requestAnimationFrame(step);
+  }
+  function refreshScope() {
+    if (lastScopeS) buildScopeWaveform(lastScopeS);
+  }
+
+  // ---------- Timeline (count-only mode): TOP-tick + cursor, no brackets ----------
+  function drawTimelineCountOnly() {
+    const fall = effectiveFallMs;
+    const tEnterTopPct = (TOP_ENTER_AT / fall) * 100;
+
+    // Hide Δt and τ_BOT brackets — there's no BOT data in count-only modes
+    (tlDt as HTMLElement).style.transition = 'none';
+    (tlDt as HTMLElement).style.width = '0%';
+    (tlTauBot as HTMLElement).style.transition = 'none';
+    (tlTauBot as HTMLElement).style.width = '0%';
+
+    // τ_TOP collapses to a thin "drop counted" tick at TOP enter
+    pending.push(setTimeout(() => {
+      (tlTauTop as HTMLElement).style.transition = 'none';
+      (tlTauTop as HTMLElement).style.left = `${Math.max(0, tEnterTopPct - 0.6)}%`;
+      (tlTauTop as HTMLElement).style.width = '1.5%';
+    }, TOP_ENTER_AT));
+
+    (tlCursor as HTMLElement).style.transition = `left ${fall}ms linear`;
+    (tlCursor as HTMLElement).style.left = '100%';
+
+    const t0 = performance.now();
+    const tickRaf = () => {
+      const elapsed = performance.now() - t0;
+      if (elapsed >= fall || STATE.paused) {
+        tlNowLabel.textContent = `${Math.round(displayMsFromVisual(fall))} ms`;
+        return;
+      }
+      tlNowLabel.textContent = `${Math.round(displayMsFromVisual(elapsed))} ms`;
+      requestAnimationFrame(tickRaf);
+    };
+    requestAnimationFrame(tickRaf);
+  }
+
+  // ---------- Per-drop loop ----------
+  function loop() {
+    // Formation budget: the gap between drops (LOOP_MS − fall). At high dpm ×
+    // slow speed this can collapse to the 200 ms floor; drops then look like
+    // they pop out fast and overlap in flight, which is the right physics.
+    const formMs = Math.max(200, LOOP_MS - effectiveFallMs);
+
+    spawnDrop(formMs, () => onDropDetach(formMs));
+  }
+
+  function onDropDetach(formMs: number) {
+    resetTimeline(true);
+
+    const fullMeasure = STATE.beamMode === 'dual' && STATE.phaseMode === 'active';
+    const counterOnly = STATE.beamMode === 'single';
+
+    const s = sample(STATE.dpm);
+
+    // TOP beam shadow always fires — TOP LED is solid (single + dual+active) or pulsed (dual+stop)
+    pending.push(setTimeout(() => {
+      topOcclusionCount++;
+      syncBeamShadows();
+    }, TOP_ENTER_AT));
+    pending.push(setTimeout(() => {
+      topOcclusionCount = Math.max(0, topOcclusionCount - 1);
+      syncBeamShadows();
+      if (fullMeasure) {
+        // Only Phase 1 (dual+active) measures τ_TOP per drop. In P2 the LED
+        // is duty-cycled and the comparator only fires for counting — no
+        // rising-edge timestamp is captured, so τ_TOP cannot be read.
+        tauTopEl.textContent = `${s.tauTop.toFixed(1)} ms`;
+        fire(tauTopEl);
+      }
+    }, TOP_EXIT_AT));
+
+    if (fullMeasure) {
+      // BOT beam shadow + full readout commit
+      pending.push(setTimeout(() => {
+        botOcclusionCount++;
+        syncBeamShadows();
+      }, BOT_ENTER_AT));
+      pending.push(setTimeout(() => {
+        botOcclusionCount = Math.max(0, botOcclusionCount - 1);
+        syncBeamShadows();
+        tauBotEl.textContent = `${s.tauBot.toFixed(1)} ms`;
+        dtEl.textContent     = `${s.dtMs.toFixed(1)} ms`;
+        vEl.textContent      = `${s.vDrop.toFixed(2)} m·s⁻¹`;
+        dEl.textContent      = `${s.dMm.toFixed(2)} mm`;
+        volEl.textContent    = `${s.volUl.toFixed(1)} µL`;
+        rateEl.textContent   = `${s.dualRate.toFixed(1)} mL·hr⁻¹`;
+        fire(tauBotEl); fire(dtEl);
+        pushHistory(s.dualRate);
+        updateCompareCard(s.singleRate, s.dualRate);
+        // P1: refresh the calibration count display (N grew toward VOL_WINDOW)
+        updateReadoutMode();
+      }, BOT_EXIT_AT));
+      drawTimeline(s);
+    } else {
+      // Count-only (single OR dual+stop): only the rate updates per drop. In
+      // P2 the τ / d / V readouts are locked at the P1 averages (set on state
+      // change by populateP2Readout). In single mode they stay dashed.
+      pending.push(setTimeout(() => {
+        const rate = counterOnly ? s.singleRate : s.dualRate;
+        rateEl.textContent = `${rate.toFixed(1)} mL·hr⁻¹`;
+        pushHistory(rate);
+        updateCompareCard(s.singleRate, s.dualRate);
+        // Increment the count of drops registered in this P2/single session
+        countedDrops += 1;
+        updateReadoutMode();
+      }, TOP_EXIT_AT));
+      drawTimelineCountOnly();
+    }
+
+    // Reset the τ dashes during the idle gap (only in full-measure mode — the
+    // count-only modes already keep them dashed throughout).
+    const idleGap = LOOP_MS - effectiveFallMs - formMs;
+    if (idleGap > 250 && fullMeasure) {
+      pending.push(setTimeout(() => {
+        tauTopEl.textContent = '— ms';
+        tauBotEl.textContent = '— ms';
+        dtEl.textContent     = '— ms';
+      }, effectiveFallMs + 120));
+    }
+
+    // Scope: rebuild the waveform per drop (shape depends on which beams are
+    // active) and start the cursor sweep. Fires in every mode — the scope is
+    // a useful view in single-beam + dual+stop too.
+    buildScopeWaveform(s);
+    animateScopeCursor();
+  }
+
+  // ---------- Recompute geometry + nominal rates from current state ----------
+  function recomputeGeometry() {
+    // The drip-set's outlet radius determines the nominal drop volume.
+    // FLUID_TABLE entries are Tate predictions calibrated for the macro-20
+    // outlet (nominal 50 µL/drop); scale them by the chosen set's nominal
+    // volume so e.g. macro-10 doubles the drop, micro-60 quarters it.
+    assumedVolUl = 1000 / SET_TABLE[STATE.setId].gttPerMl;
+    const FLUID_REF_V_UL = 50; // macro-20 reference
+    trueVolUl = FLUID_TABLE[STATE.fluidId].V_uL * (assumedVolUl / FLUID_REF_V_UL);
+
+    const V_m3 = trueVolUl * 1e-9;
+    const r_m  = Math.cbrt(3 * V_m3 / (4 * Math.PI));
+    trueDmm    = 2 * r_m * 1000;
+    trueTauTopMs = (trueDmm / 1000) / V_TOP_MS * 1000;
+    // Drop SVG radius scales linearly with diameter (saline macro-20 4.74 mm → r_px = 5)
+    dropR_px = 5 * trueDmm / 4.74;
+
+    // Crossing fractions of the fall window
+    const TOP_ENTER_FRAC = (TOP_BEAM_Y - DROP_CY - dropR_px) / FALL_SPAN;
+    const TOP_EXIT_FRAC  = (TOP_BEAM_Y - DROP_CY + dropR_px) / FALL_SPAN;
+    const BOT_ENTER_FRAC = (BOT_BEAM_Y - DROP_CY - dropR_px) / FALL_SPAN;
+    const BOT_EXIT_FRAC  = (BOT_BEAM_Y - DROP_CY + dropR_px) / FALL_SPAN;
+    TOP_CENTER_FRAC = (TOP_BEAM_Y - DROP_CY) / FALL_SPAN;
+    BOT_CENTER_FRAC = (BOT_BEAM_Y - DROP_CY) / FALL_SPAN;
+
+    LOOP_MS         = 60000 / STATE.dpm;
+    // Gravity is constant — fall duration tracks the Speed selector verbatim,
+    // even at high drip rates. Multiple drops simply overlap in flight.
+    effectiveFallMs = STATE.fallTimeMs;
+
+    TOP_ENTER_AT = TOP_ENTER_FRAC * effectiveFallMs;
+    TOP_EXIT_AT  = TOP_EXIT_FRAC  * effectiveFallMs;
+    BOT_ENTER_AT = BOT_ENTER_FRAC * effectiveFallMs;
+    BOT_EXIT_AT  = BOT_EXIT_FRAC  * effectiveFallMs;
+
+    dualRateNominal   = STATE.dpm * trueVolUl    * 0.06;
+    singleRateNominal = STATE.dpm * assumedVolUl * 0.06;
+  }
+
+  // ---------- Apply all visuals + restart loop ----------
+  function applyState(restartLoop: boolean) {
+    recomputeGeometry();
+
+    document.documentElement.style.setProperty('--fall-ms', `${effectiveFallMs}ms`);
+    applyFluidVisuals();
+    applyPhaseVisuals();
+    applyModeTag();
+    updatePowerCard();
+
+    // Reset rate-trace baseline whenever the nominal moves. Do NOT clear the
+    // calibration buffers here — they should survive dpm / speed / mode
+    // changes so P2 can keep displaying the prior P1 averages.
+    history = [];
+    traceEl.setAttribute('points', '');
+    resetTimeline(false);
+    resetDashes();
+    // Reset the count of drops counted in this mode session
+    countedDrops = 0;
+    // In P2 the readout is locked at the P1 averages — populate immediately
+    // so the user sees the calibration values the moment they switch to P2.
+    if (STATE.beamMode === 'dual' && STATE.phaseMode === 'stop') {
+      populateP2Readout();
+    }
+    updateReadoutMode();
+    cmpSingle.textContent = '—';
+    cmpDual.textContent   = '—';
+    cmpDVal.textContent   = '—';
+    (cmpDBarFill as HTMLElement).style.width = '0%';
+
+    clearPending();
+    // Clear in-flight drops + reset occlusion counters
+    dropLayer.innerHTML = '';
+    topOcclusionCount = 0;
+    botOcclusionCount = 0;
+    syncBeamShadows();
+
+    if (timer) { clearInterval(timer); timer = null; }
+    refreshScope();
+    if (restartLoop && !STATE.paused) {
+      loop();
+      timer = setInterval(loop, LOOP_MS);
+    }
+  }
+
+  // ---------- Wire up controls ----------
+  dpmInput.addEventListener('input', () => {
+    STATE.dpm = parseInt(dpmInput.value, 10);
+    dpmVal.textContent = `${STATE.dpm} dpm`;
+    applyState(true);
+  });
+  setSel.addEventListener('change', () => {
+    STATE.setId = setSel.value;
+    // Set change ⇒ outlet radius changes ⇒ drop physics change ⇒ wipe calibration.
+    resetCalibration();
+    applyState(true);
+  });
+  fluidSel.addEventListener('change', () => {
+    STATE.fluidId = fluidSel.value;
+    // Fluid change ⇒ γ/ρ change ⇒ drop physics change ⇒ wipe calibration.
+    resetCalibration();
+    applyState(true);
+  });
+
+  // Segmented groups (beam-mode, phase-mode, speed)
+  document.querySelectorAll<HTMLDivElement>('.seg-group').forEach(group => {
+    group.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (!target.classList.contains('seg-btn')) return;
+      group.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+      target.classList.add('active');
+      const value = target.getAttribute('data-value') ?? '';
+      const kind = group.getAttribute('data-group');
+      if (kind === 'beam-mode')  STATE.beamMode = value as 'dual' | 'single';
+      if (kind === 'phase-mode') STATE.phaseMode = value as 'active' | 'stop';
+      if (kind === 'speed')      STATE.fallTimeMs = parseInt(value, 10);
+      applyState(true);
+    });
+  });
+
+  // Pause / step — pause stops new drops; step fires one drop in paused mode.
+  // No mid-flight freeze: CSS transitions on the timeline can't be paused
+  // cleanly mid-fall, so the current drop completes its fall, then no more
+  // spawn until resume or step.
+  pauseBtn.addEventListener('click', () => {
+    STATE.paused = !STATE.paused;
+    pauseBtn.classList.toggle('active', STATE.paused);
+    pauseBtn.textContent = STATE.paused ? '▶ Resume' : '⏸ Pause';
+    stepBtn.disabled = !STATE.paused;
+    if (STATE.paused) {
+      if (timer) { clearInterval(timer); timer = null; }
+    } else {
+      applyState(true);
+    }
+  });
+  stepBtn.addEventListener('click', () => {
+    if (!STATE.paused) return;
+    clearPending();
+    loop();
+  });
+
+  scopeChk.addEventListener('change', () => {
+    if (scopeChk.checked) {
+      scopeEl.removeAttribute('hidden');
+      refreshScope();
+    } else {
+      scopeEl.setAttribute('hidden', '');
+    }
+  });
+
+  // ---------- Boot ----------
+  applyState(true);
+</script>

@@ -1,0 +1,79 @@
+---
+const bom = [
+  { ref: 'U2',         part: 'STM32G071C8T6',           src: 'LCSC C529341',         qty: 1, chf: '3.20'  },
+  { ref: 'U1',         part: 'TPS610981DSET',           src: 'LCSC C73820',          qty: 1, chf: '1.85'  },
+  { ref: 'U3',         part: 'EA DOGS164W-A',           src: 'DigiKey 1481-1196-ND', qty: 1, chf: '19.40' },
+  { ref: 'D1, D2',     part: 'BPV10NF photodiode',      src: 'DigiKey 751-1054-ND',  qty: 2, chf: '2.10'  },
+  { ref: 'LED1, LED2', part: 'VSMY2940RG IR LED',       src: 'DigiKey 751-1325-ND',  qty: 2, chf: '1.20'  },
+  { ref: '—',          part: 'passives, switches, FFC, holder', src: 'misc',         qty: '—', chf: '8.50' },
+  { ref: '—',          part: 'ASA filament + heat inserts',     src: '—',            qty: '—', chf: '2.80' },
+];
+
+const downloads = [
+  { title: 'KiCad project',     meta: 'hardware/kicad/ · v8' },
+  { title: 'Gerbers + drill',   meta: 'hardware/fab/ · 2-layer' },
+  { title: 'Enclosure STL',     meta: 'enclosure/stl/ · ASA' },
+  { title: 'Firmware HEX',      meta: 'firmware/build/ · v1.0' },
+  { title: 'Validation dataset',meta: 'Zenodo · 10.5281/…' },
+  { title: 'Analysis notebook', meta: 'analysis/ · Docker' },
+];
+---
+<section id="build">
+  <div class="eyebrow">Reproduce</div>
+  <h2>Build it yourself.</h2>
+  <p class="lead">
+    Single Docker command regenerates every figure in this page from the raw
+    CSVs in the Zenodo deposit. Hardware files are KiCad 8 native; firmware
+    builds on STM32CubeIDE 1.16; enclosure prints in ASA on a 0.4 mm nozzle.
+  </p>
+
+  <div class="build-grid">
+    <div class="bom-card">
+      <h3>Bill of materials · 1 unit</h3>
+      <table>
+        <thead><tr><th>Ref</th><th>Part</th><th>Source</th><th>Qty</th><th>CHF</th></tr></thead>
+        <tbody>
+          {bom.map((r) => (
+            <tr>
+              <td>{r.ref}</td><td>{r.part}</td><td>{r.src}</td>
+              <td class="num">{r.qty}</td><td class="num">{r.chf}</td>
+            </tr>
+          ))}
+          <tr style="border-top: 2px solid var(--line-2);">
+            <td colspan="3"><strong>Unit-cost estimate <span style="color: var(--fg-mute); font-weight: 400;">· single-qty DigiKey/LCSC, 2026-04</span></strong></td>
+            <td class="num"></td>
+            <td class="num"><strong>39.05</strong></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top: 14px; font-size: 13px; color: var(--fg-dim);">
+        See <a href="/docs/recommendations.html">docs/recommendations</a> for V3 cost-reduction levers (bulk DOGS164, power-chain options under review).
+      </div>
+    </div>
+
+    <div>
+      <h3>Downloads</h3>
+      <div class="download-grid">
+        {downloads.map((d) => (
+          <a class="dl" href="#">
+            <span class="dl-title">{d.title}</span>
+            <span class="dl-meta">{d.meta}</span>
+          </a>
+        ))}
+      </div>
+
+      <h3 style="margin-top: 36px;">Reproduce in one command <span class="placeholder-inline">target output · pipeline lands 2026-05-11</span></h3>
+      <pre class="code-block"><span class="prompt">$</span> git clone https://github.com/Gluflex/iv-flow-monitor-v2
+<span class="prompt">$</span> cd iv-flow-monitor-v2/analysis
+<span class="prompt">$</span> docker compose up regenerate-figures
+<span class="ok"># → analysis/figures/bland_altman.png</span>
+<span class="ok"># → analysis/figures/mape_per_rate.png</span>
+<span class="ok"># → analysis/figures/error_decomposition.png</span></pre>
+
+      <p style="margin-top: 18px;">
+        Cold-clone reproducibility test scheduled 2026-05-13 — output and notes to
+        <a href="/docs/external-reproducibility.html">docs/external-reproducibility</a> once it runs.
+      </p>
+    </div>
+  </div>
+</section>

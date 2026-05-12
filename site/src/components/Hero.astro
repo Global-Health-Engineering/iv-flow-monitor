@@ -1,0 +1,31 @@
+---
+const repoUrl = 'https://github.com/Gluflex/iv-flow-monitor-v2';
+const docsUrl = '/docs/';
+---
+<section class="hero">
+  <div class="hero-single">
+    <div class="eyebrow">MIT + CERN-OHL-W</div>
+    <h1>
+      Open-source IV drip flow monitor for
+      <span class="accent">pediatric humanitarian care</span>.
+    </h1>
+    <p class="lead">
+      A standalone, battery-powered device that counts individual drops with two
+      infrared beams, infers volumetric flow from drop transit time, and alarms
+      when delivery deviates from the prescribed rate. Built on STM32G0,
+      ≤ CHF 50 BOM target, deployable without an infusion pump.
+    </p>
+    <div class="badges">
+      <span class="badge cyan"><span class="b-dot"></span>Zenodo · 10.5281/zenodo.16902366</span>
+    </div>
+    <div class="ctas">
+      <a class="btn btn-primary" href="#dual-beam">See how it works →</a>
+      <a class="btn btn-ghost" href={repoUrl}>Clone the repo</a>
+      <a class="btn btn-ghost" href={docsUrl}>Read the design</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero-single { max-width: 760px; }
+</style>

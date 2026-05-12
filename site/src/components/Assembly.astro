@@ -1,0 +1,810 @@
+---
+type Caution = { kind: 'polarity' | 'esd' | 'torque' | 'tip'; label: string };
+
+type Step = {
+  tag: string;
+  minutes: number;
+  title: string;
+  body: string;
+  parts: string[];
+  tools: string[];
+  cautions?: Caution[];
+  inlineDiagram?: 'led-polarity';
+};
+
+const steps: Step[] = [
+  {
+    tag: 'MECH',
+    minutes: 25,
+    title: 'Print the case',
+    body: 'Two FDM-printed shells in ASA white — front and back. 0.2 mm layer height, 0.4 mm nozzle, 35 % infill. Press M2 brass heat-set inserts into the captive hex pockets at full nozzle temperature before the part cools.',
+    parts: ['ASA white filament', 'M2 brass heat-set ×4'],
+    tools: ['FDM printer', 'Soldering iron'],
+    cautions: [{ kind: 'tip', label: 'INSERTS WHILE HOT' }],
+  },
+  {
+    tag: 'SOLDER',
+    minutes: 12,
+    title: 'Solder the LCD + buttons',
+    body: 'EA DOGS164W-A LCD onto the back side of the PCB (B.Cu) — its through-pins exit on the front. Three PTS647 tactile switches on the same back side so the user presses through the rear-face cutouts: S1 reset, S2 mode, S3 mute.',
+    parts: ['EA DOGS164W-A', 'PTS647 ×3'],
+    tools: ['Soldering iron', 'Flux', 'Solder wick'],
+    cautions: [{ kind: 'esd', label: 'ESD' }],
+  },
+  {
+    tag: 'MECH',
+    minutes: 5,
+    title: 'Seat the PCB in the front case',
+    body: 'Drop the populated PCB into the front shell from the rear. The four mounting holes line up with the heat-set inserts; secure with 4× M2 socket-cap screws. The slide switch SW1 should engage the front-face slot.',
+    parts: ['M2 socket-cap screws ×4'],
+    tools: ['1.5 mm hex key'],
+    cautions: [{ kind: 'torque', label: 'HAND-TIGHT' }],
+  },
+  {
+    tag: 'SOLDER',
+    minutes: 10,
+    title: 'Solder the IR LEDs to the satellite breakout',
+    body: 'Two through-hole IR LEDs on the satellite board that wraps the drip chamber — one TOP, one BOT. R1 / R4 (100 Ω) on the main PCB cap the forward current near 20 mA; Q1 / Q2 switch the cathode side to ground. Reversing a LED leaves it permanently dark and the corresponding photodiode reading full-bright.',
+    parts: ['VSMY2940RG IR LED ×2', '6-pin FFC tail'],
+    tools: ['Soldering iron', 'Helping hands'],
+    cautions: [{ kind: 'polarity', label: 'POLARITY' }],
+    inlineDiagram: 'led-polarity',
+  },
+  {
+    tag: 'ASSEMBLY',
+    minutes: 3,
+    title: 'Attach the FFC cable',
+    body: 'Open the locking latch on J4 (6-pin FFC socket). Slide the ribbon in pin-1 first (GND) with the contacts facing the latch side. Close the latch firmly until you feel it click. The other end is soldered to the satellite breakout from the previous step.',
+    parts: ['6-pin 0.5 mm FFC ribbon'],
+    tools: ['Tweezers'],
+  },
+  {
+    tag: 'MECH',
+    minutes: 5,
+    title: 'Close the back case',
+    body: 'Route the FFC ribbon through the strain-relief channel, align the LCD window with the back-shell cutout, and snap-fit the rear shell onto the front. Listen for the four corner clips to engage. No screws on the back — the snap is the seal (target IP54).',
+    parts: ['Printed back shell'],
+    tools: ['Hands'],
+  },
+  {
+    tag: 'CALIBRATE',
+    minutes: 12,
+    title: 'Insert the photodiodes',
+    body: 'Press each BPV10NF photodiode into its IR bezel until it bottoms out, then push the assembled bezels into the beam-aperture pockets in the back casing. Verify alignment by powering the device and reading the BOT and TOP test-point voltages — both should sit at the calibration midpoint within ±50 mV.',
+    parts: ['BPV10NF ×2', 'IR bezel ×2'],
+    tools: ['Multimeter', 'USB-C power'],
+    cautions: [{ kind: 'tip', label: 'VERIFY MIDPOINT ±50 mV' }],
+  },
+];
+
+const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
+---
+<section id="assembly">
+  <div class="eyebrow">Build</div>
+  <h2>Assembly.</h2>
+
+  <div class="asm-manifest">
+    <div class="asm-manifest-meta">
+      <span class="asm-meta-cell">
+        <span class="asm-meta-k">Steps</span>
+        <span class="asm-meta-v"><span class="asm-done-count" data-done-count>0</span> / {steps.length}</span>
+      </span>
+      <span class="asm-meta-cell">
+        <span class="asm-meta-k">Active time</span>
+        <span class="asm-meta-v">≈ {totalMinutes} min</span>
+      </span>
+      <span class="asm-meta-cell">
+        <span class="asm-meta-k">Photo guide</span>
+        <a class="asm-meta-link" href="/docs/assembly/"><code>docs/assembly/</code></a>
+      </span>
+      <span class="asm-meta-cell asm-meta-status" data-status>
+        <span class="asm-meta-k">Status</span>
+        <span class="asm-meta-v" data-status-label>Bench-ready</span>
+      </span>
+    </div>
+    <div class="asm-progress" role="progressbar" aria-label="Assembly progress" aria-valuemin="0" aria-valuemax={steps.length} aria-valuenow={0} data-progress>
+      <div class="asm-progress-fill" data-progress-fill></div>
+    </div>
+    <div class="asm-toolbar">
+      <button
+        type="button"
+        class="asm-toolbar-btn"
+        data-toggle-all
+        aria-expanded="false"
+      >
+        <span class="asm-toolbar-glyph" aria-hidden="true">+</span>
+        <span data-toggle-all-label>Expand all</span>
+      </button>
+    </div>
+  </div>
+
+  <ol class="asm-list" data-asm-list>
+    {steps.map((s, i) => {
+      const num = String(i + 1).padStart(2, '0');
+      return (
+        <li class="asm-step" data-step={i + 1}>
+          <div class="asm-rail">
+            <button
+              class="asm-node"
+              type="button"
+              aria-pressed="false"
+              aria-label={`Mark step ${num} ${s.title} as done`}
+              data-toggle={i + 1}
+            >
+              <svg class="asm-node-check" viewBox="0 0 14 14" aria-hidden="true">
+                <path d="M3 7.5l2.7 2.7L11 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="asm-body">
+            <details class="asm-details">
+              <summary class="asm-summary">
+                <div class="asm-head">
+                  <span class="asm-step-meta">
+                    <span class="asm-num">{num}</span>
+                    <span class="asm-tag">{s.tag}</span>
+                    <span class="asm-time">~{s.minutes} min</span>
+                  </span>
+                  {s.cautions && s.cautions.length > 0 && (
+                    <span class="asm-cautions">
+                      {s.cautions.map((c) => (
+                        <span class={`asm-caution asm-caution-${c.kind}`}>{c.label}</span>
+                      ))}
+                    </span>
+                  )}
+                </div>
+                <div class="asm-summary-title-row">
+                  <h3>{s.title}</h3>
+                  <span class="asm-summary-chevron" aria-hidden="true">▾</span>
+                </div>
+              </summary>
+
+              <div class="asm-detail-body">
+                <p>{s.body}</p>
+
+                {s.inlineDiagram === 'led-polarity' && (
+              <figure class="asm-figure">
+                <div class="asm-figure-head">
+                  <span class="asm-figure-tag">FIG · 04A</span>
+                  <span class="asm-figure-title">IR LED polarity — both channels</span>
+                </div>
+                <svg class="asm-led-svg" viewBox="0 0 480 180" role="img" aria-label="IR LED orientation: long leg to plus pad, short leg to minus pad">
+                  <defs>
+                    <radialGradient id="ledGlow" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stop-color="#ff6b35" stop-opacity=".55" />
+                      <stop offset="60%" stop-color="#ff6b35" stop-opacity=".10" />
+                      <stop offset="100%" stop-color="#ff6b35" stop-opacity="0" />
+                    </radialGradient>
+                  </defs>
+
+                  {/* Two LED illustrations side-by-side */}
+                  {[80, 320].map((cx, idx) => (
+                    <g transform={`translate(${cx}, 0)`}>
+                      {/* glow halo */}
+                      <circle cx="0" cy="48" r="46" fill="url(#ledGlow)" />
+                      {/* LED dome — flat on right (cathode side) */}
+                      <path
+                        d="M -26 26 A 26 26 0 0 1 26 26 L 26 70 L -26 70 Z"
+                        fill="#1c0f08"
+                        stroke="#ff6b35"
+                        stroke-width="1.5"
+                      />
+                      {/* small flat indicator on cathode (right) side */}
+                      <line x1="26" y1="34" x2="26" y2="62" stroke="#ff6b35" stroke-width="2.5" stroke-linecap="round" />
+                      {/* legs */}
+                      <line x1="-12" y1="70" x2="-12" y2="140" stroke="#9aa3ad" stroke-width="1.6" stroke-linecap="round" />
+                      <line x1="12"  y1="70" x2="12"  y2="115" stroke="#9aa3ad" stroke-width="1.6" stroke-linecap="round" />
+                      {/* solder pads as little hairlines */}
+                      <line x1="-22" y1="140" x2="-2"  y2="140" stroke="#ff6b35" stroke-width="2" />
+                      <line x1="2"   y1="115" x2="22"  y2="115" stroke="#ff6b35" stroke-width="2" />
+                      {/* pad labels */}
+                      <text x="-12" y="158" text-anchor="middle" class="asm-led-pad">LED+</text>
+                      <text x="12"  y="133" text-anchor="middle" class="asm-led-pad">LED−</text>
+                      {/* leg annotations */}
+                      <text x="-44" y="108" text-anchor="end" class="asm-led-note">LONG</text>
+                      <text x="-44" y="121" text-anchor="end" class="asm-led-note-sub">anode</text>
+                      <text x="44"  y="95"  text-anchor="start" class="asm-led-note">SHORT</text>
+                      <text x="44"  y="108" text-anchor="start" class="asm-led-note-sub">cathode</text>
+                      {/* connector lines from notes to legs */}
+                      <line x1="-43" y1="104" x2="-18" y2="100" stroke="#2a323d" stroke-width="1" />
+                      <line x1="43"  y1="91"  x2="18"  y2="85"  stroke="#2a323d" stroke-width="1" />
+                      {/* flat-side callout */}
+                      <line x1="32" y1="48" x2="56" y2="40" stroke="#2a323d" stroke-width="1" />
+                      <text x="58" y="38" class="asm-led-note-sub">flat = cathode</text>
+                      {/* channel label */}
+                      <text x="0" y="14" text-anchor="middle" class="asm-led-title">
+                        {idx === 0 ? 'TOP CHANNEL' : 'BOT CHANNEL'}
+                      </text>
+                    </g>
+                  ))}
+
+                  {/* divider between the two LEDs */}
+                  <line x1="200" y1="20" x2="200" y2="160" stroke="#1f2630" stroke-width="1" stroke-dasharray="3 4" />
+                </svg>
+                <figcaption>
+                  Long leg <strong>→ LED+ pad</strong> · short leg <strong>→ LED− pad</strong>. Convention holds for both channels. The flat on the LED body marks the cathode side.
+                </figcaption>
+              </figure>
+            )}
+
+                <div class="asm-manifest-row">
+                  {s.parts.length > 0 && (
+                    <div class="asm-chip-group">
+                      <span class="asm-chip-label">Parts</span>
+                      <span class="asm-chip-list">
+                        {s.parts.map((p) => <span class="asm-chip asm-chip-part">{p}</span>)}
+                      </span>
+                    </div>
+                  )}
+                  {s.tools.length > 0 && (
+                    <div class="asm-chip-group">
+                      <span class="asm-chip-label">Tools</span>
+                      <span class="asm-chip-list">
+                        {s.tools.map((t) => <span class="asm-chip asm-chip-tool">{t}</span>)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </details>
+          </div>
+        </li>
+      );
+    })}
+  </ol>
+</section>
+
+<style>
+  /* ---- manifest header strip ---- */
+  .asm-manifest {
+    margin-top: 28px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 22px 16px;
+  }
+  .asm-manifest-meta {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    align-items: baseline;
+  }
+  .asm-meta-cell { display: flex; flex-direction: column; gap: 4px; }
+  .asm-meta-k {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+  }
+  .asm-meta-v {
+    font-family: var(--serif);
+    font-size: 18px;
+    color: var(--fg);
+    letter-spacing: -.01em;
+  }
+  .asm-meta-link {
+    border: 0;
+    color: var(--fg-dim);
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .asm-meta-link:hover { color: var(--ir); }
+  .asm-meta-link code { font-family: inherit; font-size: inherit; }
+  .asm-meta-status .asm-meta-v {
+    color: var(--flow);
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: .04em;
+  }
+  .asm-meta-status[data-status="done"] .asm-meta-v {
+    color: var(--ir);
+    text-shadow: 0 0 14px rgba(255,107,53,.4);
+  }
+  .asm-done-count { color: var(--ir); font-variant-numeric: tabular-nums; }
+
+  .asm-progress {
+    margin-top: 16px;
+    height: 3px;
+    background: var(--bg-3);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .asm-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--ir), #ff9466);
+    box-shadow: 0 0 12px rgba(255,107,53,.35);
+    transition: width .45s cubic-bezier(.4, 0, .2, 1);
+  }
+
+  /* ---- expand/collapse all toolbar ---- */
+  .asm-toolbar {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .asm-toolbar-btn {
+    background: transparent;
+    border: 0;
+    padding: 4px 0;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color .12s ease;
+    border-bottom: 1px dashed transparent;
+    border-radius: 0;
+  }
+  .asm-toolbar-btn:hover { color: var(--ir); }
+  .asm-toolbar-btn:focus-visible {
+    outline: none;
+    color: var(--ir);
+    border-bottom-color: var(--ir);
+  }
+  .asm-toolbar-glyph {
+    display: inline-grid;
+    place-items: center;
+    width: 14px; height: 14px;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1;
+    transition: transform .2s ease;
+  }
+  .asm-toolbar-btn:hover .asm-toolbar-glyph { transform: scale(1.08); }
+
+  /* ---- step list ---- */
+  .asm-list {
+    list-style: none;
+    margin: 28px 0 0;
+    padding: 0;
+    position: relative;
+  }
+  /* the spine — runs the full height behind the nodes */
+  .asm-list::before {
+    content: "";
+    position: absolute;
+    top: 26px; bottom: 26px;
+    left: 16px;
+    width: 1px;
+    background: linear-gradient(180deg, transparent 0%, var(--line-2) 8%, var(--line-2) 92%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .asm-step {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 26px;
+    padding: 26px 0 28px;
+    border-bottom: 1px dashed var(--line);
+    transition: opacity .25s ease;
+    position: relative;
+  }
+  .asm-step:last-child { border-bottom: 0; }
+  .asm-step.is-done .asm-body h3 { color: var(--fg-mute); }
+  .asm-step.is-done .asm-body p,
+  .asm-step.is-done .asm-manifest-row { opacity: .58; }
+  .asm-step.is-done .asm-num { color: var(--fg-mute); }
+
+  /* ---- rail node (clickable check) ---- */
+  .asm-rail {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding-top: 4px;
+  }
+  .asm-node {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1.5px solid var(--line-2);
+    color: transparent;
+    cursor: pointer;
+    padding: 0;
+    display: grid; place-items: center;
+    transition: background .15s ease, border-color .15s ease, color .15s ease, box-shadow .2s ease, transform .12s ease;
+    position: relative;
+    z-index: 1;
+  }
+  .asm-node:hover {
+    border-color: var(--ir);
+    box-shadow: 0 0 0 4px rgba(255,107,53,.08);
+  }
+  .asm-node:active { transform: scale(.94); }
+  .asm-node:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255,107,53,.35);
+  }
+  .asm-node[aria-pressed="true"] {
+    background: var(--ir);
+    border-color: var(--ir);
+    color: #1a0d05;
+    box-shadow: 0 0 14px rgba(255,107,53,.35);
+  }
+  .asm-node-check {
+    width: 14px; height: 14px;
+    opacity: 0;
+    transform: scale(.6);
+    transition: opacity .15s ease, transform .2s cubic-bezier(.18,.89,.32,1.28);
+  }
+  .asm-node[aria-pressed="true"] .asm-node-check {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* ---- collapsible details/summary ---- */
+  .asm-details { display: block; }
+  .asm-summary {
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    display: block;
+    border-radius: 6px;
+    padding: 2px 0;
+    transition: background .12s ease;
+  }
+  .asm-summary::-webkit-details-marker { display: none; }
+  .asm-summary:hover h3 { color: var(--ir); }
+  .asm-summary:focus-visible {
+    outline: none;
+    background: rgba(255,107,53,.04);
+  }
+  .asm-summary-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+  .asm-summary-title-row h3 {
+    flex: 1;
+    transition: color .15s ease;
+  }
+  .asm-summary-chevron {
+    font-size: 14px;
+    line-height: 1;
+    color: var(--fg-mute);
+    flex-shrink: 0;
+    transition: transform .25s ease, color .15s ease;
+    transform-origin: center;
+  }
+  .asm-details[open] .asm-summary-chevron { transform: rotate(180deg); }
+  .asm-summary:hover .asm-summary-chevron { color: var(--ir); }
+  .asm-detail-body {
+    animation: asm-detail-in .22s ease both;
+  }
+  @keyframes asm-detail-in {
+    from { opacity: 0; transform: translateY(-2px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  /* When closed, tighten the bottom padding so collapsed rows don't feel airy */
+  .asm-step:has(.asm-details:not([open])) { padding-bottom: 18px; }
+
+  /* ---- step head: number, tag, time, cautions ---- */
+  .asm-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .asm-step-meta {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .asm-num {
+    font-family: var(--serif);
+    font-size: 28px;
+    line-height: 1;
+    color: var(--ir);
+    font-weight: 600;
+    letter-spacing: -.02em;
+    transition: color .2s ease;
+  }
+  .asm-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+    padding: 3px 8px;
+    border: 1px solid var(--line-2);
+    border-radius: 3px;
+    background: var(--bg-2);
+  }
+  .asm-time {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--fg-mute);
+    letter-spacing: .04em;
+  }
+
+  .asm-cautions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .asm-caution {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    padding: 3px 9px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .asm-caution::before { content: "⚠"; font-size: 10px; }
+  .asm-caution-polarity {
+    color: var(--ir);
+    background: rgba(255,107,53,.10);
+    border: 1px solid rgba(255,107,53,.30);
+  }
+  .asm-caution-esd {
+    color: var(--yellow);
+    background: rgba(251,191,36,.08);
+    border: 1px solid rgba(251,191,36,.28);
+  }
+  .asm-caution-torque {
+    color: var(--yellow);
+    background: rgba(251,191,36,.08);
+    border: 1px solid rgba(251,191,36,.28);
+  }
+  .asm-caution-tip {
+    color: var(--flow);
+    background: rgba(6,182,212,.08);
+    border: 1px solid rgba(6,182,212,.28);
+  }
+  .asm-caution-tip::before { content: "→"; }
+
+  .asm-body h3 {
+    font-size: 20px;
+    margin: 6px 0 8px;
+    transition: color .2s ease;
+  }
+  .asm-body p {
+    font-size: 14.5px;
+    line-height: 1.6;
+    margin: 0;
+    color: var(--fg-dim);
+    max-width: 68ch;
+    transition: opacity .2s ease;
+  }
+
+  /* ---- parts/tools manifest row ---- */
+  .asm-manifest-row {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    align-items: baseline;
+    transition: opacity .2s ease;
+  }
+  .asm-chip-group { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .asm-chip-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+  }
+  .asm-chip-list { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+  .asm-chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    color: var(--fg-dim);
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+  }
+  .asm-chip-tool { color: var(--fg-mute); border-style: dashed; }
+
+  /* ---- inline LED polarity figure ---- */
+  .asm-figure {
+    margin: 18px 0 4px;
+    background:
+      radial-gradient(ellipse at 25% 45%, rgba(255,107,53,.05), transparent 55%),
+      radial-gradient(ellipse at 75% 45%, rgba(255,107,53,.05), transparent 55%),
+      var(--bg-2);
+    border: 1px solid var(--line);
+    border-left: 2px solid var(--ir);
+    border-radius: var(--radius);
+    padding: 14px 18px 16px;
+    position: relative;
+  }
+  .asm-figure-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .asm-figure-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    color: var(--ir);
+    font-weight: 600;
+  }
+  .asm-figure-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: var(--fg-mute);
+    text-transform: uppercase;
+  }
+  .asm-led-svg {
+    width: 100%;
+    height: auto;
+    max-width: 560px;
+    display: block;
+    margin: 8px auto 6px;
+  }
+  .asm-led-pad {
+    font-family: var(--mono);
+    font-size: 11px;
+    fill: var(--ir);
+    font-weight: 600;
+    letter-spacing: .04em;
+  }
+  .asm-led-note {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    fill: var(--fg);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .asm-led-note-sub {
+    font-family: var(--sans);
+    font-size: 9.5px;
+    font-style: italic;
+    fill: var(--fg-mute);
+  }
+  .asm-led-title {
+    font-family: var(--mono);
+    font-size: 9px;
+    fill: var(--fg-mute);
+    letter-spacing: .14em;
+  }
+  .asm-figure figcaption {
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--fg-dim);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+  .asm-figure figcaption strong {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  /* ---- responsive ---- */
+  @media (max-width: 760px) {
+    .asm-manifest-meta { grid-template-columns: 1fr 1fr; gap: 16px; }
+    .asm-step { grid-template-columns: 40px 1fr; gap: 16px; }
+    .asm-list::before { left: 12px; }
+    .asm-num { font-size: 22px; }
+    .asm-cautions { margin-left: 0; flex-basis: 100%; }
+    .asm-led-svg { max-width: 100%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .asm-progress-fill,
+    .asm-node,
+    .asm-node-check,
+    .asm-step,
+    .asm-num,
+    .asm-body h3,
+    .asm-body p,
+    .asm-manifest-row,
+    .asm-summary-chevron,
+    .asm-summary-title-row h3 { transition: none; }
+    .asm-detail-body { animation: none; }
+  }
+</style>
+
+<script>
+  // Hydrate done-state from localStorage; persist on click.
+  const KEY = 'dripito.assembly.done.v1';
+  const list = document.querySelector('[data-asm-list]') as HTMLOListElement | null;
+  const progressEl = document.querySelector('[data-progress]') as HTMLElement | null;
+  const progressFill = document.querySelector('[data-progress-fill]') as HTMLElement | null;
+  const doneCount = document.querySelector('[data-done-count]') as HTMLElement | null;
+  const statusEl = document.querySelector('[data-status]') as HTMLElement | null;
+  const statusLabel = document.querySelector('[data-status-label]') as HTMLElement | null;
+
+  if (list && progressFill && doneCount && statusEl && statusLabel && progressEl) {
+    const total = list.querySelectorAll<HTMLLIElement>('.asm-step').length;
+    let state = new Set<number>();
+
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as unknown;
+        if (Array.isArray(parsed)) {
+          state = new Set(parsed.filter((n) => typeof n === 'number' && n >= 1 && n <= total));
+        }
+      }
+    } catch { /* localStorage may be unavailable — fall through */ }
+
+    const render = () => {
+      list.querySelectorAll<HTMLLIElement>('.asm-step').forEach((li) => {
+        const idx = Number(li.dataset.step);
+        const isDone = state.has(idx);
+        li.classList.toggle('is-done', isDone);
+        const btn = li.querySelector<HTMLButtonElement>('.asm-node');
+        if (btn) btn.setAttribute('aria-pressed', String(isDone));
+      });
+      const n = state.size;
+      const pct = total === 0 ? 0 : (n / total) * 100;
+      progressFill.style.width = `${pct}%`;
+      progressEl.setAttribute('aria-valuenow', String(n));
+      doneCount.textContent = String(n);
+
+      if (n === 0) {
+        statusLabel.textContent = 'Bench-ready';
+        statusEl.removeAttribute('data-status');
+      } else if (n === total) {
+        statusLabel.textContent = 'Build complete ✓';
+        statusEl.setAttribute('data-status', 'done');
+      } else {
+        statusLabel.textContent = `Step ${n + 1 > total ? total : n + 1} next`;
+        statusEl.removeAttribute('data-status');
+      }
+    };
+
+    const persist = () => {
+      try { localStorage.setItem(KEY, JSON.stringify(Array.from(state).sort((a, b) => a - b))); }
+      catch { /* localStorage may be full or blocked — silent fail is fine */ }
+    };
+
+    list.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const btn = target.closest<HTMLButtonElement>('.asm-node');
+      if (!btn) return;
+      const idx = Number(btn.dataset.toggle);
+      if (!Number.isFinite(idx)) return;
+      if (state.has(idx)) state.delete(idx); else state.add(idx);
+      persist();
+      render();
+    });
+
+    render();
+  }
+
+  // Expand / collapse all toggle for step details.
+  const toggleAllBtn = document.querySelector<HTMLButtonElement>('[data-toggle-all]');
+  const toggleAllLabel = document.querySelector<HTMLElement>('[data-toggle-all-label]');
+  const toggleAllGlyph = document.querySelector<HTMLElement>('.asm-toolbar-glyph');
+  const detailsEls = document.querySelectorAll<HTMLDetailsElement>('.asm-details');
+
+  if (toggleAllBtn && toggleAllLabel && toggleAllGlyph && detailsEls.length > 0) {
+    const syncLabel = () => {
+      const anyOpen = Array.from(detailsEls).some((d) => d.open);
+      toggleAllLabel.textContent = anyOpen ? 'Collapse all' : 'Expand all';
+      toggleAllGlyph.textContent = anyOpen ? '−' : '+';
+      toggleAllBtn.setAttribute('aria-expanded', String(anyOpen));
+    };
+
+    toggleAllBtn.addEventListener('click', () => {
+      const anyOpen = Array.from(detailsEls).some((d) => d.open);
+      detailsEls.forEach((d) => { d.open = !anyOpen; });
+      // toggle events fire and call syncLabel for us
+    });
+
+    detailsEls.forEach((d) => d.addEventListener('toggle', syncLabel));
+    syncLabel();
+  }
+</script>

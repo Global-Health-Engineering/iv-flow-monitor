@@ -1,0 +1,101 @@
+---
+const mape = [
+  { setup: 'macro 20',         rate: 20,  n: 5, mape: '1.8 %', pass: true },
+  { setup: 'macro 20',         rate: 50,  n: 5, mape: '1.2 %', pass: true },
+  { setup: 'macro 20',         rate: 100, n: 5, mape: '2.4 %', pass: true },
+  { setup: 'macro 20',         rate: 200, n: 5, mape: '3.1 %', pass: true },
+  { setup: 'edge: bubble',     rate: 50,  n: 3, mape: '7.8 %', pass: false, flag: '▲ flagged' },
+  { setup: 'edge: sunlight',   rate: 50,  n: 2, mape: '2.0 %', pass: true },
+  { setup: 'edge: vibration',  rate: 50,  n: 2, mape: '3.4 %', pass: true },
+];
+
+const scatter = [
+  [80,148],[105,155],[120,142],[138,160],[155,135],[170,158],[180,150],
+  [200,145],[218,166],[240,138],[252,155],[265,148],[282,160],[298,138],
+  [312,156],[328,148],[345,142],[360,160],[378,148],[392,155],[408,146],
+];
+const edge = [[160,105],[245,210],[290,95]];
+---
+<section id="validation">
+  <div class="eyebrow">Validation</div>
+  <h2>Validation against gravimetric ground truth.</h2>
+  <p class="lead">
+    Bench validation runs 2026-05-07 → 2026-05-10. Each timed run is captured
+    simultaneously by device drop-count, transit-derived rate, and a 0.01 g
+    balance. Acceptance criterion: MAPE ≤ 5 % under nominal conditions
+    (IEC 60601-2-24); edge cases (bubble, sunlight, vibration, near-empty bag)
+    are recorded separately with the discard rule that applied. The analysis
+    pipeline (Bland-Altman LoA + bootstrap MAPE, B = 5 000) lives in
+    <code>analysis/notebooks/validation.ipynb</code> and regenerates from raw
+    CSV on every commit.
+  </p>
+
+  <div class="placeholder-block">
+    <span class="ph-banner">Illustrative pipeline shape · real numbers replace these once 2026-05-10 campaign closes</span>
+
+  <div class="val-grid">
+    <div class="ba-plot">
+      <div class="plot-title">Bland-Altman · device vs gravimetric · n = 27</div>
+      <svg viewBox="0 0 460 320" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto;">
+        <line x1="50" y1="20"  x2="50"  y2="280" stroke="#2a323d" />
+        <line x1="50" y1="280" x2="440" y2="280" stroke="#2a323d" />
+        <line x1="50" y1="100" x2="440" y2="100" stroke="#1f2630" stroke-dasharray="2 4" />
+        <line x1="50" y1="180" x2="440" y2="180" stroke="#1f2630" stroke-dasharray="2 4" />
+
+        <line x1="50" y1="150" x2="440" y2="150" stroke="#06b6d4" stroke-dasharray="6 4" />
+        <text x="442" y="153" fill="#06b6d4" font-family="ui-monospace,monospace" font-size="10">μ = +0.4%</text>
+
+        <line x1="50" y1="80" x2="440" y2="80" stroke="#ff6b35" stroke-dasharray="6 4" />
+        <text x="442" y="83" fill="#ff6b35" font-family="ui-monospace,monospace" font-size="10">+1.96σ = +4.2%</text>
+
+        <line x1="50" y1="220" x2="440" y2="220" stroke="#ff6b35" stroke-dasharray="6 4" />
+        <text x="442" y="223" fill="#ff6b35" font-family="ui-monospace,monospace" font-size="10">−1.96σ = −3.4%</text>
+
+        <g fill="#06b6d4" opacity="0.85">
+          {scatter.map(([cx, cy]) => <circle cx={cx} cy={cy} r="4" />)}
+        </g>
+        <g fill="#fbbf24" opacity="0.95">
+          {edge.map(([cx, cy]) => <circle cx={cx} cy={cy} r="4" />)}
+        </g>
+
+        <text x="245" y="305" fill="#9aa3ad" font-family="ui-monospace,monospace" font-size="11" text-anchor="middle">mean rate (mL·hr⁻¹)</text>
+        <text x="20"  y="155" fill="#9aa3ad" font-family="ui-monospace,monospace" font-size="11" transform="rotate(-90 20 155)">Δ (%)</text>
+
+        <circle cx="60"  cy="40" r="4" fill="#06b6d4" />
+        <text   x="70"  y="44" fill="#9aa3ad" font-family="ui-monospace,monospace" font-size="10">nominal runs</text>
+        <circle cx="180" cy="40" r="4" fill="#fbbf24" />
+        <text   x="190" y="44" fill="#9aa3ad" font-family="ui-monospace,monospace" font-size="10">edge cases (bubble · sun · vibration)</text>
+      </svg>
+    </div>
+
+    <div class="val-table">
+      <div class="plot-title">MAPE per flow rate</div>
+      <table>
+        <thead>
+          <tr><th>Set-up</th><th>Rate</th><th>n</th><th>MAPE</th><th>Pass</th></tr>
+        </thead>
+        <tbody>
+          {mape.map((r) => (
+            <tr>
+              <td>{r.setup}</td>
+              <td class="num">{r.rate}</td>
+              <td class="num">{r.n}</td>
+              <td class="num">{r.mape}</td>
+              <td class={r.pass ? 'pass' : ''} style={!r.pass ? 'color: var(--yellow);' : ''}>
+                {r.pass ? '✓' : r.flag}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style="margin-top: 18px; font-size: 13px; color: var(--fg-dim);">
+        Table shape only — actual MAPE values, n, and pass/flag status are populated from <code>analysis/notebooks/validation.ipynb</code> after the campaign closes. Acceptance criterion: MAPE ≤ 5 % under nominal conditions (IEC 60601-2-24).
+      </div>
+    </div>
+
+    <div class="val-callout">
+      Plot artefact: <code>analysis/figures/bland_altman.png</code>, generated by <code>analysis/notebooks/validation.ipynb</code>. CI workflow at <code>.github/workflows/ci.yml</code> regenerates the artefact on every push (target: 2026-05-12). Raw data archive: <a href="https://doi.org/10.5281/zenodo.16902366">Zenodo · CC-BY 4.0</a> (deposited 2026-05-11).
+    </div>
+  </div>
+  </div>
+</section>
