@@ -34,7 +34,21 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+/* Phase 1 dual-beam drop-detection demo */
+#define BEAM_PITCH_MM     10.0f       /* TOP-to-BOT optical centre-to-centre */
+#define G_MMPS2           9810.0f     /* gravitational acceleration, mm/s^2  */
+#define BEAM_WIDTH_MM     0.0f        /* TODO: measure beam width and add to chord correction (chord = d + W) */
 
+/* Per-channel hysteretic edge thresholds are *calibrated at boot*: see
+   the cal block right after the splash. Clear baselines drift between
+   boards (2026-05-08 bench: TOP ~3100, BOT ~3280, both noisy) so a
+   self-cal is more robust than fixed values. Both channels saturate
+   at 4094 when blocked, so plenty of headroom.                             */
+#define CAL_DURATION_MS   250U        /* sample baseline this long at boot   */
+#define CAL_MARGIN_LOW     80U        /* thresh_low  = max_baseline + this   */
+#define CAL_MARGIN_HIGH   220U        /* thresh_high = max_baseline + this   */
+
+#define REARM_CLEAR_MS    150U        /* both channels clear this long → re-arm */
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -119,7 +133,15 @@ int main(void)
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);   /* buzzer on PA8   */
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);   /* LED_TOP on PB3  */
   HAL_GPIO_WritePin(LED_CTRL_BOT_GPIO_Port, LED_CTRL_BOT_Pin, GPIO_PIN_SET);
-  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 125);  /* ~50% duty LED_TOP */
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 250);  /* 100% duty LED_TOP (compare > ARR=249) */
+
+  /* Free-running 1 MHz µs counter on TIM2 (32-bit), used for drop-event
+     timestamps. Independent of TIM1 so buzzer tones don't disturb timing.   */
+  __HAL_RCC_TIM2_CLK_ENABLE();
+  TIM2->PSC = (SystemCoreClock / 1000000U) - 1U;
+  TIM2->ARR = 0xFFFFFFFFU;
+  TIM2->EGR = TIM_EGR_UG;
+  TIM2->CR1 = TIM_CR1_CEN;
 
   HAL_ADCEx_Calibration_Start(&hadc1);
   /* Bump common sampling time to 160.5 cycles (~5 µs) so VREFINT and
@@ -155,10 +177,10 @@ int main(void)
      Overwrites the row of drops on line 3 with the title block.         */
   {
     static const char *const L[4] = {
-      "  Dripito Rev-B ",
-      "  ETH GHE 2026  ",
-      "  Pediatric IV  ",
-      "  Flow Monitor  ",
+      "Dripito Rev-B   ",
+      "ETH GHE 2026    ",
+      "Pediatric IV    ",
+      "Flow Monitor    ",
     };
     for (int col = 0; col < 16; ++col) {
       for (int ln = 0; ln < 4; ++ln) {
@@ -176,57 +198,161 @@ int main(void)
   LCD_Clear();
   /* USER CODE END 2 */
 
-  LCD_Print(2, "Block beam->    ");
-  LCD_Print(3, "watch val shift ");
+  /* Boot-time auto-calibration: sample both photodiode chains for
+     CAL_DURATION_MS while the chamber is empty, take the worst-case
+     ceiling on each channel, and set hysteretic thresholds above it.
+     Adapts to per-board variation, ambient drift, and casing tolerance. */
+  LCD_Print(0, "Calibrating...  ");
+  LCD_Print(1, "                ");
+  LCD_Print(2, "                ");
+  LCD_Print(3, "Hold off chamber");
+
+  uint16_t top_max = 0, bot_max = 0;
+  uint32_t cal_end = HAL_GetTick() + CAL_DURATION_MS;
+  while ((int32_t)(cal_end - HAL_GetTick()) > 0) {
+    uint16_t t = adc_read(ADC_CHANNEL_1);
+    uint16_t b = adc_read(ADC_CHANNEL_4);
+    if (t > top_max) top_max = t;
+    if (b > bot_max) bot_max = b;
+  }
+
+  uint16_t top_thresh_low  = (uint16_t)(top_max + CAL_MARGIN_LOW);
+  uint16_t top_thresh_high = (uint16_t)(top_max + CAL_MARGIN_HIGH);
+  uint16_t bot_thresh_low  = (uint16_t)(bot_max + CAL_MARGIN_LOW);
+  uint16_t bot_thresh_high = (uint16_t)(bot_max + CAL_MARGIN_HIGH);
+
+  /* Briefly show the calibrated ceilings so they can be sanity-checked. */
+  {
+    char line[17];
+    snprintf(line, sizeof(line), "Cal T:%4u B:%4u", top_max, bot_max);
+    LCD_Print(0, line);
+    HAL_Delay(700);
+  }
+  LCD_Clear();
+  LCD_Print(0, "dt:   --- ms    ");
+  LCD_Print(1, "vT:  ---- m/s   ");
+  LCD_Print(2, "tT:   --- ms    ");
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint32_t dash_last   = 0;
-  uint32_t popup_until = 0;
-  uint8_t  prev_mute   = 1;
-  uint8_t  prev_mode   = 1;
+  /* Phase 1: dual-beam drop detection demo.
+     Each drop produces four edges in order:
+       tT_in  — leading edge enters TOP beam (ADC rises above TOP_THRESH_HIGH)
+       tT_out — trailing edge exits TOP    (ADC falls below TOP_THRESH_LOW)
+       tB_in  — leading edge enters BOT    (ADC rises above BOT_THRESH_HIGH)
+       tB_out — trailing edge exits BOT    (ADC falls below BOT_THRESH_LOW)
+     Math:
+       Δt   = tB_in − tT_in
+       τTOP = tT_out − tT_in
+       v_TOP = L/Δt − ½ g · Δt        (gravity-corrected)
+       d   ≈ v_TOP · τTOP             (point-beam approx; W_beam = 0 for now)
+       V   = (π/6) · d^3              (spherical-drop assumption)             */
+  uint8_t  top_in        = 0;
+  uint8_t  bot_in        = 0;
+  uint32_t tT_in         = 0;
+  uint32_t tT_out        = 0;
+  uint32_t tB_in         = 0;
+  uint32_t tB_out        = 0;
+  uint8_t  armed         = 0;
+  uint8_t  top_seq_ok    = 0;
+  uint32_t both_clear_ms = 0;
   while (1)
   {
     /* USER CODE END WHILE */
     Buttons_Poll();
     /* USER CODE BEGIN 3 */
-    uint32_t now = HAL_GetTick();
+    uint32_t now_us  = TIM2->CNT;
+    uint32_t now_ms  = HAL_GetTick();
+    uint16_t top_raw = adc_read(ADC_CHANNEL_1);   /* PA1 — TOP photodiode */
+    uint16_t bot_raw = adc_read(ADC_CHANNEL_4);   /* PA4 — BOT photodiode */
 
-    /* Button edge detection — active low (0 = pressed) */
-    extern volatile uint8_t Buttons_MuteState;
-    extern volatile uint8_t Buttons_ModeState;
-
-    if (prev_mute == 1 && Buttons_MuteState == 0) {
-      LCD_Print(2, "[MUTE] pressed  ");
-      LCD_Print(3, "                ");
-      popup_until = now + 800;
-    }
-    if (prev_mode == 1 && Buttons_ModeState == 0) {
-      LCD_Print(2, "[MODE] pressed  ");
-      LCD_Print(3, "                ");
-      popup_until = now + 800;
-    }
-    prev_mute = Buttons_MuteState;
-    prev_mode = Buttons_ModeState;
-
-    /* Restore hint lines when popup expires */
-    if (popup_until && now >= popup_until) {
-      popup_until = 0;
-      LCD_Print(2, "Block beam->    ");
-      LCD_Print(3, "watch val shift ");
+    /* TOP edge detection (hysteretic) */
+    if (!top_in && top_raw > top_thresh_high) {
+      top_in = 1;
+      if (armed && tT_in == 0) tT_in = now_us;
+    } else if (top_in && top_raw < top_thresh_low) {
+      top_in = 0;
+      if (armed && tT_in != 0 && tT_out == 0) {
+        tT_out = now_us;
+        top_seq_ok = 1;
+      }
     }
 
-    if (now - dash_last >= 200) {
-      dash_last = now;
+    /* BOT edge detection (hysteretic). BOT events are only meaningful after
+       the TOP entry has been captured — otherwise we treat them as noise. */
+    if (!bot_in && bot_raw > bot_thresh_high) {
+      bot_in = 1;
+      if (armed && top_seq_ok && tB_in == 0) tB_in = now_us;
+    } else if (bot_in && bot_raw < bot_thresh_low) {
+      bot_in = 0;
+      if (armed && tB_in != 0 && tB_out == 0) {
+        tB_out = now_us;
 
-      uint16_t top_raw = adc_read(ADC_CHANNEL_1);   /* PA1 — TOP photodiode */
-      uint16_t bot_raw = adc_read(ADC_CHANNEL_4);   /* PA4 — BOT photodiode */
+        /* Full drop captured — compute and display */
+        uint32_t dt_us  = tB_in  - tT_in;     /* may wrap; uint subtraction is fine */
+        uint32_t tau_us = tT_out - tT_in;
 
-      char line[17];
-      snprintf(line, sizeof(line), "TOP: %4u        ", top_raw);
-      LCD_Print(0, line);
-      snprintf(line, sizeof(line), "BOT: %4u        ", bot_raw);
-      LCD_Print(1, line);
+        /* Guard against pathological short Δt (would blow up L/Δt).
+           5 ms ≈ a 2 m/s drop over 10 mm; below that something's wrong. */
+        if (dt_us > 500U && tau_us > 100U) {
+          float dt_s    = (float)dt_us  * 1.0e-6f;
+          float tau_s   = (float)tau_us * 1.0e-6f;
+          float v_mmps  = (BEAM_PITCH_MM / dt_s) - 0.5f * G_MMPS2 * dt_s;
+          float d_mm    = v_mmps * tau_s;          /* chord = d (W_beam = 0) */
+          float vol_uL  = 3.14159265f / 6.0f * d_mm * d_mm * d_mm;
+
+          /* Convert to integer tenths/hundredths for nano-printf (no %f). */
+          uint32_t dt_tenths    = (dt_us  + 50U) / 100U;          /* 0.1 ms */
+          uint32_t tau_tenths   = (tau_us + 50U) / 100U;          /* 0.1 ms */
+          int32_t  v_centi_mps  = (int32_t)(v_mmps * 0.1f + (v_mmps >= 0 ? 0.5f : -0.5f));  /* 0.01 m/s */
+          int32_t  d_tenths     = (int32_t)(d_mm * 10.0f + (d_mm >= 0 ? 0.5f : -0.5f));    /* 0.1 mm */
+          int32_t  vol_tenths   = (int32_t)(vol_uL * 10.0f + (vol_uL >= 0 ? 0.5f : -0.5f));/* 0.1 µL */
+
+          char line[17];
+          snprintf(line, sizeof(line), "dt:%4lu.%lu ms    ",
+                   (unsigned long)(dt_tenths / 10U),
+                   (unsigned long)(dt_tenths % 10U));
+          LCD_Print(0, line);
+          snprintf(line, sizeof(line), "vT:%3ld.%02ld m/s   ",
+                   (long)(v_centi_mps / 100),
+                   (long)((v_centi_mps < 0 ? -v_centi_mps : v_centi_mps) % 100));
+          LCD_Print(1, line);
+          snprintf(line, sizeof(line), "tT:%4lu.%lu ms    ",
+                   (unsigned long)(tau_tenths / 10U),
+                   (unsigned long)(tau_tenths % 10U));
+          LCD_Print(2, line);
+          snprintf(line, sizeof(line), "V:%ld.%lduL    ",
+                   (long)(d_tenths / 10),
+                   (long)((d_tenths < 0 ? -d_tenths : d_tenths) % 10),
+                   (long)(vol_tenths / 10),
+                   (long)((vol_tenths < 0 ? -vol_tenths : vol_tenths) % 10));
+          LCD_Print(3, line);
+        } else {
+          LCD_Print(3, "drop too fast?  ");
+        }
+
+        /* Reset for next drop; require both channels stable-clear before re-arm */
+        armed       = 0;
+        top_seq_ok  = 0;
+        tT_in       = 0;
+        tT_out      = 0;
+        tB_in       = 0;
+        tB_out      = 0;
+        both_clear_ms = now_ms;
+      }
+    }
+
+    /* Re-arm after both channels have been quiescently clear (below the
+       low-side hysteresis on both) for REARM_CLEAR_MS. */
+    if (!armed) {
+      uint8_t both_clear = (!top_in && !bot_in
+                            && top_raw < top_thresh_low
+                            && bot_raw < bot_thresh_low);
+      if (!both_clear) {
+        both_clear_ms = now_ms;
+      } else if ((now_ms - both_clear_ms) >= REARM_CLEAR_MS) {
+        armed = 1;
+      }
     }
   }
   /* USER CODE END 3 */
