@@ -432,7 +432,14 @@ def make_figure(
     # Move "Baseline" to the top by sorting it last on the axis.
     is_base = pooled["source"] == "Baseline (all noise)"
     pooled = pd.concat([pooled[~is_base], pooled[is_base]]).reset_index(drop=True)
-    colors = plt.cm.YlOrRd(np.linspace(0.30, 0.85, len(pooled)))
+    # Colour each bar by the SOURCE'S CONTRIBUTION to error (delta vs baseline),
+    # not by its absolute MAPE. Reader cue: deep red = "this source dominates,
+    # fix it for Rev-C"; pale = "noise floor, ignore". Baseline (delta=0) lands
+    # palest because it's the reference, not a contributor.
+    deltas = pooled["delta_vs_baseline_pct"].abs().to_numpy()
+    max_delta = float(deltas.max()) if len(deltas) and deltas.max() > 0 else 1.0
+    delta_norm = deltas / max_delta
+    colors = plt.cm.YlOrRd(0.25 + 0.60 * delta_norm)
     bars = ax_a.barh(pooled["source"], pooled["mape_pct"],
                      color=colors, edgecolor="black", linewidth=0.5)
     max_mape = float(pooled["mape_pct"].max())
