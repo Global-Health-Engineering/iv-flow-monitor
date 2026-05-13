@@ -1,0 +1,314 @@
+---
+const rawBase = import.meta.env.BASE_URL;
+const baseUrl = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+
+const predicted = [
+  {
+    num: '3.1 %',
+    label: 'predicted per-drop MAPE, pooled across 20 / 50 / 100 mL·h⁻¹.',
+    tone: 'flow',
+  },
+  {
+    num: '±3.87 µL',
+    label: '95 % Limits of Agreement on 50 µL drops, committed to git before any bench data exists.',
+    tone: 'flow',
+  },
+  {
+    num: '49 %',
+    label: 'of total predicted error attributable to print tolerance on the sensor arm — the dominant Rev-C lever.',
+    tone: 'ir',
+  },
+  {
+    num: '2.7 %',
+    label: 'V_cal uncertainty at CAL_N = 10 (35 s of calibration time at 50 mL·h⁻¹) — drip-set-CV-limited.',
+    tone: 'flow',
+  },
+];
+
+const panels = [
+  {
+    label: '(a) Ablation',
+    title: 'Which noise source carries the budget?',
+    body: 'Each bar shows the pooled MAPE that would remain if that one noise source were forced to zero. Shorter bar = bigger contribution. Colour intensifies with attributable error (deepest red = the source to fix). Print tolerance dominates because the firmware uses a nominal d = 10.0 mm while individual printed sensor arms scatter ±0.115 mm 1-sigma; ADC discretisation and timing jitter are second-order; drop-volume CV and drop-velocity CV contribute essentially zero — a consequence of the dual-beam ratio inversion (see Findings).',
+  },
+  {
+    label: '(b) Bland-Altman',
+    title: 'Predicted device-vs-truth agreement.',
+    body: 'Each dot is one of ~225 000 simulated drops. Y = (device estimate − true volume) in µL; X = mean of the two methods (the Bland-Altman convention). The black line is the predicted bias (+0.05 µL — effectively zero, no systematic skew); red dashes mark the 95 % Limits of Agreement (±3.87 µL). The three flow-rate colours overlap because the model predicts no rate-dependent failure mode. Post-bench drops will be overlaid as black triangles; landing them inside the red band validates the prediction.',
+  },
+  {
+    label: '(c) Convergence',
+    title: 'How many drops to lock V_cal?',
+    body: 'The firmware boot sequence collects N drops, trims one each end, averages the rest. The curve shows SD(V_cal) as a function of N — for one board calibrating against its own drops. The firmware default CAL_N = 10 (red dashed) lands at 2.67 %; 35 s of calibration time at 50 mL·h⁻¹. The asymptote is set by the inherent ~8 % drop-to-drop variability of the drip set itself, not by sensor noise. The 1 % target line (grey dotted) is reachable but requires ~65 drops.',
+  },
+];
+
+const findings = [
+  {
+    head: 'The dual-beam (τ / Δt) ratio inversion is velocity-invariant.',
+    body: 'The firmware computes drop diameter as D = d_nominal × (τ / Δt). Both τ (shadow duration) and Δt (inter-beam transit) scale inversely with the drop\'s velocity, so the ratio cancels it exactly. The device does not need to know how fast a drop is falling to estimate its volume. The error budget surfaces this directly — drop-velocity CV contributes ≈ 0 percentage points to MAPE despite a realistic 8 % drop-velocity scatter in the inputs.',
+  },
+  {
+    head: 'Print tolerance is the single knob worth turning for Rev-C accuracy.',
+    body: 'Of the 3.13 % predicted MAPE, 1.54 percentage points (49 %) are attributable to per-board variation in the printed sensor arm. ADC discretisation contributes 0.28 pp; timing jitter 0.13 pp. Two design moves shrink the dominant term: storing per-board measured d_actual in flash (drops it to caliper-repeatability ≈ 0.05 mm SD), or injection-moulding the sensor arm (≈ ±0.05 mm tolerance). Either yields a ~4× reduction.',
+  },
+  {
+    head: 'Calibration accuracy is drip-set-physics-limited, not sensor-limited.',
+    body: 'The convergence asymptote is dictated by the ~8 % drop-volume coefficient of variation that any standard drip set exhibits — physical heterogeneity of real drops, not measurement error. Halving the calibration uncertainty requires ~4× more drops, or a more consistent drip set. The architecture is measuring better than its input variability allows.',
+  },
+  {
+    head: 'Tethered power scope.',
+    body: 'The validation dataset is collected with 3.3 V supplied directly to MCU VDD via ST-Link, bypassing the TPS610982 boost converter. The dataset validates the optical detection chain, sphere-model calibration, and dual-beam architecture. The field power chain (single AA Li-ion → boost → MCU) is deferred to Rev-C. This is named as a limitation rather than hidden in the bias term.',
+  },
+];
+---
+
+<section id="analysis">
+  <div class="eyebrow">Analysis</div>
+  <h2>Predicted accuracy from first principles, before any bench data.</h2>
+  <p class="lead">
+    A Monte Carlo error budget propagates measurement uncertainty through the
+    firmware's volume-inversion math to predict per-drop MAPE, Bland-Altman
+    Limits of Agreement, and calibration convergence — committed to git
+    <em>before</em> the validation campaign begins. Post-bench drops are then
+    overlaid onto the same axes. The git timestamp on the predicted figure is
+    what turns the bench result into a verification rather than a post-hoc fit.
+  </p>
+
+  <div class="analysis-stats">
+    {predicted.map((s) => (
+      <div class={`stat tone-${s.tone}`}>
+        <div class="num">{s.num}</div>
+        <div class="label">{s.label}</div>
+      </div>
+    ))}
+  </div>
+
+  <figure class="analysis-figure">
+    <img src={`${baseUrl}analysis/fig_error_budget.png`}
+         alt="A priori MC error budget — ablation, predicted Bland-Altman, calibration convergence." />
+    <figcaption>
+      A priori Monte Carlo error budget at d = 10 mm, 50 µL drops, 0.77 m·s⁻¹
+      fall velocity, Bambu Lab print tolerance ±0.115 mm 1-sigma. Regenerated
+      byte-identical from a fresh clone via
+      <code>docker compose up regenerate-error-budget</code>;
+      source notebook lives at
+      <code>analysis/notebooks/error_budget.ipynb</code>.
+    </figcaption>
+  </figure>
+
+  <div class="panel-walks">
+    {panels.map((p) => (
+      <div class="panel-walk">
+        <div class="panel-label">{p.label}</div>
+        <h3>{p.title}</h3>
+        <p>{p.body}</p>
+      </div>
+    ))}
+  </div>
+
+  <h3 class="findings-heading">Findings of architectural significance</h3>
+  <ul class="findings">
+    {findings.map((f) => (
+      <li>
+        <strong>{f.head}</strong>
+        <span>{f.body}</span>
+      </li>
+    ))}
+  </ul>
+
+  <div class="reproducibility">
+    <div class="repro-label">Reproducibility</div>
+    <p>
+      The figure regenerates byte-identical from a fresh clone — no input data
+      required. Fixed RNG seed (<code>20260513</code>, the bench date) keeps
+      the prediction stable across re-runs until a parameter changes. The
+      assumption table for every input is the docstring of
+      <code>scripts.error_budget.default_params</code>; every value traces to
+      a measurement, a datasheet, or a flagged placeholder.
+    </p>
+    <pre><code>cd analysis
+docker compose up regenerate-error-budget</code></pre>
+  </div>
+</section>
+
+<style>
+  #analysis h2 {
+    font-family: var(--serif);
+    font-size: 40px;
+    line-height: 1.1;
+    max-width: 22ch;
+    margin: 0 0 18px;
+  }
+  #analysis h3 {
+    font-family: var(--serif);
+    font-size: 22px;
+    line-height: 1.25;
+    margin: 0 0 8px;
+    color: var(--fg);
+  }
+  #analysis em { color: var(--ir); font-style: normal; }
+
+  .analysis-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin: 40px 0 56px;
+  }
+  .analysis-stats .stat {
+    padding: 20px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .analysis-stats .stat .num {
+    font-family: var(--serif);
+    font-size: 34px;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+  .analysis-stats .stat .label {
+    font-size: 13.5px;
+    color: var(--fg-dim);
+    line-height: 1.45;
+  }
+  .analysis-stats .stat.tone-ir .num { color: var(--ir); }
+  .analysis-stats .stat.tone-flow .num { color: var(--flow); }
+
+  .analysis-figure {
+    margin: 0 0 56px;
+    background: #ffffff;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    padding: 18px;
+  }
+  .analysis-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+  .analysis-figure figcaption {
+    margin-top: 14px;
+    color: var(--fg-mute);
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+  }
+  .analysis-figure figcaption code {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--fg-dim);
+    background: var(--bg-3);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  .panel-walks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 56px;
+  }
+  .panel-walk {
+    padding: 22px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .panel-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ir);
+    margin-bottom: 6px;
+  }
+  .panel-walk p {
+    color: var(--fg-dim);
+    font-size: 14.5px;
+    line-height: 1.6;
+    margin: 8px 0 0;
+  }
+
+  h3.findings-heading {
+    font-size: 28px;
+    margin: 0 0 18px;
+  }
+
+  .findings {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 56px;
+    display: grid;
+    gap: 16px;
+  }
+  .findings li {
+    padding: 18px 20px;
+    background: var(--bg-2);
+    border-left: 3px solid var(--ir);
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .findings li strong {
+    display: block;
+    color: var(--fg);
+    font-weight: 600;
+    font-size: 15.5px;
+    margin-bottom: 6px;
+  }
+  .findings li span {
+    color: var(--fg-dim);
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+
+  .reproducibility {
+    padding: 24px;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .repro-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--flow);
+    margin-bottom: 10px;
+  }
+  .reproducibility p {
+    color: var(--fg-dim);
+    font-size: 14.5px;
+    line-height: 1.6;
+    margin: 0 0 14px;
+    max-width: 70ch;
+  }
+  .reproducibility p code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--fg);
+    background: var(--bg-2);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .reproducibility pre {
+    margin: 0;
+    padding: 14px 18px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--fg);
+  }
+
+  @media (max-width: 900px) {
+    .analysis-stats { grid-template-columns: repeat(2, 1fr); }
+    .panel-walks { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 540px) {
+    .analysis-stats { grid-template-columns: 1fr; }
+    #analysis h2 { font-size: 32px; }
+  }
+</style>
