@@ -57,3 +57,28 @@ services:
       - -p
       - SAMPLE_MODE
       - "False"
+
+  # A priori MC error budget — fully synthetic, no input data needed.
+  # Writes fig_error_budget.png + error_budget_synthetic.csv (the cold-clone
+  # sample) so the prediction is reproducible from a fresh git clone before
+  # any bench data exists.
+  regenerate-error-budget:
+    build: .
+    image: dripito-analysis:latest
+    volumes:
+      - ../data/sample:/work/data/sample
+      - ./figures:/work/figures
+    command:
+      - python
+      - -m
+      - papermill
+      - /work/notebooks/error_budget.ipynb
+      - /work/notebooks/error_budget_executed.ipynb
+      - --cwd
+      - /work/notebooks
+      - -p
+      - FIGURES_DIR
+      - /work/figures
+      - -p
+      - SAMPLE_DIR
+      - /work/data/sample
