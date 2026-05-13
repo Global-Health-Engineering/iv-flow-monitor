@@ -39,7 +39,20 @@
 /* Phase 1 dual-beam drop-detection demo */
 #define BEAM_PITCH_MM     10.0f       /* TOP-to-BOT optical centre-to-centre */
 #define G_MMPS2           9810.0f     /* gravitational acceleration, mm/s^2  */
-#define BEAM_WIDTH_MM     5.0f        /* bench value 2026-05-12; chord = d + W → d = chord − W */
+#define BEAM_WIDTH_MM     0.0f        /* 2026-05-13 bench: W=5 over-corrected (chord ~2 ms at v~1 m/s
+                                          → d_mm negative for every drop, 100% DROP_REJECT d_low).
+                                          Reverted to design-doc placeholder W=0 (point-beam approx);
+                                          true W to be back-solved offline from gravimetric data. */
+#define V_CAL_K           1.27f       /* 2026-05-13 bench: scalar correction applied to vol_uL after
+                                          the chord-to-sphere conversion. Derived as the unweighted
+                                          mean of per-run k = V_true_gravimetric / V_est across the
+                                          four 2026-05-13 campaigns (V_50_01..04): k = (1.61, 1.00,
+                                          1.32, 1.13). Compensates for the residual chord-vs-volume
+                                          gap left by drop oscillation between oblate and prolate
+                                          shape during free fall, which the mean-pulse algorithm
+                                          cannot resolve per-drop. Per-run residual after correction
+                                          is ~30% — calibrate per drip-set + fluid combination at
+                                          deployment for tighter performance. */
 
 /* Per-channel hysteretic edge thresholds are *calibrated at boot*: see
    the cal block right after the splash. Clear baselines drift between
@@ -47,8 +60,16 @@
    self-cal is more robust than fixed values. Both channels saturate
    at 4094 when blocked, so plenty of headroom.                             */
 #define CAL_DURATION_MS   250U        /* sample baseline this long at boot   */
-#define CAL_MARGIN_LOW     80U        /* thresh_low  = max_baseline + this   */
-#define CAL_MARGIN_HIGH   220U        /* thresh_high = max_baseline + this   */
+#define CAL_MARGIN_LOW     30U        /* thresh_low  = max_baseline + this. 2026-05-13 bench:
+                                          dropped from 80 → 30 so the drop's signal tail stays above
+                                          threshold longer, extending tau toward the geometric chord.
+                                          Trade-off: less margin against baseline noise. */
+#define CAL_MARGIN_HIGH   100U        /* thresh_high = max_baseline + this. 2026-05-13 bench:
+                                          dropped from 220 → 100. The high-position experiment with
+                                          margin=30 confirmed that lowering the threshold catches a
+                                          long BOT splash tail (BOT/TOP pulse ratio jumped from 2x to
+                                          7.8x), so we keep margin=100 to clip the splash artifact
+                                          and rely on V_CAL_K to correct the remaining bias. */
 
 #define REARM_CLEAR_MS    150U        /* both channels clear this long → re-arm */
 
@@ -71,7 +92,12 @@
    and the rolling Q. Numbers chosen with margin around real macro-10 /
    macro-15 / macro-20 / pediatric-60 drip-set drops. */
 #define V_MMPS_MIN         50.0f      /* < 50 mm/s ≈ unphysical for free fall */
-#define D_MM_MIN            1.0f      /* < 1 mm diameter is below any drip set */
+#define D_MM_MIN            0.1f      /* 2026-05-13 bench: relaxed from 1.0 → 0.1 so chord-time-
+                                          truncated drops still propagate to the CSV. Bench observed
+                                          tau ~1 ms at v ~0.73 m/s → d ~0.7 mm (rejected at 1.0),
+                                          even though the underlying physical drops are macro-set.
+                                          Treat sub-mm reports as a signal of the truncation effect,
+                                          not as a noise rejection failure. */
 #define VOL_UL_MAX        500.0f      /* > 500 µL is bigger than any drop set  */
 
 /* Alarm policy (IEC 60601-2-24 / NICE CG174 spirit). Armed against the
@@ -611,7 +637,7 @@ int main(void)
                 float v_mmps   = (BEAM_PITCH_MM / dt_s) - 0.5f * G_MMPS2 * dt_s;
                 float chord_mm = v_mmps * tau_s + 0.5f * G_MMPS2 * tau_s * tau_s;
                 float d_mm     = chord_mm - BEAM_WIDTH_MM;
-                float vol_uL   = 3.14159265f / 6.0f * d_mm * d_mm * d_mm;
+                float vol_uL   = (3.14159265f / 6.0f * d_mm * d_mm * d_mm) * V_CAL_K;
                 uint8_t accept = (v_mmps  >= V_MMPS_MIN)
                               && (d_mm    >= D_MM_MIN)
                               && (vol_uL  >  0.0f)
@@ -744,21 +770,30 @@ int main(void)
                                 bot_raw, bot_sample_us, bot_thresh_low);
 
         /* Full drop captured — compute, validate, then route by state. */
-        uint32_t dt_us  = tB_in  - tT_in;     /* uint subtraction wraps fine */
-        uint32_t tau_us = tT_out - tT_in;
+        uint32_t dt_us       = tB_in  - tT_in;     /* uint subtraction wraps fine */
+        uint32_t tau_us      = tT_out - tT_in;     /* TOP shadow */
+        uint32_t pulse_bot_us = tB_out - tB_in;    /* BOT shadow */
+        /* 2026-05-13 bench: TOP photodiode produces ~half the pulse width of
+           BOT for the same physical drop (TOP/BOT pulse ratio ~0.44-0.48 on
+           board 1). Using TOP alone systematically under-reports drop volume.
+           Mean of TOP and BOT pulses tracks gravimetric V_true to within the
+           per-drop CV across three runs at different flow rates — matches the
+           post-processing model in analysis/scripts/load_run.py. */
+        uint32_t pulse_mean_us = (tau_us + pulse_bot_us) / 2U;
 
         /* First-pass guard: pathologically short intervals would blow up
            v = L/Δt. 5 ms = 2 m/s drop over 10 mm — below that something's
            gone wrong (ringing, optical glitch, debounce miss). */
         if (dt_us > 500U && tau_us > 100U) {
-          float dt_s     = (float)dt_us  * 1.0e-6f;
-          float tau_s    = (float)tau_us * 1.0e-6f;
+          float dt_s     = (float)dt_us        * 1.0e-6f;
+          float tau_s    = (float)pulse_mean_us * 1.0e-6f;
           float v_mmps   = (BEAM_PITCH_MM / dt_s) - 0.5f * G_MMPS2 * dt_s;
-          /* Chord = ∫v dt = v_TOP·τ + ½gτ². Mirror of the Δt treatment;
-             omitting it underestimates d by ~10 % at typical drop sizes. */
+          /* Chord = ∫v dt = v·τ + ½gτ². v is gravity-corrected at TOP entry;
+             using the mean pulse trades a small bias on BOT chord against the
+             much larger TOP/BOT optical asymmetry on this board. */
           float chord_mm = v_mmps * tau_s + 0.5f * G_MMPS2 * tau_s * tau_s;
           float d_mm     = chord_mm - BEAM_WIDTH_MM;
-          float vol_uL   = 3.14159265f / 6.0f * d_mm * d_mm * d_mm;
+          float vol_uL   = (3.14159265f / 6.0f * d_mm * d_mm * d_mm) * V_CAL_K;
 
           /* Second-pass guard: physical-plausibility floors / ceiling on
              the derived quantities. v could go negative for very slow
@@ -795,7 +830,7 @@ int main(void)
               float Q = compute_Q_mLph(now_ms);
               int32_t Q_cmLph = (int32_t)(Q * 100.0f + (Q >= 0 ? 0.5f : -0.5f));
               int state_int = (session_state == STATE_CAL) ? 1 : 2;
-              uint32_t pulse_bot_us = tB_out - tB_in;
+              /* pulse_bot_us already in scope from the volume calc above. */
               drops_accepted++;
               log_drop_csv(now_ms, drops_accepted,
                            dt_us,           /* transit_us */
