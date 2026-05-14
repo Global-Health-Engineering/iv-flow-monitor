@@ -46,31 +46,24 @@ Conditions under which this decision should be re-opened (e.g.
 - A superseded decision **stays in the repo** with `Status: superseded by
   [link]`. Deleting it loses the reasoning trail.
 
-## Planned decision records
-
-These are decisions already made during the Rev-B work and tracked in the
-author's private notes. They will be imported into this folder before
-submission:
+## Decision records in this folder
 
 | File | Topic |
 |------|-------|
-| `comparator-simplification.md` | COMP1 → comparator-only simplification |
-| `optical-architecture.md` | Dual-beam Phase 1 / LPTIM Phase 2 trade-off |
-| `power-architecture.md` | TPS610982 boost converter selection |
-| `enclosure-material.md` | ASA white, M2 brass heat inserts, 0.2 mm layer |
-| `enclosure-geometry.md` | Sensor arm + front plate geometry |
-| `sensor-arm-alignment.md` | Direct FDM vs steel dowel pin (deferred) |
-| `chamber-holder-mechanism.md` | Drip chamber retention mechanism |
-| `usb-interface-removal.md` | USB-C dropped from Rev-B |
-| `back-casing-extrude.md` | Back casing extrusion choice |
-| `battery-cell-size.md` | AA Li-ion vs alternatives |
-| `battery-indicator.md` | Battery state-of-charge indicator scheme |
-| `led-duty-cycle.md` | IR LED PWM duty cycle |
-| `auto-calibration-at-boot.md` | Optional auto-cal vs manual `#define` thresholds |
-| `onshape-mcp-evaluation.md` | CAD tooling decision |
-
-This folder will fill in over the Week-4 polish sprint (2026-05-11 →
-2026-05-13) per the project plan in `../project-planning.md`.
+| [`comparator-simplification.md`](comparator-simplification.md) | COMP1 → internal-comparator simplification (remove LMV331) |
+| [`optical-architecture.md`](optical-architecture.md) | Dual-beam Phase 1 / LPTIM Phase 2 trade-off |
+| [`power-architecture.md`](power-architecture.md) | Single Li-ion AA via TPS610981 boost |
+| [`power-architecture-process.md`](power-architecture-process.md) | Companion record: how the power decision was made (supervisor pushback, Tupesis consultation, solar feasibility) |
+| [`enclosure-material.md`](enclosure-material.md) | ASA white, FDM, snap-fit |
+| [`enclosure-geometry.md`](enclosure-geometry.md) | External AA holder on sensor arm as counterbalance |
+| [`sensor-arm-alignment.md`](sensor-arm-alignment.md) | FDM in Rev-B; injection moulding pathway for Rev-C |
+| [`chamber-holder-mechanism.md`](chamber-holder-mechanism.md) | Sliding gear with IR-beam pass-through (Rev-C rework expected) |
+| [`usb-interface-removal.md`](usb-interface-removal.md) | USB-C dropped; 5-pin UART debug header instead |
+| [`battery-cell-size.md`](battery-cell-size.md) | AA retained vs AAA (DripAssist battery-life benchmark) |
+| [`battery-indicator.md`](battery-indicator.md) | Low-battery symbol via threshold (deferred to Rev-C) |
+| [`led-duty-cycle.md`](led-duty-cycle.md) | Phase 2 IR LED at 0.3 % duty cycle |
+| [`auto-calibration-at-boot.md`](auto-calibration-at-boot.md) | Threshold auto-calibration (primary, no fallback) |
+| [`onshape-mcp-evaluation.md`](onshape-mcp-evaluation.md) | Parametric CAD tooling — evaluated, deferred to Rev-C |
 
 ## Why ADRs
 
