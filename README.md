@@ -20,8 +20,8 @@ Interactive dual-beam simulation, clickable PCB architecture, validation results
 | **MCU** | STM32G071C8TX |
 | **Hardware** | Rev-B PCB, KiCad 8.x, hand-assembled |
 | **Detection** | Dual-beam optical, sphere-model volume calibration |
-| **Power** | Single AA Li-ion via FFC, TPS610982 boost converter |
-| **Enclosure** | ASA white FDM, gear-driven broom-holder chamber clamp |
+| **Power** | Single AA Li-ion via FFC, TPS610981 boost converter |
+| **Enclosure** | ASA white FDM, sliding-gear chamber holder — Rev-B integrates the assembly for testing; full mechanical rework expected for Rev-C |
 | **Validation** | 21 runs vs gravimetric ground truth, 3 flow rates × macro-20 |
 | **BOM** | ~CHF 39, single-qty (see project page) |
 | **Submission** | 2026-05-14 |
@@ -50,18 +50,21 @@ Pin maps in [`firmware/README.md`](firmware/README.md).
 
 ## Hardware fabrication
 
-PCB from `hardware/gerbers/` (JLCPCB / PCBWay). Enclosure printed in ASA white per the profile in `enclosure/print_settings/`. Full enclosure requirements (hand-off for follow-up work) in [`docs/enclosure-requirements.md`](docs/enclosure-requirements.md).
+PCB from `hardware/gerbers/` (JLCPCB / PCBWay).
+
+Enclosure: STEP and STL exports in [`hardware/3dmodels/Enclosure/`](hardware/3dmodels/Enclosure/) (source CAD in Onshape). The current Rev-B enclosure is **not the final mechanical design** — it integrates the PCB + chamber holder + optics + battery into a testable assembly so the rest of the device can be validated. A full mechanical rework is expected for Rev-C. See [`docs/decisions/chamber-holder-mechanism.md`](docs/decisions/chamber-holder-mechanism.md), [`docs/decisions/sensor-arm-alignment.md`](docs/decisions/sensor-arm-alignment.md), and [`docs/enclosure-requirements.md`](docs/enclosure-requirements.md) for the rationale and Rev-C path.
 
 ## Repository layout
 
 ```
-hardware/    KiCad 8.x project — schematic, PCB, libs, datasheets, gerbers
+hardware/    KiCad 8.x project — schematic, PCB, libs, datasheets, gerbers, 3D models (PCB + Enclosure)
 firmware/    STM32CubeIDE workspace (InfusionBA2 Rev-B)
-enclosure/   Onshape exports, STLs, print profiles, print history
+enclosure/   Rev-B-is-not-final framing + cross-references; CAD lives in hardware/3dmodels/Enclosure/
 docs/        Architecture decisions, requirements, results, limitations
-data/        Raw validation CSVs, calibration log, geometry, edge cases
+data/        Raw validation CSVs, UART logs, gravimetric scale streams, geometry, edge cases
 analysis/    Reproducible analysis pipeline (Docker + Jupyter)
-tools/       Bench helpers (e.g. gravimetric log logger)
+tools/       Bench helpers (UART logging, scale logging, position-overlay rendering)
+site/        GitHub Pages source (Astro)
 media/       Photos, renders, demo clips
 ```
 
