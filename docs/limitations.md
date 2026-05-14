@@ -2,11 +2,11 @@
 
 Scope of the Rev-B validation campaign and the constraints under which the numbers in `docs/results.md` should be interpreted. Items are ordered by impact on the conclusions.
 
-## 1. Drop-shape oscillation is the fundamental residual error
+## 1. Drops oscillate between oblate and prolate after detachment
 
-The chord-time architecture measures the **vertical extent** of each drop at the beam plane, then assumes a sphere to compute volume. Drops in free fall oscillate between oblate (squashed vertically) and prolate (elongated vertically) for the first 10–30 mm after detaching from the chamber tip — the device's beam plane catches each drop at an unpredictable point in this oscillation. Over many drops the bias averages out (hence `V_CAL_K = 1.27` works on the run mean), but the per-drop CV stays inflated, and the per-run k spans 0.87–1.40 across V_50_01..04 even after the mean-pulse algorithm absorbs the optical-channel asymmetry.
+The chord-time architecture measures each drop's **vertical extent** at the beam plane and assumes a sphere to compute volume. After detachment, drops oscillate between oblate (squashed vertically) and prolate (elongated vertically) as surface tension pulls them toward equilibrium (Rayleigh 1879); the beam catches each drop at an unpredictable phase. Over many drops the bias averages out (`V_CAL_K = 1.27` on the run mean), but the per-run `k` still spans 0.87–1.40 across V_50_01..04 — a ±30 % per-run residual.
 
-Consequence: post-`V_CAL_K` per-run residual is ±30 %. A Rev-C optical front-end with two horizontally-separated beam pairs (catching horizontal as well as vertical extent of each drop) would let the firmware infer the oscillation phase and apply an oscillation-aware volume formula. Out of scope for Rev-B.
+A Rev-C optical front-end with two horizontally-separated beam pairs (catching horizontal as well as vertical extent of each drop) would let the firmware infer the oscillation phase and apply an oscillation-aware volume formula. Out of scope for Rev-B.
 
 ## 2. Two-orifice divergence (invalidates per-drop matching)
 
@@ -100,3 +100,7 @@ Several algorithm variants were trialled — TOP-low only, BOT-low only, BOT-cor
 Architectural conclusion: with Rev-B optics — one TOP photodiode whose dynamic range above baseline depends on the drop-to-beam geometry, and one BOT photodiode close enough to the chamber pool to see splash at high mounts — the optical chord-time architecture **does not deliver a single position-invariant `V_CAL_K`**. The two beams *do* deliver position-agnostic velocity (transit time) and reliable drop counting at most positions; what they don't deliver is a position-invariant chord measurement, because every chord-time threshold inherits one or both of the umbilical/splash contaminants depending on mount height.
 
 The Rev-C path is named in §1 and §3: a second pair of horizontally-separated beams catching the drop's horizontal extent (to remove the sphere-from-vertical-chord ambiguity that drop oscillation creates), wider TOP-to-BOT separation so drops have fully detached before either beam, and TOP/BOT gain equalisation so the dynamic-range issue at TOP disappears. The Rev-B firmware was reverted to the committed `V_CAL_K = 1.27` mean-pulse state at the end of the 2026-05-13 pm session; the position-dependence finding is documented here without changing the V_50 headline in `docs/results.md`.
+
+## References
+
+- Rayleigh, J. W. S. (1879). On the capillary phenomena of jets. *Proc. R. Soc. Lond.* 29, 71–97. — Derives the natural oscillation modes of a free liquid drop, including the oblate-prolate (n=2) mode that §1 inherits.
