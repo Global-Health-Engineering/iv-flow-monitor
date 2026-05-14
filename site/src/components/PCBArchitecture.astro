@@ -247,7 +247,9 @@ const hotspots = [
 <style>
   .play-sound-slot:empty { display: none; }
   .play-sound-slot { margin: 14px 0 4px; }
-  .play-sound-btn {
+  /* Button selector goes through the static parent so Astro's scoped class
+     attaches to the slot — innerHTML-injected children inherit reach. */
+  .play-sound-slot button {
     font-family: var(--mono); font-size: 12.5px; letter-spacing: .02em;
     color: var(--ir); white-space: nowrap;
     padding: 8px 16px; border: 1px solid var(--ir); border-radius: 999px;
@@ -255,7 +257,7 @@ const hotspots = [
     cursor: pointer;
     transition: background 140ms ease, color 140ms ease;
   }
-  .play-sound-btn span { display: inline-block; margin-left: 6px; transition: transform 140ms ease; }
-  .play-sound-btn:hover { background: var(--ir); color: #0d1117; }
-  .play-sound-btn:hover span { transform: translateX(2px); }
+  .play-sound-slot button span { display: inline-block; margin-left: 6px; transition: transform 140ms ease; }
+  .play-sound-slot button:hover { background: var(--ir); color: #0d1117; }
+  .play-sound-slot button:hover span { transform: translateX(2px); }
 </style>
