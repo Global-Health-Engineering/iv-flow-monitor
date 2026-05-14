@@ -79,34 +79,14 @@ const items = [
     ))}
   </ol>
 
-  <div class="position-eyebrow">§17 — the headline + the raw evidence.</div>
+  <div class="position-eyebrow">§17 — the per-drop optical signature.</div>
   <p class="position-lead">
-    Two summary figures (the per-drop Bland-Altman across all sessions
-    and the per-drop TOP-vs-BOT pulse-width scatter) followed by three
-    raw-waveform views of the 2026-05-14 PM capture set
-    (TOP + BOT photodiode signals, ADC counts above baseline, time
-    relative to the TOP-entry trigger). The capture firmware
-    (<code>ENABLE_RAW_CAPTURE</code> on the
-    <code>feat/raw-capture-rev-c</code> branch) is <em>not</em> the Rev-B
-    submission firmware; submission firmware = HEAD of <code>v2</code>.
+    Per-drop scatter of TOP vs BOT pulse widths across the bench mount
+    positions. The position-dependence finding's raw-waveform evidence is
+    in the <a href="#analysis">Analysis section above</a>; this figure
+    shows the derived 2D feature space the chord-time architecture's
+    scalar <code>V_CAL_K</code> can't compress.
   </p>
-
-  <figure class="position-figure">
-    <img src={`${baseUrl}analysis/bland_altman_cross_session.png`}
-         alt="Cross-session Bland-Altman plot. X-axis is the mean of device estimate and gravimetric truth in microliters; Y-axis is the difference. Morning V_50 dots cluster tightly inside a horizontal band marked with morning bias and morning plus-minus 1.96 SD. Afternoon position-drift and PM raw-waveform dots scatter upward to plus 200 microliters, well outside the band." />
-    <figcaption>
-      <strong>One V_CAL_K, three sessions, one image.</strong> Bland-
-      Altman per-drop, with the same <code>V_CAL_K = 1.27</code> applied
-      uniformly across morning V_50 calibration (n=737, blue), afternoon
-      position-drift (n=150, orange), and PM raw-waveform (n=51, green).
-      Morning dots sit inside the morning ±1.96·SD bracket (the design
-      headline); afternoon and PM dots scatter to <code>+150 µL</code>
-      and <code>+220 µL</code> respectively — well outside the band. The
-      residual scales with drop size, which is the umbilical/splash
-      contamination pattern §17 describes. The cleanest summary of the
-      position-dependence finding.
-    </figcaption>
-  </figure>
 
   <figure class="position-figure">
     <img src={`${baseUrl}analysis/top_vs_bot_pulse_scatter.png`}
@@ -126,57 +106,6 @@ const items = [
     </figcaption>
   </figure>
 
-  <figure class="position-figure">
-    <img src={`${baseUrl}analysis/raw_combined_P3_minus4mm.png`}
-         alt="TOP and BOT beam-occlusion waveforms overlaid in a single panel for 23 consecutive drops at mount position P3 (4 mm below canonical). TOP curves (blue) peak around +2 ms after the trigger anchor with a small secondary shoulder approaching from negative time. BOT curves (orange) peak around +11 ms with a bifurcated structure showing a second peak at +14 ms." />
-    <figcaption>
-      <strong>One drop, both beams, one chart.</strong> 23 drops at
-      <code>P3 (-4 mm)</code>, TOP (blue) and BOT (orange) overlaid in
-      the same panel. The ~11 ms transit gap between TOP firing and BOT
-      firing is the dual-beam architecture's velocity signal — directly
-      visible. The two position-dependent contaminants of the chord
-      measurement are also direct-readable: <em>(i)</em> the TOP shoulder
-      approaching the trigger around <code>−2 ms</code> is the
-      <strong>umbilical</strong> — the fluid filament still tethering the
-      drop to the chamber tip; <em>(ii)</em> the bifurcated BOT peak
-      around <code>+11 ms / +14 ms</code> is the <strong>backsplash</strong>
-      trailing edge — particles crossing BOT after the drop body has
-      cleared.
-    </figcaption>
-  </figure>
-
-  <figure class="position-figure">
-    <img src={`${baseUrl}analysis/raw_median_bands_all_positions.png`}
-         alt="Median trace and 25 to 75 percent IQR band for each of three mount positions, TOP and BOT beams shown in separate panels. TOP medians overlap closely across all three positions. BOT medians shift systematically in timing — P1 canonical mount peaks first, P3 minus 4 mm peaks last with a visible second hump." />
-    <figcaption>
-      <strong>What position-dependence actually looks like.</strong>
-      Median trace (line) + 25–75 % IQR band (shaded) per mount position,
-      both beams. TOP shapes are largely <strong>position-invariant</strong>
-      — the medians overlap closely across P1, P2, P3.
-      BOT timing shifts <strong>systematically</strong> with mount
-      geometry: P1 canonical peaks ~10 ms after trigger, P3 (-4 mm) peaks
-      ~12 ms after trigger with a visible second hump. The §17 finding
-      is that this BOT-shape variation is exactly what defeats a
-      position-invariant chord-time → volume estimate. Bench n_drops:
-      P1=40, P2=22, P3=23.
-    </figcaption>
-  </figure>
-
-  <figure class="position-figure">
-    <img src={`${baseUrl}analysis/raw_overlays_P1_high.png`}
-         alt="Two-panel overlay of 40 drops at the canonical V_50_05-era mount position. Left panel TOP beam peaks consistently around 225 to 260 ADC counts. Right panel BOT beam peaks 397 to 508 ADC counts with a small late-time hump visible after most drops." />
-    <figcaption>
-      <strong>40 drops at the canonical mount</strong> — the densest
-      single-mount capture in the campaign. Per-channel peak ranges are
-      tight (TOP 225–260, BOT 397–508; ±7 % and ±12 % around the median),
-      meaning the device's per-drop response is repeatable; what makes
-      <code>V_CAL_K = 1.27</code> hold at <em>this</em> mount within
-      ±30 % is the same data driving the
-      <a href="#analysis">predicted accuracy envelope</a> a panel up.
-      Move the device 4 mm down the chamber (P3 above) and the BOT-shape
-      family changes — that's what §17 is about.
-    </figcaption>
-  </figure>
 </section>
 
 <style>
