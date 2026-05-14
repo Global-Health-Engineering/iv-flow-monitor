@@ -64,7 +64,7 @@ const hotspots = [
         STM32G030 → G031 → G071 because G030/G031 lack COMP1 and the DAC required
         for the threshold reference. Pin-compatible swap, no layout cost.
       </p>
-      <div class="adr-link" id="d-adr">↪ <a href="#">ADR 03 · MCU selection (G030 → G071)</a></div>
+      <div class="adr-link" id="d-adr">↪ <a href="https://github.com/Gluflex/iv-flow-monitor-v2/tree/v2/docs/decisions" rel="noopener">Architecture decisions</a></div>
     </div>
   </div>
 
@@ -72,56 +72,64 @@ const hotspots = [
 </section>
 
 <script>
-  type Detail = { tag: string; title: string; text: string; adr: string; schematic?: string };
+  type Detail = { tag: string; title: string; text: string; adr: string; adrSlug?: string; schematic?: string };
   const SCH_BASE = document.documentElement.dataset.baseUrl || '/';
+  const ADR_BASE = 'https://github.com/Gluflex/iv-flow-monitor-v2/blob/v2/docs/decisions';
+  const ADR_INDEX = 'https://github.com/Gluflex/iv-flow-monitor-v2/tree/v2/docs/decisions';
   const data: Record<string, Detail> = {
     mcu: {
       tag: 'Hotspot 1 · MCU',
       title: 'STM32G071C8T6 · core + decoupling',
       text: '48-pin LQFP, single 3.3 V rail with 4× 100 nF decoupling on VBAT/VDD/VREF+ (C9–C12) and a 32.768 kHz LSE (Y1, C6/C7 = 20 pF) for the RTC. Migrated from STM32G030 → G031 → G071 because G030/G031 lack COMP1 and the DAC required for the threshold reference. Pin-compatible swap, no layout cost.',
-      adr: 'ADR 03 · MCU selection (G030 → G071)',
+      adr: 'Comparator simplification (G030 → G071)',
+      adrSlug: 'comparator-simplification',
       schematic: 'schematic-mcu.png',
     },
     boost: {
       tag: 'Hotspot 2 · Power',
       title: 'TPS610981 boost · 1× Li-ion AA',
       text: 'Single-cell boost from 1.5 V (down to 0.9 V end-of-discharge) to 3.3 V. Validated 3.297 V no-load, ±0.09 % from target. End-of-discharge sweep and full-load regulation pending under §1.4 Limitations.',
-      adr: 'ADR 06 · Power architecture (Li-ion AA + Care Package)',
+      adr: 'Power architecture (Li-ion AA + Care Package)',
+      adrSlug: 'power-architecture',
       schematic: 'schematic-boost.png',
     },
     ir: {
       tag: 'Hotspot 3 · IR drive train',
       title: 'Q1/Q2 · 2N7002 N-MOSFET pair',
       text: 'On-board low-side switches (Q1, Q2) for the two 940 nm IR LEDs, with R1/R4 = 100 Ω current-limit, R2/R6 = 100 kΩ gate pull-down (silences the LEDs during MCU reset/boot), R3/R7 = 100 Ω gate series. The LEDs themselves live on a satellite breakout, reached via the J4 FFC ribbon (see hotspot 5). Phase 1 schedule: 150 µs ON / 1.80 ms period (8.3 % duty, ~1.5 mA average per LED). Phase 2 stop-mode: 5 µs ON / 1.80 ms period (~0.3 % duty).',
-      adr: 'ADR 09 · LED duty cycle',
+      adr: 'LED duty cycle',
+      adrSlug: 'led-duty-cycle',
       schematic: 'schematic-ir.png',
     },
     pd: {
       tag: 'Hotspot 4 · Photodiode FFCs',
       title: 'J2 / J3 · 2-pin satellite sockets',
       text: 'Two 2-pin sockets, one per photodiode. Each photodiode is biased through a 3.3 kΩ pull-up (R13/R15) with a 100 Ω series (R14/R16) and a 100 pF AC-coupling cap (C8/C13) to feed the ADC and COMP1. Threshold set by the internal DAC, calibrated at boot from ambient. The full on-chip analog chain replaced the discrete LMV331 comparator + external RC network of Rev-A.',
-      adr: 'ADR 02 · Comparator simplification',
+      adr: 'Comparator simplification',
+      adrSlug: 'comparator-simplification',
       schematic: 'schematic-pd.png',
     },
     led_bat: {
       tag: 'Hotspot 5 · LED + Battery',
       title: 'J4 · 6-pin satellite socket',
       text: 'Single FFC ribbon to the satellite breakout. Pin map: 1 = GND, 2 = BAT+, 3 = IR_LED_BOT−, 4 = IR_LED_BOT+, 5 = IR_LED_TOP−, 6 = IR_LED_TOP+. Combining battery feed (pins 1–2) and IR-LED drives (pins 3–6) on one ribbon simplifies enclosure routing — the satellite board sits next to the drip chamber and holds both the IR emitters above the beam path and the AA cell.',
-      adr: 'ADR 09 · LED duty cycle',
+      adr: 'LED duty cycle',
+      adrSlug: 'led-duty-cycle',
       schematic: 'schematic-led_bat.png',
     },
     buzzer: {
       tag: 'Hotspot 6 · Audible alarm',
       title: 'BZ1 SFN-1407PA7.6 piezo buzzer',
       text: 'Driven by Q4 2N7002 N-MOSFET. R17 1.8 kΩ pull-up holds the buzzer drain at +3.3 V when Q4 is off (no DC bias on the piezo element). R19 10 kΩ pull-down on BUZZER_CTRL keeps the gate low during MCU reset and boot — a non-trivial safety detail for a clinical alarm device, since accidental beeps during power cycles erode user trust. R18 100 Ω is the gate series resistor.',
-      adr: 'ADR · Audible alarm circuit',
+      adr: 'Architecture decisions',
       schematic: 'schematic-buzzer.png',
     },
     swd: {
       tag: 'Hotspot 7 · Debug',
       title: 'J1 · 7-pin SWD + USART1 header',
       text: 'Pin map: 1 = NRST (with C5 100 nF noise cap to GND), 2 = UART1_TX, 3 = UART1_RX, 4 = SWDIO (10 kΩ pull-up), 5 = SWCLK (10 kΩ pull-down), 6 = +3.3 V, 7 = GND. UART pins require SYSCFG_CFGR1.PA11_PA12_RMP=1 in early init — without the remap, USART1 is silent. ADR documents the USB-PD removal that made USART debug the path forward.',
-      adr: 'ADR 07 · USB interface removal',
+      adr: 'USB interface removal',
+      adrSlug: 'usb-interface-removal',
       schematic: 'schematic-swd.png',
     },
   };
@@ -154,7 +162,8 @@ const hotspots = [
       tagEl.textContent = d.tag;
       titEl.textContent = d.title;
       txtEl.textContent = d.text;
-      adrEl.innerHTML = '↪ <a href="#">' + d.adr + '</a>';
+      const adrHref = d.adrSlug ? `${ADR_BASE}/${d.adrSlug}.md` : ADR_INDEX;
+      adrEl.innerHTML = '↪ <a href="' + adrHref + '" rel="noopener">' + d.adr + '</a>';
       renderSchematic(d);
       grid.classList.add('has-detail');   // reveal the side panel on first click
       callout?.classList.add('dismissed'); // hide the "click me!" hint

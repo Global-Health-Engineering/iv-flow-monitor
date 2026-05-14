@@ -1,4 +1,8 @@
 ---
+const REPO = 'https://github.com/Gluflex/iv-flow-monitor-v2';
+const TREE = `${REPO}/tree/v2`;
+const BLOB = `${REPO}/blob/v2`;
+
 const bom = [
   { ref: 'U2',         part: 'STM32G071C8T6',           src: 'LCSC C529341',         qty: 1, chf: '3.20'  },
   { ref: 'U1',         part: 'TPS610981DSET',           src: 'LCSC C73820',          qty: 1, chf: '1.85'  },
@@ -10,12 +14,12 @@ const bom = [
 ];
 
 const downloads = [
-  { title: 'KiCad project',     meta: 'hardware/kicad/ · v8' },
-  { title: 'Gerbers + drill',   meta: 'hardware/fab/ · 2-layer' },
-  { title: 'Enclosure STL',     meta: 'enclosure/stl/ · ASA' },
-  { title: 'Firmware HEX',      meta: 'firmware/build/ · v1.0' },
-  { title: 'Validation dataset',meta: 'Zenodo · 10.5281/…' },
-  { title: 'Analysis notebook', meta: 'analysis/ · Docker' },
+  { title: 'KiCad project',     meta: 'hardware/ · v8',                   href: `${TREE}/hardware` },
+  { title: 'Gerbers + drill',   meta: 'hardware/gerbers/ · 2-layer',      href: `${TREE}/hardware/gerbers` },
+  { title: 'Enclosure STL',     meta: 'hardware/3dmodels/Enclosure/STL/', href: `${TREE}/hardware/3dmodels/Enclosure/STL` },
+  { title: 'Firmware source',   meta: 'firmware/STM32CubeIDE/InfusionBA2', href: `${TREE}/firmware/STM32CubeIDE/InfusionBA2` },
+  { title: 'Validation dataset',meta: 'data/raw/ · Zenodo on submission', href: `${TREE}/data/raw` },
+  { title: 'Analysis notebook', meta: 'analysis/notebooks/validation.ipynb', href: `${BLOB}/analysis/notebooks/validation.ipynb` },
 ];
 ---
 <section id="build">
@@ -47,7 +51,7 @@ const downloads = [
         </tbody>
       </table>
       <div style="margin-top: 14px; font-size: 13px; color: var(--fg-dim);">
-        See <a href="/docs/recommendations.html">docs/recommendations</a> for V3 cost-reduction levers (bulk DOGS164, power-chain options under review).
+        Rev-C cost-reduction levers (bulk DOGS164, power-chain options) live in <a href={`${BLOB}/docs/limitations.md`}>docs/limitations.md</a> and the open ADRs.
       </div>
     </div>
 
@@ -55,24 +59,24 @@ const downloads = [
       <h3>Downloads</h3>
       <div class="download-grid">
         {downloads.map((d) => (
-          <a class="dl" href="#">
+          <a class="dl" href={d.href} rel="noopener">
             <span class="dl-title">{d.title}</span>
             <span class="dl-meta">{d.meta}</span>
           </a>
         ))}
       </div>
 
-      <h3 style="margin-top: 36px;">Reproduce in one command <span class="placeholder-inline">target output · pipeline lands 2026-05-11</span></h3>
+      <h3 style="margin-top: 36px;">Reproduce in one command</h3>
       <pre class="code-block"><span class="prompt">$</span> git clone https://github.com/Gluflex/iv-flow-monitor-v2
 <span class="prompt">$</span> cd iv-flow-monitor-v2/analysis
-<span class="prompt">$</span> docker compose up regenerate-figures
-<span class="ok"># → analysis/figures/bland_altman.png</span>
-<span class="ok"># → analysis/figures/mape_per_rate.png</span>
-<span class="ok"># → analysis/figures/error_decomposition.png</span></pre>
+<span class="prompt">$</span> docker compose up regenerate-figures-sample   <span class="ok"># cold-clone test (sample data)</span>
+<span class="prompt">$</span> docker compose up regenerate-figures          <span class="ok"># full campaign data</span>
+<span class="ok"># → analysis/figures/fig_error_budget.png</span>
+<span class="ok"># → analysis/figures/fig_error_budget_with_bench.png</span></pre>
 
       <p style="margin-top: 18px;">
-        Cold-clone reproducibility test scheduled 2026-05-13 — output and notes to
-        <a href="/docs/external-reproducibility.html">docs/external-reproducibility</a> once it runs.
+        Pipeline source: <a href={`${BLOB}/analysis/notebooks/validation.ipynb`}>analysis/notebooks/validation.ipynb</a>.
+        Dependencies hash-locked in <a href={`${BLOB}/analysis/requirements.txt`}>analysis/requirements.txt</a>.
       </p>
     </div>
   </div>

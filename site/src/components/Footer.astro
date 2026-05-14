@@ -1,16 +1,20 @@
 ---
+const REPO = 'https://github.com/Gluflex/iv-flow-monitor-v2';
+const BLOB = `${REPO}/blob/v2`;
+const TREE = `${REPO}/tree/v2`;
+
 const projectLinks = [
-  { label: 'Documentation',     href: '/docs/' },
-  { label: 'Design decisions',  href: '/docs/decisions/' },
-  { label: 'Limitations',       href: '/docs/limitations.html' },
-  { label: 'Recommendations',   href: '/docs/recommendations.html' },
+  { label: 'Documentation',     href: `${TREE}/docs` },
+  { label: 'Design decisions',  href: `${TREE}/docs/decisions` },
+  { label: 'Limitations',       href: `${BLOB}/docs/limitations.md` },
+  { label: 'Results',           href: `${BLOB}/docs/results.md` },
 ];
 
 const codeLinks = [
-  { label: 'GitHub repository', href: 'https://github.com/Gluflex/iv-flow-monitor-v2' },
-  { label: 'Zenodo dataset',    href: 'https://doi.org/10.5281/zenodo.16902366' },
-  { label: 'CI · GitHub Actions', href: '#' },
-  { label: 'Issue tracker',     href: '#' },
+  { label: 'GitHub repository', href: REPO },
+  { label: 'Bachelor thesis (Zenodo)', href: 'https://doi.org/10.5281/zenodo.16902366' },
+  { label: 'CI · GitHub Actions', href: `${REPO}/actions` },
+  { label: 'Issue tracker',     href: `${REPO}/issues` },
 ];
 
 const ack = [
@@ -52,7 +56,7 @@ const ack = [
     </ul>
   </div>
   <div class="cite">
-    <span>build pre-release · commit hash populated by CI on tag</span>
-    <span>© 2026 Leandro Catarci · CC-BY 4.0 (docs)</span>
+    <span>Snapshot · v1.0-submission-2026-05-14</span>
+    <span>© 2026 Leandro Catarci · CC BY 4.0 (docs)</span>
   </div>
 </footer>
