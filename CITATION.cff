@@ -1,28 +1,37 @@
 cff-version: 1.2.0
-message: "To cite this repository, use:"
+message: "If you use this software, please cite it as below."
+title: "Dripito — Open-Source IV Drip Flow Monitor (Rev-B)"
+abstract: >-
+  A single-AA-cell intravenous-infusion flow-rate monitor for pediatric care
+  in resource-constrained clinical settings. Custom STM32G0 PCB, optical
+  dual-beam drop detection, monochrome graphic LCD, piezo alarm, and
+  ASA-printed enclosure. Designed and built as an MSc semester project at
+  ETH Global Health Engineering, 2026.
 license: CERN-OHL-2.0
-title: "Open-Source Intravenous Infusion Flow Rate Monitor for Pediatric Care"
-date-released: "2025-03-06"
-doi: 10.5281/zenodo.16902366
 type: software
+version: "1.0.0"
+date-released: "2026-05-14"
+repository-code: "https://github.com/Gluflex/iv-flow-monitor-v2"
+url: "https://gluflex.github.io/iv-flow-monitor-v2"
 authors:
-  - family-names: Fionn
-    given-names: Smith
-    email: fsmith@ethz.ch
-  - family-names: Tkaczuk
-    given-names: Jakub
-    email: jtkaczuk@ethz.ch
-    orcid: https://orcid.org/0000-0001-7997-9423
-  - family-names: Alcock
-    given-names: Rebecca
-    email: r.alcock@utoronto.ca
-  - family-names: Tilley
-    given-names: Elizabeth
-    email: tilleye@ethz.ch
-    orcid: https://orcid.org/0000-0002-2095-9724
+  - family-names: Catarci
+    given-names: Leandro
+    email: lcatarci@ethz.ch
+    affiliation: "ETH Zürich, Department of Mechanical and Process Engineering"
 contact:
-  - family-names: Tkaczuk
-    given-names: Jakub
-    email: jtkaczuk@ethz.ch
-    orcid: https://orcid.org/0000-0001-7997-9423
-version: 0.0.1
+  - family-names: Catarci
+    given-names: Leandro
+    email: lcatarci@ethz.ch
+references:
+  - type: thesis
+    title: >-
+      Improving a Low-Cost Intravenous Infusion Flow-Rate Monitoring Device
+      for Paediatric Care in Humanitarian Healthcare Settings
+    authors:
+      - family-names: Catarci
+        given-names: Leandro
+    year: 2025
+    institution:
+      name: "ETH Zürich, Global Health Engineering"
+    doi: 10.5281/zenodo.16902366
+    thesis-type: "Bachelor thesis"

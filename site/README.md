@@ -1,6 +1,6 @@
 # Dripito — GitHub Pages site
 
-Astro-based static site for the Dripito open-source IV drip flow monitor. Single landing page with the dual-beam architecture animation, the real PCB layout (extracted from the KiCad project), validation summary, and downloads.
+Astro-based static site for the Dripito open-source IV drip flow monitor. Single landing page composing every section: dual-beam architecture animation, real PCB layout (extracted from the KiCad project), analysis + validation results, architecture decisions, BOM with qty=1 / qty=1000 toggle, limitations, and an assembly walkthrough.
 
 ## Local development
 
@@ -13,50 +13,42 @@ npm run preview      # preview the production build locally
 
 ## Deploy to GitHub Pages
 
-The `.github/workflows/deploy.yml` workflow builds and deploys on every push to `main`. To enable:
+The [`.github/workflows/deploy-site.yml`](../.github/workflows/deploy-site.yml) workflow builds and deploys on every push to `v2`. GitHub Pages source must be set to **GitHub Actions** in the repository settings.
 
-1. In the repo settings, set **Pages → Source** to **GitHub Actions**.
-2. Adjust `astro.config.mjs`:
-   - `site`: your canonical URL (e.g. `https://gluflex.github.io`)
-   - `base`: `/<repo-name>` if served from a sub-path, or `/` for a root/custom domain.
-3. Push to `main`. The workflow runs `npm ci && npm run build`, uploads `dist/`, and deploys.
+`astro.config.mjs` sets `site` to the canonical Pages URL and `base` to `/iv-flow-monitor-v2/`.
 
 ## Source structure
 
 ```
 src/
-├── layouts/Base.astro        # html/head/body shell, global CSS import
-├── pages/index.astro         # landing page — composes the components
+├── layouts/Base.astro            # html/head/body shell, global CSS, OG/Twitter meta
+├── pages/index.astro             # landing page — composes the components
 ├── components/
 │   ├── Nav.astro
 │   ├── Hero.astro
 │   ├── Problem.astro
-│   ├── DualBeam.astro        # animated SVG + live readout
-│   ├── PCBArchitecture.astro # real PCB SVG from KiCad + 7 hotspots
+│   ├── DualBeam.astro            # animated SVG + live readout
+│   ├── PCBArchitecture.astro     # real PCB SVG from KiCad + ADR-linked hotspots
 │   ├── PowerTree.astro
 │   ├── StateMachine.astro
-│   ├── Validation.astro
-│   ├── BuildItYourself.astro
+│   ├── Analysis.astro            # bench-overlay error-budget figure
+│   ├── Decisions.astro           # ADR card grid
+│   ├── BuildItYourself.astro     # BOM table (CSV-driven, qty toggle)
+│   ├── Assembly.astro            # step-by-step build cards
+│   ├── Limitations.astro         # top-N limitations surface
+│   ├── OpenQuestions.astro
 │   └── Footer.astro
-└── styles/global.css         # design tokens + all section styles
+└── styles/global.css             # design tokens + all section styles
 ```
 
 ## Where the PCB SVG comes from
 
-The PCB diagram in `PCBArchitecture.astro` was generated from the live KiCad project at `D:\Dripito\github\hardware\flow_monitor.kicad_pcb` via the `kicad` skill. To regenerate after a layout change:
+The PCB diagram in `PCBArchitecture.astro` was generated from the live KiCad project at `hardware/flow_monitor.kicad_pcb` via the `kicad` skill. To regenerate after a layout change:
 
-1. Re-run the analyser: `python3 <kicad-skill>/scripts/analyze_pcb.py flow_monitor.kicad_pcb --output pcb_analysis.json`
-2. Re-run `D:\Dripito\build_pcb_svg.py` to emit the SVG fragment.
+1. Run the analyser against the `.kicad_pcb` file to emit `pcb_analysis.json`.
+2. Run the build script that converts the analysis into the SVG fragment.
 3. Paste the SVG into `src/components/PCBArchitecture.astro`.
 
-## Replacing placeholders
+## BOM data source
 
-Items currently marked as placeholders (yellow hatched zones) or pending real assets:
-
-- Hero photo (`src/components/Hero.astro` → image placeholder)
-- Tupesis quote — fabricated illustrative copy, NOT real correspondence (yellow border)
-- Schematic snippet thumbnails inside each PCB hotspot side-panel
-- Download links to KiCad / STL / firmware / Zenodo
-- Real values for Bland-Altman scatter and MAPE table
-
-Once validation lands clean (target 2026-05-10), swap the placeholders for real assets.
+`BuildItYourself.astro` reads [`../hardware/bom.csv`](../hardware/bom.csv) at build time and renders it as a 6-column grouped table with a qty=1 / qty=1000 pill toggle and per-group collapse. Editing the CSV is enough to update the rendered table — no component-side changes required.

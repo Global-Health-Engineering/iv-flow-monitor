@@ -28,7 +28,7 @@ The firmware mean-of-pulses approach partially absorbs this (BOT over, TOP under
 
 ## 4. Tilt sensitivity (qualitative, un-quantified)
 
-The bench observed that small device-attitude changes break drop detection: a sub-mm reposition of the chamber doubled the TOP pulse width (1.5 ms → 3.1 ms) and brought drops back into the detection envelope. The mechanism is that off-vertical drop trajectories cause the lateral position at the BOT beam to diverge from the TOP-beam crossing point, and once the offset exceeds the beam width the TOP→BOT sequence never closes. Magnitude of the tolerance was not measured. Captured in `D:\Obsidian\Dripito\01 Projects\Dripito Monitor\Logs\Bench Findings 2026-05-13.md`; the chamber-holder mechanism is to be revisited with a verticality budget for Rev-C.
+The bench observed that small device-attitude changes break drop detection: a sub-mm reposition of the chamber doubled the TOP pulse width (1.5 ms → 3.1 ms) and brought drops back into the detection envelope. The mechanism is that off-vertical drop trajectories cause the lateral position at the BOT beam to diverge from the TOP-beam crossing point, and once the offset exceeds the beam width the TOP→BOT sequence never closes. Magnitude of the tolerance was not measured. The chamber-holder mechanism is to be revisited with a verticality budget for Rev-C.
 
 ## 5. `V_CAL_K = 1.27` is fitted to the same runs it is validated against
 
@@ -48,7 +48,7 @@ The beam separation in `data/geometry.json` (`mean = 10.2 mm, sd = 0.3 mm`) refl
 
 ## 9. Drop-to-infusion volume coupling
 
-The device measures drop volume at the chamber; the volume the patient receives is downstream of the chamber. Tubing compliance, air bubbles, capillarity, and pressure dynamics decouple the two. The bench gravimetric is also upstream of the catheter, so this decoupling is invisible to the validation. Named here as a scope limitation rather than a bias term. See `D:\Obsidian\Dripito\01 Projects\Dripito Monitor\Notes\Drop-to-Infusion Volume Coupling.md` for the longer treatment.
+The device measures drop volume at the chamber; the volume the patient receives is downstream of the chamber. Tubing compliance, air bubbles, capillarity, and pressure dynamics decouple the two. The bench gravimetric is also upstream of the catheter, so this decoupling is invisible to the validation. Named here as a scope limitation rather than a bias term.
 
 ## 10. Single drip set; wide observed drop-volume range
 

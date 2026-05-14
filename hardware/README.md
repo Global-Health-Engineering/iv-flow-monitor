@@ -11,7 +11,6 @@ component datasheets, and fabrication outputs.
 | `flow_monitor.kicad_pro` | KiCad project file |
 | `flow_monitor.kicad_sch` | Schematic |
 | `flow_monitor.kicad_pcb` | Board layout |
-| `flow_monitor.kicad_prl` | Per-user layout state (committed for convenience) |
 | `sym-lib-table` | Registers `lib/IV_Flow_Monitor_Symbols.kicad_sym` |
 | `fp-lib-table` | Registers `IV_Flow_Monitor_Footprints.pretty/` |
 | `power_analysis.md` | Power-architecture analysis notes |

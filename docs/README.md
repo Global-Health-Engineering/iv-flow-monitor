@@ -2,32 +2,22 @@
 
 Project documentation written for an outside reader. The intent is that
 someone who clones this repo cold can rebuild the device, understand why
-each design decision was made, and reproduce the validation results without
-having access to the author's private notes.
+each design decision was made, and reproduce the validation results
+without having access to the author's private notes.
 
 Anything written for personal thinking lives elsewhere (PARA-style notes
 outside the repo). Anything that should accompany the artefact lives here.
 
-## What goes in this folder
+## Documents in this folder
 
-| File | Status | Purpose |
-|------|--------|---------|
-| `testing-and-validation.md` | ✅ committed | Pre-registered validation protocol (EXP-0 → EXP-6). Timestamp = pre-registration evidence. |
-| `enclosure-requirements.md` | ✅ committed | Hand-off spec for follow-up theses iterating on the 3D-printed casing. Numbered REQ-x.y requirements, verification mapping, out-of-scope rationale. |
-| `design-requirements.md` | planned | Requirements derived from clinical interviews, humanitarian context, IEC 60601-2-24, NICE CG174. |
-| `state-of-the-art.md` | planned | Photoelectric drop detection, IV drip physiology, prior-art comparison. |
-| `architecture.md` | planned | Dual-beam Phase 1 / LPTIM1 Phase 2 — first-principles derivation. The novel contribution. |
-| `pcb-design.md` | planned | Power architecture, COMP1 simplification, schematic walkthrough. |
-| `firmware.md` | planned | State machine diagram, drop-detection pseudocode, calibration algorithm. |
-| `enclosure.md` | planned | ASA print rationale, heat inserts, fit-test outcomes. |
-| `results.md` | planned | Tables + plots from the analysis notebook. The repo's core written artefact. |
-| `limitations.md` | planned | Honest weaknesses ranked by impact on conclusions (sample size, drop-shape model, beam-width bias, surface tension regime). |
-| `recommendations.md` | planned | V3 power, regulatory pathway, clinical validation, BOM-to-CHF 50, field trial design. |
-| `conclusions.md` | planned | One conclusion per research question. No new analysis. |
-| `self-caught-issues.md` | planned | Issues identified independently (BF-read protocol, buzzer ARR sharing, COMP1 floating, USART doc drift, ADC sampling). |
-| `external-reproducibility.md` | planned | Peer cold-clone test result + 3-line note. |
-| `project-planning.md` | planned | Project plan, contingencies (camp absence), scope adjustments. |
-| `decisions/` | ✅ folder | Architecture Decision Records — see `decisions/README.md`. |
+| File | Purpose |
+|------|---------|
+| [`testing-and-validation.md`](testing-and-validation.md) | Pre-registered validation protocol (EXP-0 → EXP-6). Timestamp = pre-registration evidence. |
+| [`results.md`](results.md) | Bench-day results: per-run V_true vs V_LCD, V_CAL_K derivation, residuals. |
+| [`limitations.md`](limitations.md) | Honest weaknesses ranked by impact on conclusions; includes §17 position-dependence finding. |
+| [`enclosure-requirements.md`](enclosure-requirements.md) | Hand-off spec for follow-up theses iterating on the 3D-printed casing. Numbered REQ-x.y requirements, verification mapping, out-of-scope rationale. |
+| [`decisions/`](decisions/) | Architecture Decision Records — see [`decisions/README.md`](decisions/README.md). |
+| [`bench/`](bench/) | Bench-day session notes and finding logs. |
 
 ## Naming convention
 
@@ -52,11 +42,12 @@ outside the repo). Anything that should accompany the artefact lives here.
 
 ## Cross-references to other folders
 
-- Validation data and protocol → `docs/testing-and-validation.md` →
-  `data/` (raw CSVs) → `analysis/` (notebook).
-- Hardware design rationale → `docs/pcb-design.md` →
-  `hardware/flow_monitor.kicad_sch`.
-- Firmware architecture → `docs/firmware.md` →
-  `firmware/STM32CubeIDE/InfusionBA2/Core/`.
-- Enclosure fit and print history → `docs/enclosure.md` →
-  `enclosure/`.
+- Validation data and protocol → [`testing-and-validation.md`](testing-and-validation.md) →
+  [`../data/`](../data/) (raw CSVs) → [`../analysis/`](../analysis/) (notebook).
+- Hardware design rationale → [`decisions/`](decisions/) →
+  [`../hardware/flow_monitor.kicad_sch`](../hardware/flow_monitor.kicad_sch).
+- Firmware architecture → [`../firmware/README.md`](../firmware/README.md) →
+  [`../firmware/STM32CubeIDE/InfusionBA2/Core/`](../firmware/STM32CubeIDE/InfusionBA2/Core/).
+- Enclosure fit + Rev-C path → [`enclosure-requirements.md`](enclosure-requirements.md) →
+  [`../enclosure/`](../enclosure/) → CAD source in
+  [`../hardware/3dmodels/Enclosure/`](../hardware/3dmodels/Enclosure/).

@@ -88,12 +88,11 @@ byte-identical-or-numerically-equivalent figure.
 
 ## CI integration
 
-GitHub Actions (`.github/workflows/analysis.yml`, planned for the Week-4
-sprint per `../docs/project-planning.md`) runs:
+GitHub Actions [`.github/workflows/build-and-test.yml`](../.github/workflows/build-and-test.yml) runs on every push to `v2`:
 
-1. `papermill notebooks/validation.ipynb -` — execute notebook
-2. Compare regenerated `figures/*.png` to committed versions
-3. Upload regenerated PNGs as build artefacts on every push
+1. **`pytest`** against `tests/` (analysis helpers + tools smoke tests).
+2. **`verify_estimator.py`** — Monte-Carlo verification of the firmware drop-size math.
+3. **Docker-built analysis pipeline** — regenerates `figures/fig_error_budget.png` and the validation figures from `data/sample/`, then uploads them as a workflow artifact.
 
 A green badge on the top-level README is the user-visible artefact.
 
