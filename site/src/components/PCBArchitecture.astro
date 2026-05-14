@@ -64,6 +64,7 @@ const hotspots = [
         STM32G030 → G031 → G071 because G030/G031 lack COMP1 and the DAC required
         for the threshold reference. Pin-compatible swap, no layout cost.
       </p>
+      <div class="play-sound-slot" id="d-play-sound"></div>
       <div class="adr-link" id="d-adr">↪ <a href="https://github.com/Gluflex/dripito/tree/v2/docs/decisions" rel="noopener">Architecture decisions</a></div>
     </div>
   </div>
@@ -72,7 +73,7 @@ const hotspots = [
 </section>
 
 <script>
-  type Detail = { tag: string; title: string; text: string; adr?: string; adrSlug?: string; schematic?: string };
+  type Detail = { tag: string; title: string; text: string; adr?: string; adrSlug?: string; schematic?: string; playSound?: 'startup_chime' };
   const SCH_BASE = document.documentElement.dataset.baseUrl || '/';
   const ADR_BASE = 'https://github.com/Gluflex/dripito/blob/v2/docs/decisions';
   const ADR_INDEX = 'https://github.com/Gluflex/dripito/tree/v2/docs/decisions';
@@ -120,6 +121,7 @@ const hotspots = [
       title: 'BZ1 SFN-1407PA7.6 piezo buzzer',
       text: 'Driven by Q4 2N7002 N-MOSFET. R17 1.8 kΩ pull-up holds the buzzer drain at +3.3 V when Q4 is off (no DC bias on the piezo element). R19 10 kΩ pull-down on BUZZER_CTRL keeps the gate low during MCU reset and boot — a non-trivial safety detail for a clinical alarm device, since accidental beeps during power cycles erode user trust. R18 100 Ω is the gate series resistor.',
       schematic: 'schematic-buzzer.png',
+      playSound: 'startup_chime',
     },
     swd: {
       tag: 'Hotspot 7 · Debug',
@@ -136,7 +138,33 @@ const hotspots = [
   const txtEl = document.getElementById('d-text')!;
   const adrEl = document.getElementById('d-adr')!;
   const schEl = document.getElementById('d-schematic')!;
+  const playEl = document.getElementById('d-play-sound')!;
   const grid  = document.querySelector('.pcb-grid')!;
+
+  /* Plays the actual Rev-B firmware boot chime: E6 (1319 Hz, 50 ms) → 15 ms gap →
+     B6 (1976 Hz, 100 ms). Source: firmware/.../main.c:456-459 (Buzzer_PlayFreq). */
+  function playStartupChime() {
+    const Ctx = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const now = ctx.currentTime;
+    function beep(start: number, freq: number, durMs: number) {
+      const dur = durMs / 1000;
+      const osc = ctx.createOscillator();
+      osc.type = 'square';
+      osc.frequency.value = freq;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.18, start + 0.004);
+      gain.gain.setValueAtTime(0.18, start + dur - 0.004);
+      gain.gain.linearRampToValueAtTime(0, start + dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + dur + 0.01);
+    }
+    beep(now,           1319, 50);   /* E6 */
+    beep(now + 0.065,   1976, 100);  /* B6 */
+  }
 
   function renderSchematic(d: Detail) {
     if (d.schematic) {
@@ -164,6 +192,18 @@ const hotspots = [
         adrEl.innerHTML = '↪ <a href="' + adrHref + '" rel="noopener">' + d.adr + '</a>';
       } else {
         adrEl.innerHTML = '';
+      }
+      if (d.playSound === 'startup_chime') {
+        playEl.innerHTML =
+          '<button type="button" class="play-sound-btn" id="play-startup-btn">' +
+          '<span class="play-icon" aria-hidden="true">▶</span>' +
+          '<span class="play-label">Play startup chime</span>' +
+          '<span class="play-meta">E6 50 ms · B6 100 ms · firmware boot</span>' +
+          '</button>';
+        const btn = document.getElementById('play-startup-btn');
+        if (btn) btn.addEventListener('click', playStartupChime);
+      } else {
+        playEl.innerHTML = '';
       }
       renderSchematic(d);
       grid.classList.add('has-detail');   // reveal the side panel on first click
@@ -208,3 +248,27 @@ const hotspots = [
     });
   }
 </script>
+
+<style>
+  .play-sound-slot:empty { display: none; }
+  .play-sound-slot { margin: 14px 0 4px; }
+  .play-sound-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 9px 16px;
+    background: transparent;
+    color: var(--flow);
+    border: 1px solid var(--flow);
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: .02em;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+  }
+  .play-sound-btn:hover { background: var(--flow); color: #0d1117; }
+  .play-sound-btn:active { transform: scale(.98); }
+  .play-icon { font-size: 11px; }
+  .play-label { font-weight: 600; }
+  .play-meta { color: var(--fg-mute); font-size: 11px; letter-spacing: .04em; }
+  .play-sound-btn:hover .play-meta { color: rgba(13,17,23,.65); }
+</style>
