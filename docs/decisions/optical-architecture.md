@@ -16,7 +16,7 @@ The Rev-B optical chain uses a two-phase approach:
 ## Alternatives considered
 
 - **Rev-A approach — single-beam continuous, fixed assumed drop volume.** Lost on accuracy: the fixed 50 µL/drop assumption is the dominant Rev-A error term, and any device claiming flow-rate measurement across drip sets must measure (not assume) drop volume.
-- **External ADC sampling against firmware threshold (no internal comparator).** Lost on power: continuous ADC sampling consumes more average current than the comparator-on-wake-up architecture, and the ADC dynamic range is wasted on what is fundamentally a one-bit transit event.
+- **External ADC sampling against firmware threshold (no internal comparator) as the Phase 2 architecture.** Lost on power: continuous ADC sampling consumes more average current than the comparator-on-wake-up architecture, and the ADC dynamic range is wasted on what is fundamentally a one-bit transit event. (Rev-B Phase 1 — the per-session calibration window — does use ADC polling on both photodiodes; the power-loss argument applies only to the multi-week-runtime Phase 2 mode.)
 - **Permanent dual-beam continuous operation.** Lost on power: running both IR LEDs continuously at the duty cycle Phase 1 needs would prevent multi-week runtime on a single AA. The dual-beam phase is the price paid for per-session calibration; minimising its duration (~10 drops) keeps the energy cost bounded.
 
 ## Consequences

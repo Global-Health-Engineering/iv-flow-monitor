@@ -59,9 +59,17 @@ Sources: Calculated from cell mass/volume and rated capacity. Paleblue: 2.55 Wh 
 
 ### 4. Device Running Time on a Single Charge
 
+> **Note on Rev-B scope.** The numbers in this section are the Phase-1 (worst case)
+> and Phase-2 (best case) projections from the underlying thesis power model. **Rev-B
+> ships in Phase 1 only** — both IR LEDs always-on continuous, no LPTIM duty-cycling
+> (see `site/src/components/PCBArchitecture.astro` Hotspot 3 and
+> `docs/decisions/led-duty-cycle.md`). The Phase-2 ~30-day runtime is therefore a
+> Rev-C deliverable, not a Rev-B claim. The Phase-1 worst-case ~2.5 day runtime is
+> the operative number for the as-shipped Rev-B firmware.
+
 Runtime estimated using power consumption data from both theses:
-- **Best case** (Catarci, Thesis 1): duty-cycled LED (150 us pulses, 8.3% duty) + MCU Stop mode = **1.57 mA** avg at 3.3V = 5.18 mW
-- **Worst case** (Catarci, Thesis 1): continuous LED operation = **19.5 mA** avg at 3.3V = 64.35 mW
+- **Best case** (Catarci, Thesis 1; Phase 2 — Rev-C target): duty-cycled LED (150 us pulses, 8.3% duty) + MCU Stop mode = **1.57 mA** avg at 3.3V = 5.18 mW
+- **Worst case** (Catarci, Thesis 1; Phase 1 — Rev-B as shipped): continuous LED operation = **19.5 mA** avg at 3.3V = 64.35 mW
 - For scenarios B and C, BQ25185 quiescent current (~150 uA at 3.7V = 0.56 mW) is added
 
 | Runtime | A: Li-ion AA (XTAR 4100 mWh) | A: Li-ion AA (Paleblue 2550 mWh) | B: LiPo Pouch (1000 mAh) | C: 18650 (3000 mAh) | C: 18650 (3350 mAh) |
