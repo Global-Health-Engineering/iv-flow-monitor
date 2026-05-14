@@ -83,10 +83,6 @@ const SPEEDS = [
             ))}
           </div>
         </div>
-        <div class="ctrl btn-ctrl">
-          <button type="button" id="pause-btn" class="mini-btn">⏸ Pause</button>
-          <button type="button" id="step-btn" class="mini-btn" disabled>⏭ Step</button>
-        </div>
         <div class="ctrl">
           <input id="scope-toggle" type="checkbox" />
           <label for="scope-toggle">Scope</label>
@@ -528,8 +524,6 @@ const SPEEDS = [
   const dpmVal    = document.getElementById('dpm-val')!;
   const setSel    = document.getElementById('drip-set') as HTMLSelectElement;
   const fluidSel  = document.getElementById('fluid')    as HTMLSelectElement;
-  const pauseBtn  = document.getElementById('pause-btn') as HTMLButtonElement;
-  const stepBtn   = document.getElementById('step-btn')  as HTMLButtonElement;
 
   const scopeChk  = document.getElementById('scope-toggle') as HTMLInputElement;
   const scopeEl   = document.getElementById('scope')!;
@@ -639,7 +633,6 @@ const SPEEDS = [
     beamMode: 'dual' as 'dual' | 'single',
     phaseMode: 'active' as 'active' | 'stop',
     fallTimeMs: 1500,
-    paused: false,
   };
 
   // Cached derived constants (re-derived in recomputeGeometry)
@@ -863,7 +856,7 @@ const SPEEDS = [
     const fallTime = fall;
     const tickRaf = () => {
       const elapsed = performance.now() - t0;
-      if (elapsed >= fallTime || STATE.paused) {
+      if (elapsed >= fallTime) {
         tlNowLabel.textContent = `${Math.round(displayMsFromVisual(fallTime))} ms`;
         return;
       }
@@ -1169,7 +1162,6 @@ const SPEEDS = [
     const t0 = performance.now();
     const duration = effectiveFallMs;
     const step = () => {
-      if (STATE.paused) { scopeCursorRaf = 0; return; }
       const elapsed = performance.now() - t0;
       if (elapsed >= duration) {
         const xEnd = (SCOPE_TOTAL_MS * SCOPE_PX_PER_MS).toFixed(1);
@@ -1212,7 +1204,7 @@ const SPEEDS = [
     const t0 = performance.now();
     const tickRaf = () => {
       const elapsed = performance.now() - t0;
-      if (elapsed >= fall || STATE.paused) {
+      if (elapsed >= fall) {
         tlNowLabel.textContent = `${Math.round(displayMsFromVisual(fall))} ms`;
         return;
       }
@@ -1391,7 +1383,7 @@ const SPEEDS = [
 
     if (timer) { clearInterval(timer); timer = null; }
     refreshScope();
-    if (restartLoop && !STATE.paused) {
+    if (restartLoop) {
       loop();
       timer = setInterval(loop, LOOP_MS);
     }
@@ -1430,27 +1422,6 @@ const SPEEDS = [
       if (kind === 'speed')      STATE.fallTimeMs = parseInt(value, 10);
       applyState(true);
     });
-  });
-
-  // Pause / step — pause stops new drops; step fires one drop in paused mode.
-  // No mid-flight freeze: CSS transitions on the timeline can't be paused
-  // cleanly mid-fall, so the current drop completes its fall, then no more
-  // spawn until resume or step.
-  pauseBtn.addEventListener('click', () => {
-    STATE.paused = !STATE.paused;
-    pauseBtn.classList.toggle('active', STATE.paused);
-    pauseBtn.textContent = STATE.paused ? '▶ Resume' : '⏸ Pause';
-    stepBtn.disabled = !STATE.paused;
-    if (STATE.paused) {
-      if (timer) { clearInterval(timer); timer = null; }
-    } else {
-      applyState(true);
-    }
-  });
-  stepBtn.addEventListener('click', () => {
-    if (!STATE.paused) return;
-    clearPending();
-    loop();
   });
 
   scopeChk.addEventListener('change', () => {
