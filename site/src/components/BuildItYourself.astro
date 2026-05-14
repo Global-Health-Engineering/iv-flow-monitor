@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const REPO = 'https://github.com/Gluflex/iv-flow-monitor-v2';
 const TREE = `${REPO}/tree/v2`;
 const BLOB = `${REPO}/blob/v2`;
-const BOM_CSV_URL = `${BLOB}/hardware/bom.csv.new`;
+const BOM_CSV_URL = `${BLOB}/hardware/bom.csv`;
 
 type BomRow = {
   group: string;
@@ -18,7 +18,7 @@ type BomRow = {
   priceUsd1k: number | null;
 };
 
-const csvPath = fileURLToPath(new URL('../../../hardware/bom.csv.new', import.meta.url));
+const csvPath = fileURLToPath(new URL('../../../hardware/bom.csv', import.meta.url));
 const csvText = readFileSync(csvPath, 'utf-8').trim();
 const [headerLine, ...dataLines] = csvText.split(/\r?\n/);
 const headers = headerLine.split(',');
@@ -170,7 +170,7 @@ const downloads = [
           single-unit reproducer pays the same per-piece price as one building 5.
         </p>
         <p>
-          Source: <a href={BOM_CSV_URL} rel="noopener"><code>hardware/bom.csv.new</code></a>. PCB qty=1
+          Source: <a href={BOM_CSV_URL} rel="noopener"><code>hardware/bom.csv</code></a>. PCB qty=1
           prices are USD per piece from LCSC retail (matches the JLCPCB PCBA parts-list line totals).
           Satellite + mechanical qty=1 prices are CHF receipts converted to USD at FX 0.90.
           <strong>qty=1000 prices are estimates</strong>: ~50 % of LCSC qty=1 for Extended ICs,
