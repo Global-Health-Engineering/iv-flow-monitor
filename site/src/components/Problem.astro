@@ -1,16 +1,20 @@
 ---
 const stats = [
   {
-    num: 'CHF 50',
-    label: 'target BOM for a deployable unit, vendor-agnostic across macro (10 / 15 / 20 gtt·mL⁻¹) and micro (60 gtt·mL⁻¹) drip sets.',
+    num: 'CHF 11',
+    label: 'estimated component BOM at qty=1000 (first-prototype unit ≈ CHF 33). Vendor-agnostic across macro (10 / 15 / 20 gtt·mL⁻¹) and micro (60 gtt·mL⁻¹) drip sets.',
   },
   {
-    num: '67 g',
-    label: 'device weight aboard the chamber. Clips on without modifying the giving set, reusable across patients, sterilisable in 70 % IPA.',
+    num: '119 days',
+    label: 'standby runtime on a single alkaline AA cell (5.5 days actively monitoring). Field-deployable in clinics without reliable mains or USB charging.',
   },
   {
-    num: '10 mm',
-    label: 'IR beam separation. Two beams give two independent measurements per drop — diameter from shadow duration, velocity from inter-beam transit — making the device drip-set-agnostic.',
+    num: '73 %',
+    label: 'of surveyed Sub-Saharan African neonatal facilities lack reliable infusion-pump access (none or limited). Manual gravity drip is the default — flow set by hand-counting drops, no electronic monitoring.',
+    source: {
+      text: 'Tate et al. 2023, rapid review (n = 30 facilities)',
+      href: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9834926/',
+    },
   },
 ];
 ---
@@ -29,7 +33,24 @@ const stats = [
       <div class="stat">
         <div class="num">{s.num}</div>
         <div class="label">{s.label}</div>
+        {s.source && (
+          <div class="stat-source">
+            Source: <a href={s.source.href} rel="noopener noreferrer">{s.source.text}</a>
+          </div>
+        )}
       </div>
     ))}
   </div>
+
+  <style>
+    .stat-source {
+      margin-top: 10px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--fg-mute);
+      letter-spacing: .01em;
+    }
+    .stat-source a { color: var(--fg-mute); text-decoration: underline; text-decoration-color: var(--line); }
+    .stat-source a:hover { color: var(--fg); text-decoration-color: var(--fg-mute); }
+  </style>
 </section>
