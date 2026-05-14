@@ -1,9 +1,8 @@
 ---
-type Caution = { kind: 'polarity' | 'esd' | 'torque' | 'tip'; label: string };
+type Caution = { kind: 'polarity' | 'esd' | 'tip'; label: string };
 
 type Step = {
   tag: string;
-  minutes: number;
   title: string;
   body: string;
   parts: string[];
@@ -14,70 +13,51 @@ type Step = {
 
 const steps: Step[] = [
   {
-    tag: 'MECH',
-    minutes: 25,
+    tag: 'PRINT',
     title: 'Print the case',
-    body: 'Two FDM-printed shells in ASA white — front and back. 0.2 mm layer height, 0.4 mm nozzle, 35 % infill. Press M2 brass heat-set inserts into the captive hex pockets at full nozzle temperature before the part cools.',
-    parts: ['ASA white filament', 'M2 brass heat-set ×4'],
-    tools: ['FDM printer', 'Soldering iron'],
-    cautions: [{ kind: 'tip', label: 'INSERTS WHILE HOT' }],
+    body: 'Two FDM-printed shells in ASA white — front and back.',
+    parts: ['ASA white filament'],
+    tools: ['FDM printer'],
   },
   {
     tag: 'SOLDER',
-    minutes: 12,
-    title: 'Solder the LCD + buttons',
-    body: 'EA DOGS164W-A LCD onto the back side of the PCB (B.Cu) — its through-pins exit on the front. Three PTS647 tactile switches on the same back side so the user presses through the rear-face cutouts: S1 reset, S2 mode, S3 mute.',
-    parts: ['EA DOGS164W-A', 'PTS647 ×3'],
-    tools: ['Soldering iron', 'Flux', 'Solder wick'],
+    title: 'Solder the LCD + tactile switches',
+    body: 'EA DOGS164W-A LCD and two PTS647 tactile switches (left / right). Underlay a 3 mm spacer between the LCD and the PCB.',
+    parts: ['EA DOGS164W-A', 'PTS647 ×2', '3 mm spacer'],
+    tools: ['Soldering iron', 'Flux'],
     cautions: [{ kind: 'esd', label: 'ESD' }],
   },
   {
-    tag: 'MECH',
-    minutes: 5,
-    title: 'Seat the PCB in the front case',
-    body: 'Drop the populated PCB into the front shell from the rear. The four mounting holes line up with the heat-set inserts; secure with 4× M2 socket-cap screws. The slide switch SW1 should engage the front-face slot.',
-    parts: ['M2 socket-cap screws ×4'],
-    tools: ['1.5 mm hex key'],
-    cautions: [{ kind: 'torque', label: 'HAND-TIGHT' }],
-  },
-  {
     tag: 'SOLDER',
-    minutes: 10,
-    title: 'Solder the IR LEDs to the satellite breakout',
-    body: 'Two through-hole IR LEDs on the satellite board that wraps the drip chamber — one TOP, one BOT. R1 / R4 (100 Ω) on the main PCB cap the forward current near 20 mA; Q1 / Q2 switch the cathode side to ground. Reversing a LED leaves it permanently dark and the corresponding photodiode reading full-bright.',
-    parts: ['VSMY2940RG IR LED ×2', '6-pin FFC tail'],
+    title: 'Build the satellite breakout',
+    body: 'Press the two IR LEDs into their bezels first, then solder both bezeled LEDs to the satellite PCB. Solder the AA battery leads onto the same board.',
+    parts: ['VSLY5940 IR LED ×2', 'IR bezel ×2', 'AA battery + leads', 'Satellite PCB'],
     tools: ['Soldering iron', 'Helping hands'],
     cautions: [{ kind: 'polarity', label: 'POLARITY' }],
     inlineDiagram: 'led-polarity',
   },
   {
     tag: 'ASSEMBLY',
-    minutes: 3,
     title: 'Attach the FFC cable',
-    body: 'Open the locking latch on J4 (6-pin FFC socket). Slide the ribbon in pin-1 first (GND) with the contacts facing the latch side. Close the latch firmly until you feel it click. The other end is soldered to the satellite breakout from the previous step.',
+    body: 'Open the locking latch on J4 (6-pin FFC socket) on the main PCB, slide the ribbon in, close the latch. Repeat on the matching FFC socket on the satellite — no solder joint on either end.',
     parts: ['6-pin 0.5 mm FFC ribbon'],
     tools: ['Tweezers'],
   },
   {
     tag: 'MECH',
-    minutes: 5,
-    title: 'Close the back case',
-    body: 'Route the FFC ribbon through the strain-relief channel, align the LCD window with the back-shell cutout, and snap-fit the rear shell onto the front. Listen for the four corner clips to engage. No screws on the back — the snap is the seal (target IP54).',
-    parts: ['Printed back shell'],
-    tools: ['Hands'],
+    title: 'Seat the PCB in the front case',
+    body: '',
+    parts: [],
+    tools: [],
   },
   {
-    tag: 'CALIBRATE',
-    minutes: 12,
-    title: 'Insert the photodiodes',
-    body: 'Press each BPV10NF photodiode into its IR bezel until it bottoms out, then push the assembled bezels into the beam-aperture pockets in the back casing. Verify alignment by powering the device and reading the BOT and TOP test-point voltages — both should sit at the calibration midpoint within ±50 mV.',
-    parts: ['BPV10NF ×2', 'IR bezel ×2'],
-    tools: ['Multimeter', 'USB-C power'],
-    cautions: [{ kind: 'tip', label: 'VERIFY MIDPOINT ±50 mV' }],
+    tag: 'MECH',
+    title: 'Close the back case · insert the photodiodes',
+    body: 'Press each BPV10NF photodiode into its bezel, then push the bezeled photodiodes into the beam-aperture pockets in the back shell. Snap-fit the rear shell onto the front.',
+    parts: ['BPV10NF ×2', 'IR bezel ×2', 'Printed back shell'],
+    tools: [],
   },
 ];
-
-const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
 ---
 <section id="assembly">
   <div class="eyebrow">Build</div>
@@ -88,10 +68,6 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
       <span class="asm-meta-cell">
         <span class="asm-meta-k">Steps</span>
         <span class="asm-meta-v"><span class="asm-done-count" data-done-count>0</span> / {steps.length}</span>
-      </span>
-      <span class="asm-meta-cell">
-        <span class="asm-meta-k">Active time</span>
-        <span class="asm-meta-v">≈ {totalMinutes} min</span>
       </span>
       <span class="asm-meta-cell">
         <span class="asm-meta-k">Photo guide</span>
@@ -121,113 +97,117 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
   <ol class="asm-list" data-asm-list>
     {steps.map((s, i) => {
       const num = String(i + 1).padStart(2, '0');
-      return (
-        <li class="asm-step" data-step={i + 1}>
-          <div class="asm-rail">
+      const hasContent = Boolean(s.body) || s.parts.length > 0 || s.tools.length > 0 || Boolean(s.inlineDiagram);
+      const headBlock = (
+        <div class="asm-head-top">
+          <span class="asm-num">{num}</span>
+          <span class="asm-tag">{s.tag}</span>
+          {s.cautions && s.cautions.length > 0 && (
+            <span class="asm-cautions">
+              {s.cautions.map((c) => (
+                <span class={`asm-caution asm-caution-${c.kind}`}>{c.label}</span>
+              ))}
+            </span>
+          )}
+          <span class="asm-head-actions">
             <button
-              class="asm-node"
+              class="asm-check"
               type="button"
               aria-pressed="false"
               aria-label={`Mark step ${num} ${s.title} as done`}
               data-toggle={i + 1}
             >
-              <svg class="asm-node-check" viewBox="0 0 14 14" aria-hidden="true">
-                <path d="M3 7.5l2.7 2.7L11 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <svg viewBox="0 0 14 14" aria-hidden="true">
+                <path d="M3 7.5l2.7 2.7L11 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </button>
-          </div>
-
-          <div class="asm-body">
-            <details class="asm-details">
-              <summary class="asm-summary">
-                <div class="asm-head">
-                  <span class="asm-step-meta">
-                    <span class="asm-num">{num}</span>
-                    <span class="asm-tag">{s.tag}</span>
-                    <span class="asm-time">~{s.minutes} min</span>
-                  </span>
-                  {s.cautions && s.cautions.length > 0 && (
-                    <span class="asm-cautions">
-                      {s.cautions.map((c) => (
-                        <span class={`asm-caution asm-caution-${c.kind}`}>{c.label}</span>
-                      ))}
-                    </span>
-                  )}
-                </div>
-                <div class="asm-summary-title-row">
-                  <h3>{s.title}</h3>
-                  <span class="asm-summary-chevron" aria-hidden="true">▾</span>
-                </div>
-              </summary>
-
-              <div class="asm-detail-body">
-                <p>{s.body}</p>
-
-                {s.inlineDiagram === 'led-polarity' && (
-              <figure class="asm-figure">
-                <div class="asm-figure-head">
-                  <span class="asm-figure-tag">FIG · 04A</span>
-                  <span class="asm-figure-title">IR LED polarity — both channels</span>
-                </div>
-                <svg class="asm-led-svg" viewBox="0 0 480 180" role="img" aria-label="IR LED orientation: long leg to plus pad, short leg to minus pad">
-                  <defs>
-                    <radialGradient id="ledGlow" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stop-color="#ff6b35" stop-opacity=".55" />
-                      <stop offset="60%" stop-color="#ff6b35" stop-opacity=".10" />
-                      <stop offset="100%" stop-color="#ff6b35" stop-opacity="0" />
-                    </radialGradient>
-                  </defs>
-
-                  {/* Two LED illustrations side-by-side */}
-                  {[80, 320].map((cx, idx) => (
-                    <g transform={`translate(${cx}, 0)`}>
-                      {/* glow halo */}
-                      <circle cx="0" cy="48" r="46" fill="url(#ledGlow)" />
-                      {/* LED dome — flat on right (cathode side) */}
-                      <path
-                        d="M -26 26 A 26 26 0 0 1 26 26 L 26 70 L -26 70 Z"
-                        fill="#1c0f08"
-                        stroke="#ff6b35"
-                        stroke-width="1.5"
-                      />
-                      {/* small flat indicator on cathode (right) side */}
-                      <line x1="26" y1="34" x2="26" y2="62" stroke="#ff6b35" stroke-width="2.5" stroke-linecap="round" />
-                      {/* legs */}
-                      <line x1="-12" y1="70" x2="-12" y2="140" stroke="#9aa3ad" stroke-width="1.6" stroke-linecap="round" />
-                      <line x1="12"  y1="70" x2="12"  y2="115" stroke="#9aa3ad" stroke-width="1.6" stroke-linecap="round" />
-                      {/* solder pads as little hairlines */}
-                      <line x1="-22" y1="140" x2="-2"  y2="140" stroke="#ff6b35" stroke-width="2" />
-                      <line x1="2"   y1="115" x2="22"  y2="115" stroke="#ff6b35" stroke-width="2" />
-                      {/* pad labels */}
-                      <text x="-12" y="158" text-anchor="middle" class="asm-led-pad">LED+</text>
-                      <text x="12"  y="133" text-anchor="middle" class="asm-led-pad">LED−</text>
-                      {/* leg annotations */}
-                      <text x="-44" y="108" text-anchor="end" class="asm-led-note">LONG</text>
-                      <text x="-44" y="121" text-anchor="end" class="asm-led-note-sub">anode</text>
-                      <text x="44"  y="95"  text-anchor="start" class="asm-led-note">SHORT</text>
-                      <text x="44"  y="108" text-anchor="start" class="asm-led-note-sub">cathode</text>
-                      {/* connector lines from notes to legs */}
-                      <line x1="-43" y1="104" x2="-18" y2="100" stroke="#2a323d" stroke-width="1" />
-                      <line x1="43"  y1="91"  x2="18"  y2="85"  stroke="#2a323d" stroke-width="1" />
-                      {/* flat-side callout */}
-                      <line x1="32" y1="48" x2="56" y2="40" stroke="#2a323d" stroke-width="1" />
-                      <text x="58" y="38" class="asm-led-note-sub">flat = cathode</text>
-                      {/* channel label */}
-                      <text x="0" y="14" text-anchor="middle" class="asm-led-title">
-                        {idx === 0 ? 'TOP CHANNEL' : 'BOT CHANNEL'}
-                      </text>
-                    </g>
-                  ))}
-
-                  {/* divider between the two LEDs */}
-                  <line x1="200" y1="20" x2="200" y2="160" stroke="#1f2630" stroke-width="1" stroke-dasharray="3 4" />
+            {hasContent && (
+              <span class="asm-chevron" aria-hidden="true">
+                <svg viewBox="0 0 14 14" aria-hidden="true">
+                  <path d="M3 5.5l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
-                <figcaption>
-                  Long leg <strong>→ LED+ pad</strong> · short leg <strong>→ LED− pad</strong>. Convention holds for both channels. The flat on the LED body marks the cathode side.
-                </figcaption>
-              </figure>
+              </span>
             )}
+          </span>
+        </div>
+      );
 
+      if (!hasContent) {
+        return (
+          <li class="asm-step" data-step={i + 1}>
+            <div class="asm-card asm-card-flat">
+              <div class="asm-card-head asm-card-head-flat">
+                {headBlock}
+                <h3 class="asm-title">{s.title}</h3>
+              </div>
+            </div>
+          </li>
+        );
+      }
+
+      return (
+        <li class="asm-step" data-step={i + 1}>
+          <details class="asm-card">
+            <summary class="asm-card-head">
+              {headBlock}
+              <h3 class="asm-title">{s.title}</h3>
+            </summary>
+
+            <div class="asm-card-body">
+              {s.body && <p>{s.body}</p>}
+
+              {s.inlineDiagram === 'led-polarity' && (
+                <figure class="asm-figure">
+                  <div class="asm-figure-head">
+                    <span class="asm-figure-tag">FIG · 03A</span>
+                    <span class="asm-figure-title">IR LED polarity — both channels</span>
+                  </div>
+                  <svg class="asm-led-svg" viewBox="0 0 480 180" role="img" aria-label="IR LED orientation: long leg to plus pad, short leg to minus pad">
+                    <defs>
+                      <radialGradient id="ledGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#ff6b35" stop-opacity=".55" />
+                        <stop offset="60%" stop-color="#ff6b35" stop-opacity=".10" />
+                        <stop offset="100%" stop-color="#ff6b35" stop-opacity="0" />
+                      </radialGradient>
+                    </defs>
+                    {[80, 320].map((cx, idx) => (
+                      <g transform={`translate(${cx}, 0)`}>
+                        <circle cx="0" cy="48" r="46" fill="url(#ledGlow)" />
+                        <path
+                          d="M -26 26 A 26 26 0 0 1 26 26 L 26 70 L -26 70 Z"
+                          fill="#1c0f08"
+                          stroke="#ff6b35"
+                          stroke-width="1.5"
+                        />
+                        <line x1="26" y1="34" x2="26" y2="62" stroke="#ff6b35" stroke-width="2.5" stroke-linecap="round" />
+                        <line x1="-12" y1="70" x2="-12" y2="140" stroke="#9aa3ad" stroke-width="1.6" stroke-linecap="round" />
+                        <line x1="12"  y1="70" x2="12"  y2="115" stroke="#9aa3ad" stroke-width="1.6" stroke-linecap="round" />
+                        <line x1="-22" y1="140" x2="-2"  y2="140" stroke="#ff6b35" stroke-width="2" />
+                        <line x1="2"   y1="115" x2="22"  y2="115" stroke="#ff6b35" stroke-width="2" />
+                        <text x="-12" y="158" text-anchor="middle" class="asm-led-pad">LED+</text>
+                        <text x="12"  y="133" text-anchor="middle" class="asm-led-pad">LED−</text>
+                        <text x="-44" y="108" text-anchor="end" class="asm-led-note">LONG</text>
+                        <text x="-44" y="121" text-anchor="end" class="asm-led-note-sub">anode</text>
+                        <text x="44"  y="95"  text-anchor="start" class="asm-led-note">SHORT</text>
+                        <text x="44"  y="108" text-anchor="start" class="asm-led-note-sub">cathode</text>
+                        <line x1="-43" y1="104" x2="-18" y2="100" stroke="#2a323d" stroke-width="1" />
+                        <line x1="43"  y1="91"  x2="18"  y2="85"  stroke="#2a323d" stroke-width="1" />
+                        <line x1="32" y1="48" x2="56" y2="40" stroke="#2a323d" stroke-width="1" />
+                        <text x="58" y="38" class="asm-led-note-sub">flat = cathode</text>
+                        <text x="0" y="14" text-anchor="middle" class="asm-led-title">
+                          {idx === 0 ? 'TOP CHANNEL' : 'BOT CHANNEL'}
+                        </text>
+                      </g>
+                    ))}
+                    <line x1="200" y1="20" x2="200" y2="160" stroke="#1f2630" stroke-width="1" stroke-dasharray="3 4" />
+                  </svg>
+                  <figcaption>
+                    Long leg <strong>→ LED+ pad</strong> · short leg <strong>→ LED− pad</strong>. Convention holds for both channels. The flat on the LED body marks the cathode side.
+                  </figcaption>
+                </figure>
+              )}
+
+              {(s.parts.length > 0 || s.tools.length > 0) && (
                 <div class="asm-manifest-row">
                   {s.parts.length > 0 && (
                     <div class="asm-chip-group">
@@ -246,9 +226,9 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
                     </div>
                   )}
                 </div>
-              </div>
-            </details>
-          </div>
+              )}
+            </div>
+          </details>
         </li>
       );
     })}
@@ -266,7 +246,7 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
   }
   .asm-manifest-meta {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
     align-items: baseline;
   }
@@ -284,14 +264,6 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
     color: var(--fg);
     letter-spacing: -.01em;
   }
-  .asm-meta-link {
-    border: 0;
-    color: var(--fg-dim);
-    font-family: var(--mono);
-    font-size: 13px;
-  }
-  .asm-meta-link:hover { color: var(--ir); }
-  .asm-meta-link code { font-family: inherit; font-size: inherit; }
   .asm-meta-status .asm-meta-v {
     color: var(--flow);
     font-family: var(--mono);
@@ -362,153 +334,75 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
   }
   .asm-toolbar-btn:hover .asm-toolbar-glyph { transform: scale(1.08); }
 
-  /* ---- step list ---- */
+  /* ---- step list / cards ---- */
   .asm-list {
     list-style: none;
-    margin: 28px 0 0;
+    margin: 24px 0 0;
     padding: 0;
-    position: relative;
-  }
-  /* the spine — runs the full height behind the nodes */
-  .asm-list::before {
-    content: "";
-    position: absolute;
-    top: 26px; bottom: 26px;
-    left: 16px;
-    width: 1px;
-    background: linear-gradient(180deg, transparent 0%, var(--line-2) 8%, var(--line-2) 92%, transparent 100%);
-    pointer-events: none;
-  }
-
-  .asm-step {
-    display: grid;
-    grid-template-columns: 56px 1fr;
-    gap: 26px;
-    padding: 26px 0 28px;
-    border-bottom: 1px dashed var(--line);
-    transition: opacity .25s ease;
-    position: relative;
-  }
-  .asm-step:last-child { border-bottom: 0; }
-  .asm-step.is-done .asm-body h3 { color: var(--fg-mute); }
-  .asm-step.is-done .asm-body p,
-  .asm-step.is-done .asm-manifest-row { opacity: .58; }
-  .asm-step.is-done .asm-num { color: var(--fg-mute); }
-
-  /* ---- rail node (clickable check) ---- */
-  .asm-rail {
-    position: relative;
     display: flex;
-    justify-content: center;
-    padding-top: 4px;
+    flex-direction: column;
+    gap: 12px;
   }
-  .asm-node {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    background: var(--bg);
-    border: 1.5px solid var(--line-2);
-    color: transparent;
-    cursor: pointer;
-    padding: 0;
-    display: grid; place-items: center;
-    transition: background .15s ease, border-color .15s ease, color .15s ease, box-shadow .2s ease, transform .12s ease;
-    position: relative;
-    z-index: 1;
-  }
-  .asm-node:hover {
-    border-color: var(--ir);
-    box-shadow: 0 0 0 4px rgba(255,107,53,.08);
-  }
-  .asm-node:active { transform: scale(.94); }
-  .asm-node:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(255,107,53,.35);
-  }
-  .asm-node[aria-pressed="true"] {
-    background: var(--ir);
-    border-color: var(--ir);
-    color: #1a0d05;
-    box-shadow: 0 0 14px rgba(255,107,53,.35);
-  }
-  .asm-node-check {
-    width: 14px; height: 14px;
-    opacity: 0;
-    transform: scale(.6);
-    transition: opacity .15s ease, transform .2s cubic-bezier(.18,.89,.32,1.28);
-  }
-  .asm-node[aria-pressed="true"] .asm-node-check {
-    opacity: 1;
-    transform: scale(1);
-  }
+  .asm-step { margin: 0; padding: 0; }
 
-  /* ---- collapsible details/summary ---- */
-  .asm-details { display: block; }
-  .asm-summary {
+  .asm-card {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color .15s ease, box-shadow .2s ease, background .15s ease;
+  }
+  .asm-card:hover {
+    border-color: var(--line-2);
+    background: linear-gradient(180deg, var(--bg-2), color-mix(in srgb, var(--bg-2) 92%, var(--ir) 8%));
+  }
+  .asm-card[open] {
+    border-color: rgba(255,107,53,.5);
+    box-shadow: 0 0 0 1px rgba(255,107,53,.12), 0 6px 18px -8px rgba(255,107,53,.25);
+  }
+  .asm-card-flat:hover { background: var(--bg-2); }
+  .asm-card-head-flat { cursor: default; }
+  .asm-card-head-flat:hover .asm-title { color: var(--fg); }
+  .asm-step.is-done .asm-card {
+    border-color: var(--line);
+    background: var(--bg-2);
+    opacity: .72;
+  }
+  .asm-step.is-done .asm-card:hover { opacity: .9; }
+
+  /* ---- card head (summary) ---- */
+  .asm-card-head {
     cursor: pointer;
     list-style: none;
     user-select: none;
-    display: block;
-    border-radius: 6px;
-    padding: 2px 0;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     transition: background .12s ease;
   }
-  .asm-summary::-webkit-details-marker { display: none; }
-  .asm-summary:hover h3 { color: var(--ir); }
-  .asm-summary:focus-visible {
+  .asm-card-head::-webkit-details-marker { display: none; }
+  .asm-card-head:focus-visible {
     outline: none;
     background: rgba(255,107,53,.04);
   }
-  .asm-summary-title-row {
-    display: flex;
-    align-items: baseline;
-    gap: 14px;
-  }
-  .asm-summary-title-row h3 {
-    flex: 1;
-    transition: color .15s ease;
-  }
-  .asm-summary-chevron {
-    font-size: 14px;
-    line-height: 1;
-    color: var(--fg-mute);
-    flex-shrink: 0;
-    transition: transform .25s ease, color .15s ease;
-    transform-origin: center;
-  }
-  .asm-details[open] .asm-summary-chevron { transform: rotate(180deg); }
-  .asm-summary:hover .asm-summary-chevron { color: var(--ir); }
-  .asm-detail-body {
-    animation: asm-detail-in .22s ease both;
-  }
-  @keyframes asm-detail-in {
-    from { opacity: 0; transform: translateY(-2px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  /* When closed, tighten the bottom padding so collapsed rows don't feel airy */
-  .asm-step:has(.asm-details:not([open])) { padding-bottom: 18px; }
 
-  /* ---- step head: number, tag, time, cautions ---- */
-  .asm-head {
+  .asm-head-top {
     display: flex;
+    align-items: center;
+    gap: 10px;
     flex-wrap: wrap;
-    gap: 10px 16px;
-    align-items: baseline;
-    margin-bottom: 6px;
-  }
-  .asm-step-meta {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 12px;
   }
   .asm-num {
     font-family: var(--serif);
-    font-size: 28px;
+    font-size: 22px;
     line-height: 1;
     color: var(--ir);
     font-weight: 600;
     letter-spacing: -.02em;
     transition: color .2s ease;
   }
+  .asm-step.is-done .asm-num { color: var(--fg-mute); }
   .asm-tag {
     font-family: var(--mono);
     font-size: 10px;
@@ -518,20 +412,13 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
     padding: 3px 8px;
     border: 1px solid var(--line-2);
     border-radius: 3px;
-    background: var(--bg-2);
-  }
-  .asm-time {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--fg-mute);
-    letter-spacing: .04em;
+    background: var(--bg);
   }
 
   .asm-cautions {
     display: inline-flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-left: auto;
   }
   .asm-caution {
     display: inline-flex;
@@ -556,11 +443,6 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
     background: rgba(251,191,36,.08);
     border: 1px solid rgba(251,191,36,.28);
   }
-  .asm-caution-torque {
-    color: var(--yellow);
-    background: rgba(251,191,36,.08);
-    border: 1px solid rgba(251,191,36,.28);
-  }
   .asm-caution-tip {
     color: var(--flow);
     background: rgba(6,182,212,.08);
@@ -568,18 +450,90 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
   }
   .asm-caution-tip::before { content: "→"; }
 
-  .asm-body h3 {
-    font-size: 20px;
-    margin: 6px 0 8px;
-    transition: color .2s ease;
+  /* ---- check + chevron, far right of head ---- */
+  .asm-head-actions {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
   }
-  .asm-body p {
+  .asm-check {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1.5px solid var(--line-2);
+    color: transparent;
+    cursor: pointer;
+    padding: 0;
+    display: grid; place-items: center;
+    transition: background .15s ease, border-color .15s ease, color .15s ease, box-shadow .2s ease, transform .12s ease;
+  }
+  .asm-check svg {
+    width: 14px; height: 14px;
+    opacity: 0;
+    transform: scale(.6);
+    transition: opacity .15s ease, transform .2s cubic-bezier(.18,.89,.32,1.28);
+  }
+  .asm-check:hover {
+    border-color: var(--ir);
+    box-shadow: 0 0 0 4px rgba(255,107,53,.08);
+  }
+  .asm-check:active { transform: scale(.94); }
+  .asm-check:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255,107,53,.35);
+  }
+  .asm-check[aria-pressed="true"] {
+    background: var(--ir);
+    border-color: var(--ir);
+    color: #1a0d05;
+    box-shadow: 0 0 14px rgba(255,107,53,.35);
+  }
+  .asm-check[aria-pressed="true"] svg {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .asm-chevron {
+    width: 22px; height: 22px;
+    display: grid; place-items: center;
+    color: var(--fg-mute);
+    border-radius: 4px;
+    transition: transform .25s ease, color .15s ease, background .15s ease;
+  }
+  .asm-chevron svg { width: 14px; height: 14px; }
+  .asm-card-head:hover .asm-chevron { color: var(--ir); background: rgba(255,107,53,.06); }
+  .asm-card[open] .asm-chevron { transform: rotate(180deg); color: var(--ir); }
+
+  .asm-title {
+    font-size: 19px;
+    margin: 0;
+    transition: color .15s ease;
+    line-height: 1.3;
+  }
+  .asm-card-head:hover .asm-title { color: var(--ir); }
+  .asm-step.is-done .asm-title { color: var(--fg-mute); text-decoration: line-through; text-decoration-color: rgba(255,255,255,.18); text-decoration-thickness: 1px; }
+
+  /* ---- card body ---- */
+  .asm-card-body {
+    padding: 0 20px 18px;
+    margin-top: -2px;
+    border-top: 1px dashed var(--line);
+    padding-top: 14px;
+    animation: asm-detail-in .22s ease both;
+  }
+  .asm-card-body p {
     font-size: 14.5px;
     line-height: 1.6;
     margin: 0;
     color: var(--fg-dim);
     max-width: 68ch;
     transition: opacity .2s ease;
+  }
+  .asm-step.is-done .asm-card-body p,
+  .asm-step.is-done .asm-manifest-row { opacity: .62; }
+  @keyframes asm-detail-in {
+    from { opacity: 0; transform: translateY(-2px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   /* ---- parts/tools manifest row ---- */
@@ -589,7 +543,6 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
     flex-wrap: wrap;
     gap: 10px 22px;
     align-items: baseline;
-    transition: opacity .2s ease;
   }
   .asm-chip-group { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .asm-chip-label {
@@ -606,7 +559,7 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
     padding: 3px 8px;
     border-radius: 3px;
     color: var(--fg-dim);
-    background: var(--bg-2);
+    background: var(--bg);
     border: 1px solid var(--line);
   }
   .asm-chip-tool { color: var(--fg-mute); border-style: dashed; }
@@ -617,7 +570,7 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
     background:
       radial-gradient(ellipse at 25% 45%, rgba(255,107,53,.05), transparent 55%),
       radial-gradient(ellipse at 75% 45%, rgba(255,107,53,.05), transparent 55%),
-      var(--bg-2);
+      var(--bg);
     border: 1px solid var(--line);
     border-left: 2px solid var(--ir);
     border-radius: var(--radius);
@@ -693,31 +646,30 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
   /* ---- responsive ---- */
   @media (max-width: 760px) {
     .asm-manifest-meta { grid-template-columns: 1fr 1fr; gap: 16px; }
-    .asm-step { grid-template-columns: 40px 1fr; gap: 16px; }
-    .asm-list::before { left: 12px; }
-    .asm-num { font-size: 22px; }
-    .asm-cautions { margin-left: 0; flex-basis: 100%; }
+    .asm-card-head { padding: 14px 16px; }
+    .asm-card-body { padding: 12px 16px 16px; }
+    .asm-num { font-size: 20px; }
+    .asm-title { font-size: 17px; }
     .asm-led-svg { max-width: 100%; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .asm-progress-fill,
-    .asm-node,
-    .asm-node-check,
-    .asm-step,
+    .asm-check,
+    .asm-check svg,
+    .asm-card,
     .asm-num,
-    .asm-body h3,
-    .asm-body p,
+    .asm-title,
+    .asm-card-body p,
     .asm-manifest-row,
-    .asm-summary-chevron,
-    .asm-summary-title-row h3 { transition: none; }
-    .asm-detail-body { animation: none; }
+    .asm-chevron { transition: none; }
+    .asm-card-body { animation: none; }
   }
 </style>
 
 <script>
   // Hydrate done-state from localStorage; persist on click.
-  const KEY = 'dripito.assembly.done.v1';
+  const KEY = 'dripito.assembly.done.v2';
   const list = document.querySelector('[data-asm-list]') as HTMLOListElement | null;
   const progressEl = document.querySelector('[data-progress]') as HTMLElement | null;
   const progressFill = document.querySelector('[data-progress-fill]') as HTMLElement | null;
@@ -737,14 +689,14 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
           state = new Set(parsed.filter((n) => typeof n === 'number' && n >= 1 && n <= total));
         }
       }
-    } catch { /* localStorage may be unavailable — fall through */ }
+    } catch { /* localStorage may be unavailable */ }
 
     const render = () => {
       list.querySelectorAll<HTMLLIElement>('.asm-step').forEach((li) => {
         const idx = Number(li.dataset.step);
         const isDone = state.has(idx);
         li.classList.toggle('is-done', isDone);
-        const btn = li.querySelector<HTMLButtonElement>('.asm-node');
+        const btn = li.querySelector<HTMLButtonElement>('.asm-check');
         if (btn) btn.setAttribute('aria-pressed', String(isDone));
       });
       const n = state.size;
@@ -767,13 +719,16 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
 
     const persist = () => {
       try { localStorage.setItem(KEY, JSON.stringify(Array.from(state).sort((a, b) => a - b))); }
-      catch { /* localStorage may be full or blocked — silent fail is fine */ }
+      catch { /* full or blocked */ }
     };
 
+    // Click on the check button: toggle done, but don't open/close the card.
     list.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
-      const btn = target.closest<HTMLButtonElement>('.asm-node');
+      const btn = target.closest<HTMLButtonElement>('.asm-check');
       if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
       const idx = Number(btn.dataset.toggle);
       if (!Number.isFinite(idx)) return;
       if (state.has(idx)) state.delete(idx); else state.add(idx);
@@ -788,7 +743,7 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
   const toggleAllBtn = document.querySelector<HTMLButtonElement>('[data-toggle-all]');
   const toggleAllLabel = document.querySelector<HTMLElement>('[data-toggle-all-label]');
   const toggleAllGlyph = document.querySelector<HTMLElement>('.asm-toolbar-glyph');
-  const detailsEls = document.querySelectorAll<HTMLDetailsElement>('.asm-details');
+  const detailsEls = document.querySelectorAll<HTMLDetailsElement>('.asm-card');
 
   if (toggleAllBtn && toggleAllLabel && toggleAllGlyph && detailsEls.length > 0) {
     const syncLabel = () => {
@@ -801,7 +756,6 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
     toggleAllBtn.addEventListener('click', () => {
       const anyOpen = Array.from(detailsEls).some((d) => d.open);
       detailsEls.forEach((d) => { d.open = !anyOpen; });
-      // toggle events fire and call syncLabel for us
     });
 
     detailsEls.forEach((d) => d.addEventListener('toggle', syncLabel));
