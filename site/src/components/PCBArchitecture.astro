@@ -247,9 +247,10 @@ const hotspots = [
 <style>
   .play-sound-slot:empty { display: none; }
   .play-sound-slot { margin: 14px 0 4px; }
-  /* Button selector goes through the static parent so Astro's scoped class
-     attaches to the slot — innerHTML-injected children inherit reach. */
-  .play-sound-slot button {
+  /* :global() opts the button (innerHTML-injected, so missing Astro's
+     scoping hash) out of scoping, while keeping the rule reach-limited
+     to descendants of the static parent slot. */
+  .play-sound-slot :global(button) {
     font-family: var(--mono); font-size: 12.5px; letter-spacing: .02em;
     color: var(--ir); white-space: nowrap;
     padding: 8px 16px; border: 1px solid var(--ir); border-radius: 999px;
@@ -257,7 +258,7 @@ const hotspots = [
     cursor: pointer;
     transition: background 140ms ease, color 140ms ease;
   }
-  .play-sound-slot button span { display: inline-block; margin-left: 6px; transition: transform 140ms ease; }
-  .play-sound-slot button:hover { background: var(--ir); color: #0d1117; }
-  .play-sound-slot button:hover span { transform: translateX(2px); }
+  .play-sound-slot :global(button span) { display: inline-block; margin-left: 6px; transition: transform 140ms ease; }
+  .play-sound-slot :global(button:hover) { background: var(--ir); color: #0d1117; }
+  .play-sound-slot :global(button:hover span) { transform: translateX(2px); }
 </style>
