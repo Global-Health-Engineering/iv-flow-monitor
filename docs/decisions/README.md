@@ -65,6 +65,7 @@ Conditions under which this decision should be re-opened (e.g.
 | [`led-duty-cycle.md`](led-duty-cycle.md) | Phase 2 IR LED at 0.3 % duty cycle |
 | [`auto-calibration-at-boot.md`](auto-calibration-at-boot.md) | Threshold auto-calibration (primary, no fallback) |
 | [`onshape-mcp-evaluation.md`](onshape-mcp-evaluation.md) | Parametric CAD tooling — evaluated, deferred to Rev-C |
+| [`firmware-build-and-test-rev-c.md`](firmware-build-and-test-rev-c.md) | CubeIDE-only Rev-B firmware build; Dockerized build + host-side state-machine tests deferred to Rev-C |
 
 ## Why ADRs
 
