@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const REPO = 'https://github.com/Gluflex/iv-flow-monitor-v2';
+const REPO = 'https://github.com/Gluflex/dripito';
 const TREE = `${REPO}/tree/v2`;
 const BLOB = `${REPO}/blob/v2`;
 const BOM_CSV_URL = `${BLOB}/hardware/bom.csv`;
@@ -302,8 +302,8 @@ const downloads = [
       </div>
 
       <h3 style="margin-top: 36px;">Reproduce in one command</h3>
-      <pre class="code-block"><span class="prompt">$</span> git clone https://github.com/Gluflex/iv-flow-monitor-v2
-<span class="prompt">$</span> cd iv-flow-monitor-v2/analysis
+      <pre class="code-block"><span class="prompt">$</span> git clone https://github.com/Gluflex/dripito
+<span class="prompt">$</span> cd dripito/analysis
 <span class="prompt">$</span> docker compose up regenerate-figures-sample   <span class="ok"># cold-clone test (sample data)</span>
 <span class="prompt">$</span> docker compose up regenerate-figures          <span class="ok"># full campaign data</span>
 <span class="ok"># → analysis/figures/fig_error_budget.png</span>

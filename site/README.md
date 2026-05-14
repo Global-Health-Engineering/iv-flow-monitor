@@ -15,7 +15,7 @@ npm run preview      # preview the production build locally
 
 The [`.github/workflows/deploy-site.yml`](../.github/workflows/deploy-site.yml) workflow builds and deploys on every push to `v2`. GitHub Pages source must be set to **GitHub Actions** in the repository settings.
 
-`astro.config.mjs` sets `site` to the canonical Pages URL and `base` to `/iv-flow-monitor-v2/`.
+`astro.config.mjs` sets `site` to the canonical Pages URL and `base` to `/dripito/`.
 
 ## Source structure
 

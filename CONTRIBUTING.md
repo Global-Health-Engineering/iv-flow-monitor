@@ -8,7 +8,7 @@ reports, and questions are welcome at any time.
 ## Reporting issues
 
 Open an issue at
-[github.com/Gluflex/iv-flow-monitor-v2/issues](https://github.com/Gluflex/iv-flow-monitor-v2/issues).
+[github.com/Gluflex/dripito/issues](https://github.com/Gluflex/dripito/issues).
 For safety-relevant defects (drop-detection, alarm logic, firmware state
 machine), email Leandro Catarci at `lcatarci@ethz.ch` rather than opening
 a public issue — this repository is a research prototype, not a certified

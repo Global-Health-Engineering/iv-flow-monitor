@@ -11,8 +11,8 @@ license: CERN-OHL-2.0
 type: software
 version: "1.0.0"
 date-released: "2026-05-14"
-repository-code: "https://github.com/Gluflex/iv-flow-monitor-v2"
-url: "https://gluflex.github.io/iv-flow-monitor-v2"
+repository-code: "https://github.com/Gluflex/dripito"
+url: "https://gluflex.github.io/dripito"
 # doi: 10.5281/zenodo.TBD  # populated post-submission
 authors:
   - family-names: Catarci
