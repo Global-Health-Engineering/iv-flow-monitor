@@ -60,13 +60,6 @@ const SPEEDS = [
         </div>
 
         <div class="ctrl seg-ctrl">
-          <label>Beams</label>
-          <div class="seg-group" data-group="beam-mode">
-            <button type="button" class="seg-btn active" data-value="dual">Dual</button>
-            <button type="button" class="seg-btn" data-value="single">Single</button>
-          </div>
-        </div>
-        <div class="ctrl seg-ctrl">
           <label>Power</label>
           <div class="seg-group" data-group="phase-mode">
             <button type="button" class="seg-btn active" data-value="active">P1 · Always on</button>
@@ -1401,7 +1394,7 @@ const SPEEDS = [
     applyState(true);
   });
 
-  // Segmented groups (beam-mode, phase-mode, speed)
+  // Segmented groups (phase-mode, speed)
   document.querySelectorAll<HTMLDivElement>('.seg-group').forEach(group => {
     group.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
@@ -1410,7 +1403,6 @@ const SPEEDS = [
       target.classList.add('active');
       const value = target.getAttribute('data-value') ?? '';
       const kind = group.getAttribute('data-group');
-      if (kind === 'beam-mode')  STATE.beamMode = value as 'dual' | 'single';
       if (kind === 'phase-mode') STATE.phaseMode = value as 'active' | 'stop';
       if (kind === 'speed')      STATE.fallTimeMs = parseInt(value, 10);
       applyState(true);
