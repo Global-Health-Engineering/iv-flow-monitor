@@ -1,7 +1,7 @@
 # firmware/
 
 Embedded C firmware for the Dripito Rev-B monitor. Single CubeIDE
-project at `STM32CubeIDE/InfusionBA2/`, targeting **STM32G071C8TX**.
+project at `STM32CubeIDE/Dripito/`, targeting **STM32G071C8TX**.
 
 A Rev-A predecessor (STM32G030C8TX, hardware revision A) lives in the
 bachelor-thesis archive on Zenodo
@@ -13,9 +13,9 @@ this repository ships only the active Rev-B firmware.
 CubeIDE GUI only — no CLI build is configured.
 
 1. *File → Import → Existing Projects into Workspace* — point at
-   `firmware/STM32CubeIDE/InfusionBA2/`.
+   `firmware/STM32CubeIDE/Dripito/`.
 2. To regenerate HAL after a peripheral config change, open
-   `InfusionBA2.ioc` and click *Generate Code*. Preserve any
+   `Dripito.ioc` and click *Generate Code*. Preserve any
    `Copyright (c) STMicroelectronics` headers — they are reapplied on
    regeneration.
 3. *Project → Build All*.
@@ -32,7 +32,7 @@ CubeIDE GUI only — no CLI build is configured.
 | Buttons (MUTE / MODE / RES) | PB6 / PB7 / PB8 |
 | UART (debug) | PA9 / PA10 |
 
-Source of truth: `STM32CubeIDE/InfusionBA2/Core/Inc/main.h`.
+Source of truth: `STM32CubeIDE/Dripito/Core/Inc/main.h`.
 
 ## CubeIDE pitfalls
 

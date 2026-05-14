@@ -23,7 +23,7 @@ deliberately left out of scope. Numerical results live in
 | Ground truth | Mettler-Toledo MS-series precision scale (±0.0001 g) streaming SICS `SIR` at ~23 Hz |
 
 The firmware constants above are the **final** values committed to
-`firmware/STM32CubeIDE/InfusionBA2/`. Constants were tuned during the
+`firmware/STM32CubeIDE/Dripito/`. Constants were tuned during the
 morning calibration runs (V_50_01..04); the calibrated value
 `V_CAL_K = 1.27` was baked in and verified against the independent run
 V_50_05. The full in-bench change log is in `limitations.md` §14.

@@ -45,7 +45,7 @@ Protocol: [`docs/testing-and-validation.md`](docs/testing-and-validation.md).
 
 ## Build the firmware
 
-1. Open `firmware/STM32CubeIDE/InfusionBA2/` in STM32CubeIDE.
+1. Open `firmware/STM32CubeIDE/Dripito/` in STM32CubeIDE.
 2. *Project → Build All*.
 3. Connect ST-Link, *Run → Debug*.
 
@@ -61,7 +61,7 @@ Enclosure: STEP and STL exports in [`hardware/3dmodels/Enclosure/`](hardware/3dm
 
 ```
 hardware/        KiCad 8.x project — schematic, PCB, libs, datasheets, gerbers, 3D models (PCB + Enclosure)
-firmware/        STM32CubeIDE workspace (InfusionBA2 Rev-B)
+firmware/        STM32CubeIDE workspace (Dripito Rev-B)
 enclosure/       Rev-B-is-not-final framing + cross-references; CAD lives in hardware/3dmodels/Enclosure/
 docs/            Architecture decisions, requirements, results, limitations
 data/            Raw validation CSVs, UART logs, gravimetric scale streams, geometry, edge cases

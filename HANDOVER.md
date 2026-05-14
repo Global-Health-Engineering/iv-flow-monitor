@@ -87,7 +87,7 @@ final 4-day window before submission.
 
 | Area | Path |
 |---|---|
-| Firmware (Rev-B) | `firmware/STM32CubeIDE/InfusionBA2/` |
+| Firmware (Rev-B) | `firmware/STM32CubeIDE/Dripito/` |
 | Hardware (KiCad 8) | `hardware/flow_monitor.kicad_sch`, `.kicad_pcb` |
 | Enclosure (ASA print) | `enclosure/` |
 | Validation dataset | `data/raw/2026-05-13_*`, `data/raw/2026-05-14_pm/` |

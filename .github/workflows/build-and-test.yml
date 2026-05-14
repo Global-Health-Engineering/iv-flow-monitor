@@ -33,7 +33,7 @@ jobs:
       - name: Install numpy
         run: pip install numpy
       - name: Run Monte Carlo estimator verification
-        run: python firmware/STM32CubeIDE/InfusionBA2/tools/verify_estimator.py
+        run: python firmware/STM32CubeIDE/Dripito/tools/verify_estimator.py
 
   analysis-pipeline:
     name: regenerate analysis figures from sample data

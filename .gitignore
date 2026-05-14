@@ -76,4 +76,4 @@ hardware/sch_analysis.json
 .git-filter-repo-replace-text.txt
 
 # SWD log reader runtime state (head pointer cache)
-firmware/STM32CubeIDE/InfusionBA2/tools/.read_swd_log_state.json
+firmware/STM32CubeIDE/Dripito/tools/.read_swd_log_state.json

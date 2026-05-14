@@ -60,7 +60,7 @@ students. Disagreements are welcome; personal attacks are not.
 The repository is a medical-device prototype. Three areas have heightened
 review expectations:
 
-- `firmware/STM32CubeIDE/InfusionBA2/Core/` — drop-detection state
+- `firmware/STM32CubeIDE/Dripito/Core/` — drop-detection state
   machine and alarm logic.
 - `hardware/` — schematic, BOM, and PCB layout.
 - `docs/decisions/` — Architecture Decision Records. New ADRs follow the

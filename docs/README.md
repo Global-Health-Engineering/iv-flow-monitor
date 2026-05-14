@@ -47,7 +47,7 @@ outside the repo). Anything that should accompany the artefact lives here.
 - Hardware design rationale → [`decisions/`](decisions/) →
   [`../hardware/flow_monitor.kicad_sch`](../hardware/flow_monitor.kicad_sch).
 - Firmware architecture → [`../firmware/README.md`](../firmware/README.md) →
-  [`../firmware/STM32CubeIDE/InfusionBA2/Core/`](../firmware/STM32CubeIDE/InfusionBA2/Core/).
+  [`../firmware/STM32CubeIDE/Dripito/Core/`](../firmware/STM32CubeIDE/Dripito/Core/).
 - Enclosure fit + Rev-C path → [`enclosure-requirements.md`](enclosure-requirements.md) →
   [`../enclosure/`](../enclosure/) → CAD source in
   [`../hardware/3dmodels/Enclosure/`](../hardware/3dmodels/Enclosure/).

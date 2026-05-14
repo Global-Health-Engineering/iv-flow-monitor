@@ -32,7 +32,7 @@ import pandas as pd
 V_CAL_K = 1.27
 """Scalar correction applied to the chord-sphere drop volume.
 
-Mirrors firmware/STM32CubeIDE/InfusionBA2/Core/Src/main.c (#define V_CAL_K).
+Mirrors firmware/STM32CubeIDE/Dripito/Core/Src/main.c (#define V_CAL_K).
 Derived as the unweighted mean of per-run k = V_true_gravimetric / V_est
 across the four 2026-05-13 campaigns. See docs/results.md for the
 derivation and the residual-error breakdown."""

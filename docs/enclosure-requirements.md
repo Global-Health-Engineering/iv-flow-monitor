@@ -167,7 +167,7 @@ requirements: violating any of REQ-3.x produces silently bad data.
   bezel margin around the active area.
 - **REQ-6.2** Tactile-button cutouts **shall** be provided for all
   buttons present on the active firmware revision. For Rev-B (firmware
-  `InfusionBA2`) this is MUTE / MODE / RES (3 buttons). The cutout
+  `Dripito`) this is MUTE / MODE / RES (3 buttons). The cutout
   locations match the Rev-B PCB silk; future revisions update CAD as
   the PCB changes.
 - **REQ-6.3** Buttons **shall** be operable with one finger by an adult

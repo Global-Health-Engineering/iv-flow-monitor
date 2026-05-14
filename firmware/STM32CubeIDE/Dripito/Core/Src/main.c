@@ -143,7 +143,7 @@ UART_HandleTypeDef huart1;
 /* SWD-readable debug log. The host reads `dbg_log` over SWD (Hotplug
    mode, no halt) and emits new entries to stdout. Buffer is monotonic
    `head` + 32-slot ring of NUL-terminated strings. Reader script:
-   firmware/STM32CubeIDE/InfusionBA2/tools/read_swd_log.py */
+   firmware/STM32CubeIDE/Dripito/tools/read_swd_log.py */
 #define DBG_LOG_SLOTS    32U
 #define DBG_LOG_SLOT_B   48U
 typedef struct {
