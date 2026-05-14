@@ -599,19 +599,6 @@ p.lead { color: var(--fg); font-size: 19px; max-width: 60ch; }
 }
 .cmp-d-label { color: var(--fg-mute); }
 .cmp-d-val   { color: var(--yellow); font-weight: 600; }
-.cmp-d-bar {
-  height: 4px;
-  background: var(--bg-3);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: 6px;
-}
-.cmp-d-bar-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, var(--green), var(--yellow), var(--red));
-  transition: width .35s ease;
-}
 
 /* ---------- dual-beam: power card ---------- */
 .power-card {

@@ -311,7 +311,6 @@ const SPEEDS = [
             <span class="cmp-d-label" id="cmp-d-label">Divergence</span>
             <span class="cmp-d-val" id="cmp-d-val">—</span>
           </div>
-          <div class="cmp-d-bar"><div class="cmp-d-bar-fill" id="cmp-d-bar-fill"></div></div>
         </div>
       </div>
 
@@ -556,7 +555,6 @@ const SPEEDS = [
   const cmpArrow    = document.getElementById('cmp-arrow')!;
   const cmpDLabel   = document.getElementById('cmp-d-label')!;
   const cmpDVal     = document.getElementById('cmp-d-val')!;
-  const cmpDBarFill = document.getElementById('cmp-d-bar-fill')!;
 
   // power card
   const pwCurrent   = document.getElementById('pw-current')!;
@@ -886,8 +884,6 @@ const SPEEDS = [
       ? 'Divergence (single under-reports the truth)'
       : 'Divergence (single over-reports the truth)';
     cmpArrow.textContent = Math.abs(div) < 1 ? '≈' : '≠';
-    const pct = Math.min(100, Math.abs(div) * 2.5); // 40% → full bar
-    (cmpDBarFill as HTMLElement).style.width = `${pct}%`;
   }
 
   // ---------- Power card ----------
@@ -1371,7 +1367,6 @@ const SPEEDS = [
     cmpSingle.textContent = '—';
     cmpDual.textContent   = '—';
     cmpDVal.textContent   = '—';
-    (cmpDBarFill as HTMLElement).style.width = '0%';
 
     clearPending();
     // Clear in-flight drops + reset occlusion counters
