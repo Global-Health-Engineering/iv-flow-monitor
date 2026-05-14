@@ -13,6 +13,7 @@ version: "1.0.0"
 date-released: "2026-05-14"
 repository-code: "https://github.com/Gluflex/iv-flow-monitor-v2"
 url: "https://gluflex.github.io/iv-flow-monitor-v2"
+# doi: 10.5281/zenodo.TBD  # populated post-submission
 authors:
   - family-names: Catarci
     given-names: Leandro

@@ -79,7 +79,7 @@ A bachelor thesis preceded this work:
 
 > Catarci, L. (2025). *Improving a Low-Cost Intravenous Infusion Flow-Rate Monitoring Device for Paediatric Care in Humanitarian Healthcare Settings*. ETH Zürich, Global Health Engineering. DOI: [10.5281/zenodo.16902366](https://doi.org/10.5281/zenodo.16902366).
 
-The Rev-B work in this repository receives its own Zenodo DOI on submission *(populated at submission)*.
+The Rev-B work in this repository will receive its own Zenodo DOI: *10.5281/zenodo.TBD — minted post-submission*.
 
 ## License
 
