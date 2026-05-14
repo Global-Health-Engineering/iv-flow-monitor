@@ -79,28 +79,65 @@ const items = [
     ))}
   </ol>
 
+  <div class="position-eyebrow">§17 — the raw evidence.</div>
+  <p class="position-lead">
+    Three views of the same 2026-05-14 PM raw-waveform capture set
+    (TOP + BOT photodiode signals, ADC counts above baseline, time
+    relative to the TOP-entry trigger). The capture firmware
+    (<code>ENABLE_RAW_CAPTURE</code> on the
+    <code>feat/raw-capture-rev-c</code> branch) is <em>not</em> the Rev-B
+    submission firmware; submission firmware = HEAD of <code>v2</code>.
+  </p>
+
   <figure class="position-figure">
-    <img src={`${baseUrl}analysis/raw_overlays_P3_minus4mm.png`}
-         alt="Raw photodiode beam-occlusion waveforms for ten consecutive drops at mount position P3 (4 mm below the canonical V_50_05-era mount). TOP-beam panel shows the primary occlusion peak around the trigger anchor plus a small secondary hump approximately 6 ms later. BOT-beam panel shows a bifurcated occlusion peak around +11 ms and +14 ms." />
+    <img src={`${baseUrl}analysis/raw_combined_P3_minus4mm.png`}
+         alt="TOP and BOT beam-occlusion waveforms overlaid in a single panel for 23 consecutive drops at mount position P3 (4 mm below canonical). TOP curves (blue) peak around +2 ms after the trigger anchor with a small secondary shoulder approaching from negative time. BOT curves (orange) peak around +11 ms with a bifurcated structure showing a second peak at +14 ms." />
     <figcaption>
-      <strong>§17, made visible.</strong> Ten consecutive drops at mount
-      position <code>P3 (-4 mm)</code>, beam-occlusion (ADC counts above
-      baseline) versus time relative to the TOP-entry trigger anchor. The
-      figure makes the two position-dependent contaminants of the chord
-      measurement direct-readable:
-      <em>(i)</em> the small TOP secondary peak at <code>≈ +6 ms</code>
-      is the <strong>umbilical</strong> — the fluid filament still
-      attached to the chamber tip when the drop body has already cleared
-      the beam;
-      <em>(ii)</em> the bifurcated BOT peak around <code>+11 ms / +14 ms</code>
-      is the <strong>backsplash</strong> trailing edge — splash particles
-      crossing BOT after the drop body has fallen past it. Same drip set,
-      same fluid, same board, same firmware — what changed is the
-      device's mount geometry on the drip chamber. Per-position panels
-      and the cross-position composite are in
-      <code>analysis/figs/2026-05-14_pm/</code>; the firmware that
-      captured these waveforms lives on the <code>feat/raw-capture-rev-c</code>
-      branch and is <em>not</em> the Rev-B submission firmware.
+      <strong>One drop, both beams, one chart.</strong> 23 drops at
+      <code>P3 (-4 mm)</code>, TOP (blue) and BOT (orange) overlaid in
+      the same panel. The ~11 ms transit gap between TOP firing and BOT
+      firing is the dual-beam architecture's velocity signal — directly
+      visible. The two position-dependent contaminants of the chord
+      measurement are also direct-readable: <em>(i)</em> the TOP shoulder
+      approaching the trigger around <code>−2 ms</code> is the
+      <strong>umbilical</strong> — the fluid filament still tethering the
+      drop to the chamber tip; <em>(ii)</em> the bifurcated BOT peak
+      around <code>+11 ms / +14 ms</code> is the <strong>backsplash</strong>
+      trailing edge — particles crossing BOT after the drop body has
+      cleared.
+    </figcaption>
+  </figure>
+
+  <figure class="position-figure">
+    <img src={`${baseUrl}analysis/raw_median_bands_all_positions.png`}
+         alt="Median trace and 25 to 75 percent IQR band for each of three mount positions, TOP and BOT beams shown in separate panels. TOP medians overlap closely across all three positions. BOT medians shift systematically in timing — P1 canonical mount peaks first, P3 minus 4 mm peaks last with a visible second hump." />
+    <figcaption>
+      <strong>What position-dependence actually looks like.</strong>
+      Median trace (line) + 25–75 % IQR band (shaded) per mount position,
+      both beams. TOP shapes are largely <strong>position-invariant</strong>
+      — the medians overlap closely across P1, P2, P3.
+      BOT timing shifts <strong>systematically</strong> with mount
+      geometry: P1 canonical peaks ~10 ms after trigger, P3 (-4 mm) peaks
+      ~12 ms after trigger with a visible second hump. The §17 finding
+      is that this BOT-shape variation is exactly what defeats a
+      position-invariant chord-time → volume estimate. Bench n_drops:
+      P1=40, P2=22, P3=23.
+    </figcaption>
+  </figure>
+
+  <figure class="position-figure">
+    <img src={`${baseUrl}analysis/raw_overlays_P1_high.png`}
+         alt="Two-panel overlay of 40 drops at the canonical V_50_05-era mount position. Left panel TOP beam peaks consistently around 225 to 260 ADC counts. Right panel BOT beam peaks 397 to 508 ADC counts with a small late-time hump visible after most drops." />
+    <figcaption>
+      <strong>40 drops at the canonical mount</strong> — the densest
+      single-mount capture in the campaign. Per-channel peak ranges are
+      tight (TOP 225–260, BOT 397–508; ±7 % and ±12 % around the median),
+      meaning the device's per-drop response is repeatable; what makes
+      <code>V_CAL_K = 1.27</code> hold at <em>this</em> mount within
+      ±30 % is the same data driving the
+      <a href="#analysis">predicted accuracy envelope</a> a panel up.
+      Move the device 4 mm down the chamber (P3 above) and the BOT-shape
+      family changes — that's what §17 is about.
     </figcaption>
   </figure>
 </section>
@@ -180,12 +217,44 @@ const items = [
     font-size: 14.5px;
     line-height: 1.6;
   }
+  .position-eyebrow {
+    margin: 48px 0 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ir);
+  }
+  .position-lead {
+    margin: 0 0 24px;
+    color: var(--fg-dim);
+    font-size: 14.5px;
+    line-height: 1.6;
+    max-width: 70ch;
+  }
+  .position-lead code,
+  .position-lead em {
+    font-style: normal;
+  }
+  .position-lead code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--fg-dim);
+    background: var(--bg-3);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .position-lead em { color: var(--ir); font-weight: 600; }
+
   .position-figure {
-    margin: 36px 0 0;
+    margin: 0 0 28px;
     background: #ffffff;
     border-radius: var(--radius);
     border: 1px solid var(--line);
     padding: 18px;
+  }
+  .position-figure:last-of-type {
+    margin-bottom: 0;
   }
   .position-figure img {
     display: block;
