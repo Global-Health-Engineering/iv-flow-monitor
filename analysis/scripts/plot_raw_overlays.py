@@ -30,15 +30,19 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_ROOT = REPO_ROOT / "data" / "raw" / "2026-05-14_pm"
 OUT_DIR = REPO_ROOT / "analysis" / "figs" / "2026-05-14_pm"
 
-# Map filename stem -> position tag. Populated as captures land.
-# Capture naming convention: <position-tag>_<flow>_<run>.uart.log
+# Map filename stem (without ".uart.log") -> position tag.
+# Position tags are used both as the legend label AND as the figure
+# filename suffix, so keep them filename-safe (no spaces, no parens).
+# Multiple stems can map to the same tag — multi-run captures at one
+# mount group into one legend entry on the composite.
 TODAY_POSITION_MAP = {
-    # examples (rename as bench tags settle):
-    # "P1_high_50_01": "P1_canonical_high",
-    # "P2_mid_low_50_01": "P2_mid_low",
-    # "P3_umbilical_50_01": "P3_umbilical_low",
-    # "P4_splash_50_01": "P4_high_splash",
-    # "P5_new_50_01": "P5_generalisation",
+    "p1_high_run01":      "P1_high",
+    "p1_high_run02":      "P1_high",
+    "p2_minus1mm_run01":  "P2_minus1mm",
+    "p2_minus1mm_run02":  "P2_minus1mm",
+    "p3_minus4mm_run01":  "P3_minus4mm",
+    # p1_high_first_capture intentionally excluded — format-validation
+    # probe with 0 drops captured.
 }
 
 
@@ -54,14 +58,14 @@ def _drop_overlay(events, channel: str, ax, n_drops: int = 10,
         t = ev.raw_t_us.astype(np.float64)
         bw = min(baseline_window, sig.size)
         baseline = float(np.mean(sig[:bw]))
-        atten = np.maximum(baseline - sig, 0.0)
+        atten = np.maximum(sig - baseline, 0.0)
         # Align on trigger anchor.
         t_rel_ms = (t - ev.t_trigger_us) / 1000.0
         ax.plot(t_rel_ms, atten, alpha=alpha, linewidth=0.8)
         peaks.append(float(np.max(atten)))
         drawn += 1
     ax.set_xlabel("t − t_trigger (ms)")
-    ax.set_ylabel(f"{channel.upper()} attenuation (ADC counts below baseline)")
+    ax.set_ylabel(f"{channel.upper()} beam occlusion (ADC counts above baseline)")
     ax.set_title(f"{channel.upper()} beam, n={drawn} drops, peak range {min(peaks):.0f}–{max(peaks):.0f}" if peaks else f"{channel.upper()} beam (no raw data)")
     ax.grid(alpha=0.3)
     ax.axvline(0.0, color="green", linestyle="--", alpha=0.4, linewidth=1)
@@ -98,12 +102,12 @@ def plot_composite(per_position_events: dict, out_dir: Path):
                 t = ev.raw_t_us.astype(np.float64)
                 bw = min(100, sig.size)
                 baseline = float(np.mean(sig[:bw]))
-                atten = np.maximum(baseline - sig, 0.0)
+                atten = np.maximum(sig - baseline, 0.0)
                 t_rel_ms = (t - ev.t_trigger_us) / 1000.0
                 ax.plot(t_rel_ms, atten, color=col, alpha=0.55, linewidth=0.8,
                         label=pos if j == 0 else None)
         ax.set_xlabel("t − t_trigger (ms)")
-        ax.set_ylabel(f"{channel.upper()} attenuation (ADC counts)")
+        ax.set_ylabel(f"{channel.upper()} beam occlusion (ADC counts above baseline)")
         ax.set_title(f"{channel.upper()} beam")
         ax.grid(alpha=0.3)
         ax.legend(loc="upper right", fontsize=8)
@@ -137,7 +141,7 @@ def main():
     else:
         per_position_events = {}
         for stem, position_tag in TODAY_POSITION_MAP.items():
-            log = DATA_ROOT / f"{stem}_uart.log"
+            log = DATA_ROOT / f"{stem}.uart.log"
             if not log.exists():
                 continue
             events = parse_uart_log(log, position_tag=position_tag)
