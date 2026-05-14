@@ -193,9 +193,7 @@ const hotspots = [
       if (d.playSound === 'startup_chime') {
         playEl.innerHTML =
           '<button type="button" class="play-sound-btn" id="play-startup-btn">' +
-          '<span class="play-icon" aria-hidden="true">▶</span>' +
-          '<span class="play-label">Play startup chime</span>' +
-          '<span class="play-meta">E6 50 ms · B6 100 ms · firmware boot</span>' +
+          'Play startup chime <span aria-hidden="true">▶</span>' +
           '</button>';
         const btn = document.getElementById('play-startup-btn');
         if (btn) btn.addEventListener('click', playStartupChime);
@@ -250,22 +248,14 @@ const hotspots = [
   .play-sound-slot:empty { display: none; }
   .play-sound-slot { margin: 14px 0 4px; }
   .play-sound-btn {
-    display: inline-flex; align-items: center; gap: 10px;
-    padding: 9px 16px;
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: .02em;
+    color: var(--ir); white-space: nowrap;
+    padding: 8px 16px; border: 1px solid var(--ir); border-radius: 999px;
     background: transparent;
-    color: var(--flow);
-    border: 1px solid var(--flow);
-    border-radius: 999px;
-    font-family: var(--mono);
-    font-size: 12.5px;
-    letter-spacing: .02em;
     cursor: pointer;
     transition: background 140ms ease, color 140ms ease;
   }
-  .play-sound-btn:hover { background: var(--flow); color: #0d1117; }
-  .play-sound-btn:active { transform: scale(.98); }
-  .play-icon { font-size: 11px; }
-  .play-label { font-weight: 600; }
-  .play-meta { color: var(--fg-mute); font-size: 11px; letter-spacing: .04em; }
-  .play-sound-btn:hover .play-meta { color: rgba(13,17,23,.65); }
+  .play-sound-btn span { display: inline-block; margin-left: 6px; transition: transform 140ms ease; }
+  .play-sound-btn:hover { background: var(--ir); color: #0d1117; }
+  .play-sound-btn:hover span { transform: translateX(2px); }
 </style>
