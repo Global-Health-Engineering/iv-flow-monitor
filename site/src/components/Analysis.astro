@@ -25,24 +25,6 @@ const predicted = [
   },
 ];
 
-const findings = [
-  {
-    head: 'The dual-beam (τ / Δt) ratio inversion is velocity-invariant.',
-    body: 'The firmware computes drop diameter as D = d_nominal × (τ / Δt). Both τ (shadow duration) and Δt (inter-beam transit) scale inversely with the drop\'s velocity, so the ratio cancels it exactly. The device does not need to know how fast a drop is falling to estimate its volume. The error budget surfaces this directly — drop-velocity CV contributes ≈ 0 percentage points to MAPE despite a realistic 8 % drop-velocity scatter in the inputs.',
-  },
-  {
-    head: 'Print tolerance is the single knob worth turning for Rev-C accuracy.',
-    body: 'Of the 3.13 % predicted MAPE, 1.54 percentage points (49 %) are attributable to per-board variation in the printed sensor arm. ADC discretisation contributes 0.28 pp; timing jitter 0.13 pp. Two design moves shrink the dominant term: storing per-board measured d_actual in flash (drops it to caliper-repeatability ≈ 0.05 mm SD), or injection-moulding the sensor arm (≈ ±0.05 mm tolerance). Either yields a ~4× reduction.',
-  },
-  {
-    head: 'Calibration accuracy is drip-set-physics-limited, not sensor-limited.',
-    body: 'The convergence asymptote is dictated by the ~8 % drop-volume coefficient of variation that any standard drip set exhibits — physical heterogeneity of real drops, not measurement error. Halving the calibration uncertainty requires ~4× more drops, or a more consistent drip set. The architecture is measuring better than its input variability allows.',
-  },
-  {
-    head: 'Tethered power scope.',
-    body: 'The validation dataset is collected with 3.3 V supplied directly to MCU VDD via ST-Link, bypassing the TPS610982 boost converter. The dataset validates the optical detection chain, sphere-model calibration, and dual-beam architecture. The field power chain (single AA Li-ion → boost → MCU) is deferred to Rev-C. This is named as a limitation rather than hidden in the bias term.',
-  },
-];
 ---
 
 <section id="analysis">
@@ -79,16 +61,6 @@ const findings = [
     explanation and the cross-session Bland-Altman with the actual
     measured residuals.
   </p>
-
-  <h3 class="findings-heading">Findings of architectural significance</h3>
-  <ul class="findings">
-    {findings.map((f) => (
-      <li>
-        <strong>{f.head}</strong>
-        <span>{f.body}</span>
-      </li>
-    ))}
-  </ul>
 
   <div class="reproducibility">
     <div class="repro-label">Reproducibility</div>
