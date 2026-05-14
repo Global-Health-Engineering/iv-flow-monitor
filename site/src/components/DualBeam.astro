@@ -418,6 +418,16 @@ const SPEEDS = [
       <span>how Phase 1 turns four timestamps per drop into a calibrated volume</span>
     </summary>
     <div class="tate-body">
+      <p style="border-left: 3px solid var(--ir); padding: 10px 14px; background: rgba(255,107,53,.06); margin: 0 0 18px;">
+        <strong>Rev-B vs Rev-C scope.</strong> Below is the intended
+        dual-beam algorithm. Rev-B firmware implements steps 1–6; Phase 2
+        (step 7) is a Rev-C target. The
+        <code>V_CAL_K&nbsp;=&nbsp;1.27</code> scalar applied after Step 6
+        corrects the systematic chord-sphere under-prediction surfaced in
+        bench validation — see
+        <a href="#limitations">Limitations §17</a> for the residual error
+        sources and position-dependence ceiling.
+      </p>
       <p>
         Phase 1 runs both IR beams simultaneously for the first ~10 drops of a
         session. Each drop emits two falling/rising edge pairs at the
@@ -463,20 +473,23 @@ const SPEEDS = [
       </p>
       <div class="eq"><em>V</em><sub>cal</sub> = (1⁄8) · Σ<sub><em>i</em>=2</sub><sup>9</sup> <em>V</em><sub>(<em>i</em>)</sub></div>
       <p>
-        <strong>7. Phase 2 — count, don't measure.</strong> The MCU now sleeps in
-        Stop mode; LPTIM1 pulses the IR LED at 5 µs ON / 1.8 ms (~0.3 % duty),
-        and COMP1 wakes the core only when the LED is lit AND a drop is in the
-        beam. Each wake counts as one drop event. Flow rate displayed to the
-        clinician is the running rolling sum:
+        <strong>7. Phase 2 — count, don't measure (Rev-C target).</strong>
+        The Rev-C design has the MCU sleep in Stop mode between drops; LPTIM1
+        pulses the IR LED at 5 µs ON / 1.8 ms (~0.3 % duty), and COMP1 wakes
+        the core only when the LED is lit AND a drop is in the beam. Each
+        wake counts as one drop event. Flow rate displayed to the clinician
+        is the running rolling sum:
       </p>
       <div class="eq"><em>Q</em> = (drops in window) · <em>V</em><sub>cal</sub> ⁄ window</div>
       <p style="border-top: 1px solid var(--line); padding-top: 14px; margin-top: 18px;">
-        <strong>Why this works.</strong> Tate's Law (above) guarantees that for a
-        fixed fluid and outlet, drop diameter is essentially constant — so the
-        ten Phase-1 samples are tight enough that a trimmed mean of eight is a
-        defensible session-level calibration. The dual-beam architecture's job
-        is to <em>find</em> that constant; once found, Phase 2 reduces to drop
-        counting at single-µA average current.
+        <strong>Why this works (in principle).</strong> The dual-beam
+        architecture finds the per-session constant <em>V</em><sub>cal</sub>
+        in ten drops; once found, Phase 2 reduces to counting. Bench
+        validation showed that in practice the ratio
+        <em>K</em>&nbsp;=&nbsp;<em>V</em><sub>true</sub>&nbsp;⁄&nbsp;<em>V</em><sub>est</sub>
+        spans 0.42–1.98 across mount positions — the position-dependence
+        finding (<a href="#limitations">Limitations §17</a>) is the live
+        ceiling on this approach.
       </p>
     </div>
   </details>
