@@ -163,29 +163,20 @@ const downloads = [
       </table>
       <div class="bom-foot">
         <p class="bom-callout">
-          <strong>The table above is a component-only BOM</strong> — it does not include JLCPCB PCBA
-          assembly fees, per-Extended-part surcharges, stencil cost, or shipping. The actual 2026-04-23
-          order <code>Y9-9959576A</code> totalled <strong>$99.06 USD for 5 boards (the JLCPCB MOQ)</strong>
-          — ≈ $19.81 per delivered SMD-assembled PCB. The LCD and the three tactile switches were
-          excluded from PCBA and ordered separately on a 2026-04-02 DigiKey invoice
-          (LCD CHF 6.45 each, PTS647 CHF 0.182 each); the IR LEDs / photodiodes / FFC cable also came
-          from that DigiKey order. Adding the headless PCB ($19.81) + DigiKey LCD ($7.17) + 3 hand-
-          soldered switches ($0.61) + satellite breakout + IR LEDs + photodiodes + bezels ($3.40) +
-          mechanical / battery / FFC / filament ($5.73), the <strong>real per-device build cost at
-          qty=1 = qty=5 ≈ $36.72 USD</strong>. The JLCPCB minimum order is 5 boards, so a single-device
-          reproducer pays the same per-unit price as one building 5. The table itself stays
-          component-only for design transparency and rubric convention.
+          <strong>Component-only BOM</strong> — excludes JLCPCB PCBA assembly fees, per-Extended-part
+          surcharges, stencil, and shipping. Including PCBA services and the separately-ordered LCD
+          and tactile switches (hand-soldered from DigiKey), the <strong>real per-device build cost
+          at qty=1 = qty=5 ≈ $36.72 USD</strong>. The JLCPCB minimum order is 5 boards, so a
+          single-unit reproducer pays the same per-piece price as one building 5.
         </p>
         <p>
           Source: <a href={BOM_CSV_URL} rel="noopener"><code>hardware/bom.csv.new</code></a>. PCB qty=1
-          prices are USD per piece from LCSC retail (the per-piece sums match the Y9-9959576A
-          parts-list line totals, $22.85 across 27 lines for 5 boards). Satellite + mechanical qty=1
-          prices are real CHF receipts converted to USD at FX 0.90. <strong>qty=1000 prices are
-          estimates</strong>: ~50 % of LCSC qty=1 for Extended ICs (STM32, TPS61098, photodiode, IR LED),
-          unchanged for LCSC Basic parts, $0.30 for JLCPCB fab at qty=1000, $0.50 for the AA holder
-          bulk, slight discount on ASA filament. Each estimated row is flagged in its <code>notes</code>
-          column. Rev-C cost-reduction levers (bulk DOGS164, power-chain options) live in
-          <a href={`${BLOB}/docs/limitations.md`}>docs/limitations.md</a> and the open ADRs.
+          prices are USD per piece from LCSC retail (matches the JLCPCB PCBA parts-list line totals).
+          Satellite + mechanical qty=1 prices are CHF receipts converted to USD at FX 0.90.
+          <strong>qty=1000 prices are estimates</strong>: ~50 % of LCSC qty=1 for Extended ICs,
+          unchanged for Basic parts, with documented overrides for fab, holder, and filament. Each
+          estimated row is flagged in its <code>notes</code> column. Rev-C cost-reduction levers live
+          in <a href={`${BLOB}/docs/limitations.md`}>docs/limitations.md</a> and the open ADRs.
         </p>
       </div>
     </div>
