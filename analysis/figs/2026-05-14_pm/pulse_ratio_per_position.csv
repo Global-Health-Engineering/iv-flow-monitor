@@ -1,0 +1,6 @@
+position_tag,n,pulse_top_mean,pulse_top_std,pulse_bot_mean,pulse_bot_std,bot_top_ratio_mean,bot_top_ratio_std,top_raw_mean,bot_raw_mean
+high_splash,9,3186.33,158.28,22203.89,43509.78,6.99,13.73,3902.22,3577.11
+low_bot_core,14,6243.86,108.5,7124.21,42.67,1.14,0.02,3877.86,3326.93
+low_post_overnight,74,7060.73,301.52,6989.88,244.15,0.99,0.03,3805.64,3370.74
+mid_low_remount,38,7187.53,173.45,6669.89,101.4,0.93,0.01,3791.71,3519.21
+new_remount,16,8118.06,65.19,7609.25,69.63,0.94,0.01,3866.5,3344.44

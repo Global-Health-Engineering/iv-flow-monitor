@@ -1,0 +1,12 @@
+=== Raw-waveform area-integral volume — P3 (23 drops) ===
+V_true (gravimetric)  = 49.73 uL/drop
+V_top  (area + d^3)   =   0.00 ±  0.00  err = -100.0%
+V_bot  (area + d^3)   =   0.00 ±  0.00  err = -100.0%
+V_min  (auto-clean)   =   0.00 ±  0.00  err = -100.0%
+V_mean (top+bot avg)  =   0.00 ±  0.00  err = -100.0%
+
+vs other methods (same P3 dataset):
+  firmware K=1.27                   = 231.40 uL  err = +365.3%
+  refit global K=0.54               =  98.18 uL  err =  +97.4%
+  linear regression (chord_min+v)   =  70.51 uL  err =  +41.8%
+  area-integral V_min (NEW)         = 0.00 uL  err = -100.0%

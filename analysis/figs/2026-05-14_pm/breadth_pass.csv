@@ -1,0 +1,8 @@
+exp,family,algorithm,K_min,K_max,K_ratio,rejected_pct,n_positions
+0,—,algo_reference (firmware K=1.27),0.3031438218029095,0.595713557534926,1.9651185829616948,0.6622516556291425,5
+4,F,F4 pulse-duration outlier rejection,0.3031438218029095,0.595713557534926,1.9651185829616948,0.6622516556291425,5
+1,A,A1 peak-relative threshold,,,,,0
+2,B,B1 attenuation integral,,,,,0
+3,C,C1 multi-feature regression,,,,,0
+5,E,E1 oscillation-phase chord,,,,,0
+6,F,F1 tail-energy asymmetry filter,,,,,0

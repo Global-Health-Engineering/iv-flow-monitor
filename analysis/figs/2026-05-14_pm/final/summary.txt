@@ -1,0 +1,49 @@
+=== Final drop-volume algorithm — 2026-05-14 PM ===
+
+Yesterday dataset: 150 drops, 5 positions, edge-time features only.
+
+V_true per position (gravimetric, weighted):
+  high_splash               V_true=78.80 µL/drop
+  low_bot_core              V_true=53.76 µL/drop
+  low_post_overnight        V_true=53.14 µL/drop
+  mid_low_remount           V_true=54.53 µL/drop
+  new_remount               V_true=51.74 µL/drop
+
+Per-position K-fit (V_true / mean V_est, target = 1.0):
+  method                                K_min   K_max   ratio   MAPE_pos
+  firmware K=1.27                       0.303   0.596    1.97     146.9%
+  refit global K=0.539                  0.714   1.404    1.97      23.5%
+  LOPO chord_mean_only                  0.875   1.567    1.79      14.4%
+  LOPO chord_min                        0.857   1.419    1.65      12.1%
+  LOPO chord_min_v                      0.973   1.349    1.39       7.1%  <-- BEST
+  LOPO chord_min_botovertop             0.916   1.601    1.75      10.9%
+  LOPO chord_min_taus                   0.845   1.494    1.77      16.5%
+  LOPO full                             0.955   4.543    4.76      18.4%
+
+Best model: chord_min_v  features=['chord_min', 'v_mmps']
+  Coefficients (fitted on ALL yesterday) + bias = [-3.1949899830143984, 0.03889353581963867, 41.2208364356241]
+
+P3 (today, -4 mm) BLIND TEST  n=24  V_true=49.73 µL/drop
+  firmware K=1.27:        V_est=231.40 ± 14.33  err=+365.3%
+  refit global K=0.539: V_est=98.18 ± 6.08  err=+97.4%
+  new (chord_min_v):  V_est=70.51 ± 0.33  err=+41.8%
+
+
+=== 6-position LOPO (P3 added to training) ===
+BEST: chord_min  features=['chord_min']  MAPE_pos=11.6%  K_ratio=1.94
+                            y      y_hat     K_fit    err_pct
+position                                                     
+P3_today_minus4mm   49.733333  63.223529  0.786627  27.125059
+high_splash         78.800000  51.606654  1.526935 -34.509323
+low_bot_core        53.757143  56.121377  0.957873   4.397991
+low_post_overnight  53.144595  51.719014  1.027564  -2.682457
+mid_low_remount     54.531579  54.388821  1.002625  -0.261789
+new_remount         51.737500  51.988397  0.995174   0.484942
+
+Read: 4/6 positions hit ±5%. high_splash and P3_today_minus4mm are extrapolation
+failures at the two contamination extremes (oversplash / under-mount-umbilical).
+
+Caveats:
+  - Only 5 positions in training set; LOPO with N=5 is statistically thin.
+  - Per-drop V_true is the run-level mean (Tate's-Law per-drop variance not separable from CV).
+  - P3 is one held-out position; not a proof of universal position-invariance.
