@@ -83,6 +83,12 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
   <div class="eyebrow">Build</div>
   <h2>Assembly.</h2>
 
+  <figure class="asm-device-photo">
+    <img src={`${import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/'}media/pcb.jpg`}
+         alt="Assembled Dripito Rev-B PCB" loading="lazy" />
+    <figcaption>Assembled Rev-B PCB. The enclosure, satellite breakout, and chamber clamp seat around this board.</figcaption>
+  </figure>
+
   <div class="asm-manifest">
     <div class="asm-manifest-meta">
       <span class="asm-meta-cell">
@@ -256,6 +262,28 @@ const totalMinutes = steps.reduce((sum, s) => sum + s.minutes, 0);
 </section>
 
 <style>
+  /* ---- finished-device photo ---- */
+  .asm-device-photo {
+    margin: 28px 0 0;
+    padding: 18px;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .asm-device-photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+  }
+  .asm-device-photo figcaption {
+    margin-top: 12px;
+    color: var(--fg-mute);
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
   /* ---- manifest header strip ---- */
   .asm-manifest {
     margin-top: 28px;

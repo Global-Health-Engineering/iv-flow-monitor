@@ -85,15 +85,18 @@ const findings = [
   </div>
 
   <figure class="analysis-figure">
-    <img src={`${baseUrl}analysis/fig_error_budget.png`}
-         alt="A priori MC error budget — ablation, predicted Bland-Altman, calibration convergence." />
+    <img src={`${baseUrl}analysis/fig_error_budget_with_bench.png`}
+         alt="A priori MC error budget with bench overlay — ablation, predicted Bland-Altman with bench drops, calibration convergence." />
     <figcaption>
       A priori Monte Carlo error budget at d = 10 mm, 50 µL drops, 0.77 m·s⁻¹
-      fall velocity, Bambu Lab print tolerance ±0.115 mm 1-sigma. Regenerated
-      byte-identical from a fresh clone via
-      <code>docker compose up regenerate-error-budget</code>;
-      source notebook lives at
-      <code>analysis/notebooks/error_budget.ipynb</code>.
+      fall velocity, Bambu Lab print tolerance ±0.115 mm 1-sigma — now with the
+      2026-05-13 bench drops (N = 737, v_true_per_run = 73.83, 39.26, 59.32,
+      51.95 µL) overlaid on panel (b) as red triangles. The runs land along the
+      predicted band; the 1.27× scalar correction (V_CAL_K) closes the
+      4-run-mean residual to within rounding. Per-run residuals span ±27 % —
+      see the Limitations section for why this is fundamental, and §17 for the
+      position-dependence finding that's invisible at this single mount height.
+      Source notebook: <code>analysis/notebooks/error_budget.ipynb</code>.
     </figcaption>
   </figure>
 
