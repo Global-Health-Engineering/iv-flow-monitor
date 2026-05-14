@@ -1,8 +1,8 @@
 # Results
 
-Validation of the Rev-B dual-beam drop-volume monitor against gravimetric ground truth, 2026-05-13. Four 10-minute calibration runs (V_50_01..04) plus one streaming-regime sample (`V_streaming`) characterise the device's behaviour across a 39–186 µL chamber-drop range.
+Validation of the Rev-B dual-beam drop-volume monitor against gravimetric ground truth, 2026-05-13. Four 10-minute calibration runs (V_50_01..04), one independent-verification run (V_50_05, captured **after** baking V_CAL_K into firmware), and one streaming-regime sample (`V_streaming`) characterise the device's behaviour across a 39–186 µL chamber-drop range. A separate afternoon position-drift session (11 runs across four mount positions) and a 2026-05-14 raw-waveform session (3 gravimetric-paired captures) extend the analysis — see [`limitations.md`](limitations.md) §17 and the Pages site's Analysis section respectively.
 
-Headline finding: **after applying a single scalar correction `V_CAL_K = 1.27`, the device's per-run mean volume tracks gravimetric ground truth to within ±30 % across the four calibration runs (V_50_01..04)**. A ±30 % per-run spread is far outside any clinical accuracy target; Rev-B is a working dual-beam architecture demonstrator, not a clinically deployable monitor. Residual error sources are inventoried in [`limitations.md`](limitations.md).
+Headline finding: **after applying a single scalar correction `V_CAL_K = 1.27`, the device's per-run mean volume tracks gravimetric ground truth to within ±30 % across the four calibration runs (V_50_01..04); the holdout run V_50_05 confirms the constant generalises (k_post = 1.24, inside the [0.79, 1.27] calibration bracket)**. A ±30 % per-run spread is far outside any clinical accuracy target; Rev-B is a working dual-beam architecture demonstrator, not a clinically deployable monitor. Residual error sources are inventoried in [`limitations.md`](limitations.md).
 
 ## Bench dataset
 
@@ -12,7 +12,7 @@ Headline finding: **after applying a single scalar correction `V_CAL_K = 1.27`, 
 | Drip set | nominal macro 20 gtt/mL (see `docs/limitations.md`) |
 | Fluid | Water, ρ = 1.000 g/mL |
 | Beam separation | 10.2 mm (`data/geometry.json`) |
-| Runs | V_50_01, V_50_02, V_50_03, V_50_04 (with caveat); plus V_streaming sample (continuous-flow regime, documented separately in `docs/bench/2026-05-13_V_streaming.md`) |
+| Runs | V_50_01, V_50_02, V_50_03, V_50_04 (with caveat); V_50_05 (holdout — captured after firmware V_CAL_K was set from V_50_01..04); plus V_streaming sample (continuous-flow regime, documented separately in `docs/bench/2026-05-13_V_streaming.md`) |
 | Firmware constants | `BEAM_WIDTH_MM=0.0`, `CAL_MARGIN_HIGH=100`, `CAL_MARGIN_LOW=30`, `D_MM_MIN=0.1`, `V_CAL_K=1.27` |
 
 Each run records two side-channel streams in parallel:
@@ -47,11 +47,14 @@ All `V_est` figures below come from `load_run.py`, which mirrors the firmware ph
 | V_50_02 | 573.5 | 339 | 13.3097 | 83.55 | 39.26 | 49.84 | 0.79 | device over |
 | V_50_03 | 600.0 | 180 | 10.6780 | 64.07 | 59.32 | 57.29 | 1.04 | within noise |
 | V_50_04 | 600.0 | 40 (gap) | 7.4441 | 44.66 | ≤186.10 | 208.44 | ≥0.89 | exploratory |
+| V_50_05 | 599.7 | 153 | 7.9481 | 47.72 | 51.76 | 41.59 | 1.24 | **holdout — device under** |
 | V_streaming | 141 | 66 | — | ≈ 269 | — | range 0.3–183 µL (regime breakdown) | — | streaming regime |
 
 mean(k_post) across V_50_01..04 = 0.995 (well within rounding of 1.0, as expected since `V_CAL_K` is the mean of these four runs' `k_pre`). Worst-case per-run deviation is V_50_01 (1.27×, device under-reads by 21%) and V_50_02 (0.79×, device over-reads by 27%). The k_post spread of 0.79–1.27 is the ±30 % residual referenced in the headline.
 
-Detail per run: `docs/bench/2026-05-13_V_50_0{1,2,3,4}.md` and `docs/bench/2026-05-13_V_streaming.md`.
+V_50_05 was captured **after** `V_CAL_K = 1.27` was committed to firmware, so its `k_post = 1.24` is the first independent generalisation check rather than another self-consistency point. The value falls inside the [0.79, 1.27] calibration bracket from V_50_01..04 — `V_CAL_K` is not over-fit to the calibration set, but the per-drop residual structure (drop-shape oscillation, [`limitations.md`](limitations.md) §1) is unchanged. Detail: [`docs/bench/2026-05-13_V_50_05.md`](bench/2026-05-13_V_50_05.md).
+
+Detail per run: `docs/bench/2026-05-13_V_50_0{1,2,3,4,5}.md` and `docs/bench/2026-05-13_V_streaming.md`.
 
 ## How `V_CAL_K` was chosen
 
