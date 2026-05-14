@@ -1,0 +1,74 @@
+name: Build & test
+
+on:
+  push:
+    branches: [v2]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    name: pytest (analysis + tools smoke)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install runtime + test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pandas numpy matplotlib
+      - name: Run pytest
+        run: pytest tests/ -v
+
+  verify-estimator:
+    name: verify_estimator.py (firmware drop-size math)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy
+        run: pip install numpy
+      - name: Run Monte Carlo estimator verification
+        run: python firmware/STM32CubeIDE/InfusionBA2/tools/verify_estimator.py
+
+  analysis-pipeline:
+    name: regenerate analysis figures from sample data
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: analysis
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure figures output dir exists
+        run: mkdir -p figures
+
+      - name: Build docker image
+        run: docker compose build regenerate-error-budget
+
+      - name: Regenerate the a priori MC error budget (synthetic)
+        run: |
+          docker compose up \
+            --exit-code-from regenerate-error-budget \
+            regenerate-error-budget
+
+      - name: Regenerate validation figures from sample data
+        run: |
+          docker compose up \
+            --exit-code-from regenerate-figures-sample \
+            regenerate-figures-sample
+
+      - name: Verify the error-budget figure was written
+        run: |
+          test -s figures/fig_error_budget.png || (echo "ERROR: fig_error_budget.png missing or empty" && ls -la figures/ && exit 1)
+
+      - name: Upload regenerated figures as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-figures
+          path: analysis/figures/

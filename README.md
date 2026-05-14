@@ -11,6 +11,9 @@ gear-driven broom-holder chamber clamp.
 
 ### → Full project page: **[gluflex.github.io/iv-flow-monitor-v2](https://gluflex.github.io/iv-flow-monitor-v2)**
 
+[![Build & test](https://github.com/Gluflex/iv-flow-monitor-v2/actions/workflows/build-and-test.yml/badge.svg?branch=v2)](https://github.com/Gluflex/iv-flow-monitor-v2/actions/workflows/build-and-test.yml)
+[![Deploy site to GitHub Pages](https://github.com/Gluflex/iv-flow-monitor-v2/actions/workflows/deploy-site.yml/badge.svg?branch=v2)](https://github.com/Gluflex/iv-flow-monitor-v2/actions/workflows/deploy-site.yml)
+
 Interactive dual-beam simulation, clickable PCB architecture, validation results, architecture decisions, assembly guide. This README covers only the essentials for cloning, building, and reproducing.
 
 ## At a glance
