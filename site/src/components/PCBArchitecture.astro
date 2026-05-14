@@ -72,7 +72,7 @@ const hotspots = [
 </section>
 
 <script>
-  type Detail = { tag: string; title: string; text: string; adr: string; adrSlug?: string; schematic?: string };
+  type Detail = { tag: string; title: string; text: string; adr?: string; adrSlug?: string; schematic?: string };
   const SCH_BASE = document.documentElement.dataset.baseUrl || '/';
   const ADR_BASE = 'https://github.com/Gluflex/dripito/blob/v2/docs/decisions';
   const ADR_INDEX = 'https://github.com/Gluflex/dripito/tree/v2/docs/decisions';
@@ -112,16 +112,13 @@ const hotspots = [
     led_bat: {
       tag: 'Hotspot 5 · LED + Battery',
       title: 'J4 · 6-pin satellite socket',
-      text: 'Single FFC ribbon to the satellite breakout. Pin map: 1 = GND, 2 = BAT+, 3 = IR_LED_BOT−, 4 = IR_LED_BOT+, 5 = IR_LED_TOP−, 6 = IR_LED_TOP+. Combining battery feed (pins 1–2) and IR-LED drives (pins 3–6) on one ribbon simplifies enclosure routing — the satellite board sits next to the drip chamber and holds both the IR emitters above the beam path and the AA cell.',
-      adr: 'LED duty cycle',
-      adrSlug: 'led-duty-cycle',
+      text: 'Single FFC ribbon to the satellite breakout. Pin map: 1 = GND, 2 = BAT+, 3 = IR_LED_BOT−, 4 = IR_LED_BOT+, 5 = IR_LED_TOP−, 6 = IR_LED_TOP+. Combining battery feed (pins 1–2) and IR-LED drives (pins 3–6) on one ribbon simplifies enclosure routing.',
       schematic: 'schematic-led_bat.png',
     },
     buzzer: {
       tag: 'Hotspot 6 · Audible alarm',
       title: 'BZ1 SFN-1407PA7.6 piezo buzzer',
       text: 'Driven by Q4 2N7002 N-MOSFET. R17 1.8 kΩ pull-up holds the buzzer drain at +3.3 V when Q4 is off (no DC bias on the piezo element). R19 10 kΩ pull-down on BUZZER_CTRL keeps the gate low during MCU reset and boot — a non-trivial safety detail for a clinical alarm device, since accidental beeps during power cycles erode user trust. R18 100 Ω is the gate series resistor.',
-      adr: 'Architecture decisions',
       schematic: 'schematic-buzzer.png',
     },
     swd: {
@@ -162,8 +159,12 @@ const hotspots = [
       tagEl.textContent = d.tag;
       titEl.textContent = d.title;
       txtEl.textContent = d.text;
-      const adrHref = d.adrSlug ? `${ADR_BASE}/${d.adrSlug}.md` : ADR_INDEX;
-      adrEl.innerHTML = '↪ <a href="' + adrHref + '" rel="noopener">' + d.adr + '</a>';
+      if (d.adr) {
+        const adrHref = d.adrSlug ? `${ADR_BASE}/${d.adrSlug}.md` : ADR_INDEX;
+        adrEl.innerHTML = '↪ <a href="' + adrHref + '" rel="noopener">' + d.adr + '</a>';
+      } else {
+        adrEl.innerHTML = '';
+      }
       renderSchematic(d);
       grid.classList.add('has-detail');   // reveal the side panel on first click
       callout?.classList.add('dismissed'); // hide the "click me!" hint
