@@ -42,14 +42,11 @@ publication assets.
   imagery without consent. None expected.
 - Working files (Photoshop `.psd`, source video projects). Commit only
   the exported asset.
-- Internal print-history photos for enclosure iterations — those go in
-  `../enclosure/print_history/` next to the matching log entry.
+- Internal print-history photos for enclosure iterations — drop them next to the matching enclosure ADR / log entry rather than here.
 
 ## Embedding from Markdown
 
-```markdown
-![Assembled Dripito monitor](media/assembled-device-front.jpg)
-```
+From the top-level README (or any sibling-of-`media/` markdown file), reference assets under `media/<filename>`. From a sibling folder (e.g. `docs/`), step up first: `../media/<filename>`. Concrete examples in [`../README.md`](../README.md) and [`../enclosure/README.md`](../enclosure/README.md).
 
 Use relative paths so embedding works on GitHub, locally, and in the
-planned GitHub Pages site.
+GitHub Pages site.
