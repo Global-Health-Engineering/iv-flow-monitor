@@ -25,7 +25,7 @@ Interactive dual-beam simulation, clickable PCB architecture, validation results
 | **Detection** | Dual-beam optical, sphere-model volume calibration |
 | **Power** | Single AA Li-ion via FFC, TPS610981 boost converter |
 | **Enclosure** | ASA white FDM, sliding-gear chamber holder — Rev-B integrates the assembly for testing; full mechanical rework expected for Rev-C |
-| **Validation** | 21 paired bench runs against gravimetric truth across 3 sessions (5 V_50 calibration + 11 position-drift + 5 raw-waveform), macro-20 drip set |
+| **Validation** | 19 gravimetric-paired bench runs across 3 sessions (5 V_50 calibration + 11 position-drift + 3 raw-waveform-paired), macro-20 drip set; 7 raw-waveform captures total (4 unpaired warm-ups) |
 | **BOM** | ~CHF 39, single-qty (see project page) |
 | **Submission** | 2026-05-14 |
 
@@ -98,3 +98,6 @@ The Rev-B work in this repository will receive its own Zenodo DOI: *10.5281/zeno
 
 **Jakub Tkaczuk** — Supervisor.
 **Prof. Elizabeth Tilley** — Group head, Chair of Global Health Engineering, ETH Zürich.
+
+**Project originator:** Dr. Michelle Niescierenko — Boston Children's Hospital / Harvard Humanitarian Initiative.
+**Clinical collaborator:** Dr. Janis Tupesis — University of Wisconsin / WHO Emergency Medical Teams.
