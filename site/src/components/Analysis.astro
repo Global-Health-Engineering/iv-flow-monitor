@@ -25,24 +25,6 @@ const predicted = [
   },
 ];
 
-const panels = [
-  {
-    label: '(a) Ablation',
-    title: 'Which noise source carries the budget?',
-    body: 'Each bar shows the pooled MAPE that would remain if that one noise source were forced to zero. Shorter bar = bigger contribution. Colour intensifies with attributable error (deepest red = the source to fix). Print tolerance dominates because the firmware uses a nominal d = 10.0 mm while individual printed sensor arms scatter ±0.115 mm 1-sigma; ADC discretisation and timing jitter are second-order; drop-volume CV and drop-velocity CV contribute essentially zero — a consequence of the dual-beam ratio inversion (see Findings).',
-  },
-  {
-    label: '(b) Bland-Altman',
-    title: 'Predicted device-vs-truth agreement.',
-    body: 'Each dot is one of ~225 000 simulated drops. Y = (device estimate − true volume) in µL; X = mean of the two methods (the Bland-Altman convention). The black line is the predicted bias (+0.05 µL — effectively zero, no systematic skew); red dashes mark the 95 % Limits of Agreement (±3.87 µL). The three flow-rate colours overlap because the model predicts no rate-dependent failure mode. Post-bench drops will be overlaid as black triangles; landing them inside the red band validates the prediction.',
-  },
-  {
-    label: '(c) Convergence',
-    title: 'How many drops to lock V_cal?',
-    body: 'The firmware boot sequence collects N drops, trims one each end, averages the rest. The curve shows SD(V_cal) as a function of N — for one board calibrating against its own drops. The firmware default CAL_N = 10 (red dashed) lands at 2.67 %; 35 s of calibration time at 50 mL·h⁻¹. The asymptote is set by the inherent ~8 % drop-to-drop variability of the drip set itself, not by sensor noise. The 1 % target line (grey dotted) is reachable but requires ~65 drops.',
-  },
-];
-
 const findings = [
   {
     head: 'The dual-beam (τ / Δt) ratio inversion is velocity-invariant.',
@@ -70,9 +52,12 @@ const findings = [
     A Monte Carlo error budget propagates measurement uncertainty through the
     firmware's volume-inversion math to predict per-drop MAPE, Bland-Altman
     Limits of Agreement, and calibration convergence — committed to git
-    <em>before</em> the validation campaign begins. Post-bench drops are then
-    overlaid onto the same axes. The git timestamp on the predicted figure is
-    what turns the bench result into a verification rather than a post-hoc fit.
+    <em>before</em> the validation campaign began. The four headline
+    numbers below are the pre-bench prediction; the
+    <a href="#limitations">Limitations</a> section carries the measured
+    cross-session Bland-Altman so the predict-vs-measure gap is reviewable
+    side-by-side. Source notebook:
+    <code>analysis/notebooks/error_budget.ipynb</code>.
   </p>
 
   <div class="analysis-stats">
@@ -84,37 +69,20 @@ const findings = [
     ))}
   </div>
 
-  <figure class="analysis-figure">
-    <img src={`${baseUrl}analysis/fig_error_budget_with_bench.png`}
-         alt="A priori MC error budget with bench overlay — ablation, predicted Bland-Altman with bench drops, calibration convergence." />
-    <figcaption>
-      A priori Monte Carlo error budget at d = 10 mm, 50 µL drops, 0.77 m·s⁻¹
-      fall velocity, Bambu Lab print tolerance ±0.115 mm 1-sigma — now with the
-      2026-05-13 bench drops (N = 737, v_true_per_run = 73.83, 39.26, 59.32,
-      51.95 µL) overlaid on panel (b) as red triangles. The runs land along the
-      predicted band; the 1.27× scalar correction (V_CAL_K) closes the
-      4-run-mean residual to within rounding. Per-run residuals span ±27 % —
-      see the Limitations section for why this is fundamental, and §17 for the
-      position-dependence finding that's invisible at this single mount height.
-      Source notebook: <code>analysis/notebooks/error_budget.ipynb</code>.
-    </figcaption>
-  </figure>
-
-  <div class="panel-walks">
-    {panels.map((p) => (
-      <div class="panel-walk">
-        <div class="panel-label">{p.label}</div>
-        <h3>{p.title}</h3>
-        <p>{p.body}</p>
-      </div>
-    ))}
-  </div>
+  <p class="lead">
+    These four numbers were the pre-bench prediction. The MC budget
+    correctly identified print tolerance as the dominant predicted source
+    (1.54 percentage points of the 3.13 % MAPE) but <em>under-estimated
+    the residual ~6×</em>; the gap turns out to be the position-dependent
+    contamination of the chord measurement — see
+    <a href="#limitations">§17 in Limitations</a> for the architectural
+    explanation and the cross-session Bland-Altman with the actual
+    measured residuals. The figures below sanity-check the bench
+    protocol itself (gravimetric integrity per V_50 run; time-of-flight
+    measurement consistent across mounts).
+  </p>
 
   <h3 class="findings-heading">Sanity-check figures from the bench dataset</h3>
-  <p class="lead">
-    Two views that aren't strictly part of the predicted-vs-measured argument
-    but answer "did the device + the protocol behave?" in a glance.
-  </p>
 
   <figure class="analysis-figure">
     <img src={`${baseUrl}analysis/cumulative_mass_v50.png`}
@@ -241,33 +209,6 @@ docker compose up regenerate-error-budget</code></pre>
     border-radius: 4px;
   }
 
-  .panel-walks {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    margin-bottom: 56px;
-  }
-  .panel-walk {
-    padding: 22px;
-    background: var(--bg-2);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-  }
-  .panel-label {
-    font-family: var(--mono);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: .08em;
-    color: var(--ir);
-    margin-bottom: 6px;
-  }
-  .panel-walk p {
-    color: var(--fg-dim);
-    font-size: 14.5px;
-    line-height: 1.6;
-    margin: 8px 0 0;
-  }
-
   h3.findings-heading {
     font-size: 28px;
     margin: 0 0 18px;
@@ -342,7 +283,6 @@ docker compose up regenerate-error-budget</code></pre>
 
   @media (max-width: 900px) {
     .analysis-stats { grid-template-columns: repeat(2, 1fr); }
-    .panel-walks { grid-template-columns: 1fr; }
   }
   @media (max-width: 540px) {
     .analysis-stats { grid-template-columns: 1fr; }
