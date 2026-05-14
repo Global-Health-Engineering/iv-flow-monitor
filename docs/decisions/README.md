@@ -60,6 +60,7 @@ Conditions under which this decision should be re-opened (e.g.
 | [`chamber-holder-mechanism.md`](chamber-holder-mechanism.md) | Sliding gear with IR-beam pass-through (Rev-C rework expected) |
 | [`usb-interface-removal.md`](usb-interface-removal.md) | USB-C dropped; 5-pin UART debug header instead |
 | [`battery-cell-size.md`](battery-cell-size.md) | AA retained vs AAA (DripAssist battery-life benchmark) |
+| [`care-package-deployment.md`](care-package-deployment.md) | Planned deployment kit (3–5 units + alkaline AA fallback + external USB solar panel); not executed in Rev-B |
 | [`battery-indicator.md`](battery-indicator.md) | Low-battery symbol via threshold (deferred to Rev-C) |
 | [`led-duty-cycle.md`](led-duty-cycle.md) | Phase 2 IR LED at 0.3 % duty cycle |
 | [`auto-calibration-at-boot.md`](auto-calibration-at-boot.md) | Threshold auto-calibration (primary, no fallback) |
