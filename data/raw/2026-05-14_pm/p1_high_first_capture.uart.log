@@ -1,0 +1,10 @@
+
+# Dripito Rev-B UART log v1; t_ms = ms since boot
+# EVT,<t_ms>,<message>
+# DROP,<t_ms>,<drop_N>,<transit_us>,<pulse_top_us>,<pulse_bot_us>,<v_centi_mps>,<d_0.1mm>,<V_0.1uL>,<state>,<Q_0.01mLph>,<top_raw>,<bot_raw>
+# EVT,<t_ms>,DROP_REJECT,reason=<r>,dt_us=...,tau_us=...,v_mmps_tenths=...,d_mm_tenths=...,V_uL_tenths=...
+# DROP_RAW_BEGIN,<t_ms>,<drop_N>,<sample_count>,<t_first_us>,<t_last_us>,<t_trigger_us>
+# RAW,<t_us>,<top_adc>,<bot_adc>  (x sample_count)
+# DROP_RAW_END,<drop_N>
+EVT,6148,BOOT done
+EVT,6149,thresh T_hi=3693 B_hi=3309
