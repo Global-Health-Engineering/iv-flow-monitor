@@ -15,6 +15,8 @@
 *.su
 *.d
 *.log
+# But keep bench UART captures committed alongside raw data
+!data/raw/**/*.log
 
 # STM32CubeIDE debug launch / OpenOCD configs (machine-specific paths)
 firmware/STM32CubeIDE/**/*.launch
@@ -62,3 +64,13 @@ hardware/3dmodels/Neuer Ordner/
 
 # Claude Code local settings (personal/machine-specific, never commit)
 .claude/settings.local.json
+
+# KiCad skill scratch outputs (tool-generated, not source)
+hardware/_*_analysis.json
+hardware/sch_analysis.json
+
+# KiCad per-user UI state (active layer, panel positions, etc.)
+**/*.kicad_prl
+
+# git-filter-repo configuration (history-scrub helper, not for repo)
+.git-filter-repo-replace-text.txt
