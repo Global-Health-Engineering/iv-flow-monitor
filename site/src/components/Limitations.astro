@@ -1,4 +1,7 @@
 ---
+const rawBase = import.meta.env.BASE_URL;
+const baseUrl = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+
 const LIMITATIONS_URL =
   'https://github.com/Gluflex/iv-flow-monitor-v2/blob/v2/docs/limitations.md';
 
@@ -75,6 +78,31 @@ const items = [
       </li>
     ))}
   </ol>
+
+  <figure class="position-figure">
+    <img src={`${baseUrl}analysis/raw_overlays_P3_minus4mm.png`}
+         alt="Raw photodiode beam-occlusion waveforms for ten consecutive drops at mount position P3 (4 mm below the canonical V_50_05-era mount). TOP-beam panel shows the primary occlusion peak around the trigger anchor plus a small secondary hump approximately 6 ms later. BOT-beam panel shows a bifurcated occlusion peak around +11 ms and +14 ms." />
+    <figcaption>
+      <strong>§17, made visible.</strong> Ten consecutive drops at mount
+      position <code>P3 (-4 mm)</code>, beam-occlusion (ADC counts above
+      baseline) versus time relative to the TOP-entry trigger anchor. The
+      figure makes the two position-dependent contaminants of the chord
+      measurement direct-readable:
+      <em>(i)</em> the small TOP secondary peak at <code>≈ +6 ms</code>
+      is the <strong>umbilical</strong> — the fluid filament still
+      attached to the chamber tip when the drop body has already cleared
+      the beam;
+      <em>(ii)</em> the bifurcated BOT peak around <code>+11 ms / +14 ms</code>
+      is the <strong>backsplash</strong> trailing edge — splash particles
+      crossing BOT after the drop body has fallen past it. Same drip set,
+      same fluid, same board, same firmware — what changed is the
+      device's mount geometry on the drip chamber. Per-position panels
+      and the cross-position composite are in
+      <code>analysis/figs/2026-05-14_pm/</code>; the firmware that
+      captured these waveforms lives on the <code>feat/raw-capture-rev-c</code>
+      branch and is <em>not</em> the Rev-B submission firmware.
+    </figcaption>
+  </figure>
 </section>
 
 <style>
@@ -152,6 +180,43 @@ const items = [
     font-size: 14.5px;
     line-height: 1.6;
   }
+  .position-figure {
+    margin: 36px 0 0;
+    background: #ffffff;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    padding: 18px;
+  }
+  .position-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+  .position-figure figcaption {
+    margin-top: 14px;
+    color: var(--fg-mute);
+    font-size: 13px;
+    line-height: 1.55;
+    text-align: left;
+  }
+  .position-figure figcaption strong {
+    color: var(--fg);
+  }
+  .position-figure figcaption em {
+    color: var(--ir);
+    font-style: normal;
+    font-weight: 600;
+  }
+  .position-figure figcaption code {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--fg-dim);
+    background: var(--bg-3);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
   @media (max-width: 720px) {
     .lim-row { grid-template-columns: 1fr; gap: 6px; }
     .lim-section { font-size: 13px; }
