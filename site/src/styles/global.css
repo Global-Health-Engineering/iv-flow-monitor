@@ -977,39 +977,6 @@ p.lead { color: var(--fg); font-size: 19px; max-width: 60ch; }
   .assembly-step .step-num { font-size: 28px; }
 }
 
-/* ---------- open questions cards ---------- */
-.open-questions-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
-  margin-top: 40px;
-}
-.oq-card {
-  background: var(--bg-2);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 22px 24px;
-  display: flex; flex-direction: column;
-}
-.oq-card .oq-cat {
-  font-family: var(--mono); font-size: 10px; font-weight: 600;
-  letter-spacing: .08em; text-transform: uppercase;
-  padding: 3px 8px; border-radius: 4px;
-  align-self: flex-start;
-  margin-bottom: 10px;
-}
-.oq-card .oq-cat-bench   { color: var(--flow);  background: rgba(6,182,212,.10); }
-.oq-card .oq-cat-field   { color: var(--yellow);background: rgba(251,191,36,.08); }
-.oq-card .oq-cat-product { color: var(--ir);    background: rgba(255,107,53,.08); }
-.oq-card h3 { font-size: 17px; margin: 0 0 10px; color: var(--fg); }
-.oq-card p {
-  font-size: 14px; line-height: 1.55;
-  color: var(--fg-dim); margin: 0; max-width: none;
-}
-@media (max-width: 700px) {
-  .open-questions-grid { grid-template-columns: 1fr; }
-}
-
 /* ---------- self-review audit table ---------- */
 .audit-table-wrap {
   margin-top: 32px;
