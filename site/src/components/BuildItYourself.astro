@@ -91,7 +91,7 @@ const downloads = [
   <div class="eyebrow">Reproduce</div>
   <div class="build-head">
     <h2>Build it yourself.</h2>
-    <a class="skip-to-assembly" href="#assembly">Skip to assembly →</a>
+    <a class="skip-to-assembly" href="#assembly">Assembly instructions <span aria-hidden="true">↓</span></a>
   </div>
   <p class="lead">
     Single Docker command regenerates every figure in this page from the raw
@@ -244,11 +244,15 @@ const downloads = [
       .build-head { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-bottom: 8px; }
       .build-head h2 { margin: 0; }
       .skip-to-assembly {
-        font-family: var(--mono); font-size: 13px; color: var(--ir);
-        text-decoration: none; opacity: 0.85; white-space: nowrap;
-        transition: opacity 120ms ease;
+        font-family: var(--mono); font-size: 12.5px; letter-spacing: .02em;
+        color: var(--ir); text-decoration: none; white-space: nowrap;
+        padding: 8px 16px; border: 1px solid var(--ir); border-radius: 999px;
+        background: transparent;
+        transition: background 140ms ease, color 140ms ease;
       }
-      .skip-to-assembly:hover { opacity: 1; text-decoration: underline; }
+      .skip-to-assembly span { display: inline-block; margin-left: 6px; transition: transform 140ms ease; }
+      .skip-to-assembly:hover { background: var(--ir); color: #0d1117; }
+      .skip-to-assembly:hover span { transform: translateY(2px); }
       .bom-card { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; }
       .bom-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
       .bom-head h3 { margin: 0; }
