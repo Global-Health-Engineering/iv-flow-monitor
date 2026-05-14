@@ -25,7 +25,7 @@ Interactive dual-beam simulation, clickable PCB architecture, validation results
 | **Detection** | Dual-beam optical, sphere-model volume calibration |
 | **Power** | Single AA Li-ion via FFC, TPS610981 boost converter |
 | **Enclosure** | ASA white FDM, sliding-gear chamber holder — Rev-B integrates the assembly for testing; full mechanical rework expected for Rev-C |
-| **Validation** | 21 runs vs gravimetric ground truth, 3 flow rates × macro-20 |
+| **Validation** | 21 paired bench runs against gravimetric truth across 3 sessions (5 V_50 calibration + 11 position-drift + 5 raw-waveform), macro-20 drip set |
 | **BOM** | ~CHF 39, single-qty (see project page) |
 | **Submission** | 2026-05-14 |
 
@@ -60,18 +60,22 @@ Enclosure: STEP and STL exports in [`hardware/3dmodels/Enclosure/`](hardware/3dm
 ## Repository layout
 
 ```
-hardware/    KiCad 8.x project — schematic, PCB, libs, datasheets, gerbers, 3D models (PCB + Enclosure)
-firmware/    STM32CubeIDE workspace (InfusionBA2 Rev-B)
-enclosure/   Rev-B-is-not-final framing + cross-references; CAD lives in hardware/3dmodels/Enclosure/
-docs/        Architecture decisions, requirements, results, limitations
-data/        Raw validation CSVs, UART logs, gravimetric scale streams, geometry, edge cases
-analysis/    Reproducible analysis pipeline (Docker + Jupyter)
-tools/       Bench helpers (UART logging, scale logging, position-overlay rendering)
-site/        GitHub Pages source (Astro)
-media/       Photos, renders, demo clips
+hardware/        KiCad 8.x project — schematic, PCB, libs, datasheets, gerbers, 3D models (PCB + Enclosure)
+firmware/        STM32CubeIDE workspace (InfusionBA2 Rev-B)
+enclosure/       Rev-B-is-not-final framing + cross-references; CAD lives in hardware/3dmodels/Enclosure/
+docs/            Architecture decisions, requirements, results, limitations
+data/            Raw validation CSVs, UART logs, gravimetric scale streams, geometry, edge cases
+analysis/        Reproducible analysis pipeline (Docker + Jupyter) + diagnostic plotters + figures
+tools/           Bench helpers (UART logging, scale logging, position-overlay rendering)
+site/            GitHub Pages source (Astro)
+media/           Photos, renders, demo clips
+HANDOVER.md      State-of-the-prototype handover (Rev-B → Rev-C, what works / blockers / path)
+CONTRIBUTING.md  Contribution guidelines (PRs paused during grading)
 ```
 
 Each folder has its own `README.md`.
+
+For the next person picking this up, start with [`HANDOVER.md`](HANDOVER.md): what works in Rev-B scope, the three blockers (position-dependence, drop-shape oscillation, tilt sensitivity), and the Rev-C optical-front-end path. [`docs/limitations.md`](docs/limitations.md) §17 is the matching architectural finding with bench evidence.
 
 ## Citation
 
