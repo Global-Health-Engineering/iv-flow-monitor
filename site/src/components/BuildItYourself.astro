@@ -316,18 +316,6 @@ const downloads = [
         ))}
       </div>
 
-      <h3 style="margin-top: 36px;">Reproduce in one command</h3>
-      <pre class="code-block"><span class="prompt">$</span> git clone https://github.com/Gluflex/dripito
-<span class="prompt">$</span> cd dripito/analysis
-<span class="prompt">$</span> docker compose up regenerate-figures-sample   <span class="ok"># cold-clone test (sample data)</span>
-<span class="prompt">$</span> docker compose up regenerate-figures          <span class="ok"># full campaign data</span>
-<span class="ok"># → analysis/figures/fig_error_budget.png</span>
-<span class="ok"># → analysis/figures/fig_error_budget_with_bench.png</span></pre>
-
-      <p style="margin-top: 18px;">
-        Pipeline source: <a href={`${BLOB}/analysis/notebooks/validation.ipynb`}>analysis/notebooks/validation.ipynb</a>.
-        Dependencies hash-locked in <a href={`${BLOB}/analysis/requirements.txt`}>analysis/requirements.txt</a>.
-      </p>
     </div>
   </div>
 </section>

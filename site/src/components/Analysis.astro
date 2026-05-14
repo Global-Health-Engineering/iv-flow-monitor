@@ -125,7 +125,7 @@ const findings = [
   <div class="reproducibility">
     <div class="repro-label">Reproducibility</div>
     <p>
-      The figure regenerates byte-identical from a fresh clone — no input data
+      <strong>Synthetic error budget.</strong> The figure regenerates byte-identical from a fresh clone — no input data
       required. Fixed RNG seed (<code>20260513</code>, the bench date) keeps
       the prediction stable across re-runs until a parameter changes. The
       assumption table for every input is the docstring of
@@ -134,6 +134,17 @@ const findings = [
     </p>
     <pre><code>cd analysis
 docker compose up regenerate-error-budget</code></pre>
+
+    <p style="margin-top: 22px;">
+      <strong>Validation pipeline (sanity-check figures + Bland-Altman).</strong> The same Dockerfile rebuilds the validation notebook against either the committed sample subset (<code>data/sample/</code>) — the cold-clone test — or the full bench dataset (<code>data/raw/</code>):
+    </p>
+    <pre><code>cd analysis
+docker compose up regenerate-figures-sample   # cold-clone test (sample data)
+docker compose up regenerate-figures          # full campaign data</code></pre>
+
+    <p class="repro-foot">
+      <strong>Prerequisites.</strong> Docker + git installed locally. First build downloads ~300 MB of pinned Python + scientific-stack and takes ~3 min on a typical laptop. Pipeline source: <code>analysis/notebooks/validation.ipynb</code>. Dependencies hash-locked in <code>analysis/requirements.txt</code> (Python 3.12.7, <code>pip&nbsp;--require-hashes</code>). The same two commands run on every push to <code>v2</code> in CI (<code>.github/workflows/build-and-test.yml</code>) on a fresh ubuntu-latest runner — green CI is the cold-clone reproducibility proof.
+    </p>
   </div>
 </section>
 
@@ -280,6 +291,15 @@ docker compose up regenerate-error-budget</code></pre>
     font-size: 13px;
     color: var(--fg);
   }
+  .reproducibility p.repro-foot {
+    margin-top: 22px;
+    font-size: 13px;
+    color: var(--fg-mute);
+    line-height: 1.55;
+    max-width: 78ch;
+  }
+  .reproducibility p.repro-foot strong { color: var(--fg-dim); }
+  .reproducibility p.repro-foot code { font-size: 12px; }
 
   @media (max-width: 900px) {
     .analysis-stats { grid-template-columns: repeat(2, 1fr); }
