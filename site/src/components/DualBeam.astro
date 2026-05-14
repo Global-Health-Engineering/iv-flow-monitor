@@ -18,7 +18,6 @@ const SETS = [
 const SPEEDS = [
   { value: 3000, label: 'Slow' },
   { value: 1500, label: 'Default' },
-  { value: 600,  label: 'Fast' },
   { value: 200,  label: 'Real-time' },
 ];
 ---
@@ -40,7 +39,7 @@ const SPEEDS = [
       <div class="anim-controls anim-controls-grid">
         <div class="ctrl">
           <label for="dpm">Drip rate</label>
-          <input id="dpm" type="range" min="5" max="120" value="30" step="1" />
+          <input id="dpm" type="range" min="20" max="39" value="30" step="1" />
           <span class="val" id="dpm-val">30 dpm</span>
         </div>
         <div class="ctrl">
@@ -58,7 +57,6 @@ const SPEEDS = [
               <option value={f.id} selected={f.id === 'saline'}>{f.name}</option>
             ))}
           </select>
-          <span class="placeholder-inline" title="Per-fluid drop volumes are Tate's-Law predictions, not measured at the bench.">Tate</span>
         </div>
 
         <div class="ctrl seg-ctrl">
@@ -82,10 +80,6 @@ const SPEEDS = [
               <button type="button" class={`seg-btn ${sp.value === 1500 ? 'active' : ''}`} data-value={String(sp.value)}>{sp.label}</button>
             ))}
           </div>
-        </div>
-        <div class="ctrl">
-          <input id="scope-toggle" type="checkbox" />
-          <label for="scope-toggle">Scope</label>
         </div>
       </div>
 
@@ -525,7 +519,6 @@ const SPEEDS = [
   const setSel    = document.getElementById('drip-set') as HTMLSelectElement;
   const fluidSel  = document.getElementById('fluid')    as HTMLSelectElement;
 
-  const scopeChk  = document.getElementById('scope-toggle') as HTMLInputElement;
   const scopeEl   = document.getElementById('scope')!;
   const scopeD1   = document.getElementById('scope-d1') as unknown as SVGPolylineElement;
   const scopeD2   = document.getElementById('scope-d2') as unknown as SVGPolylineElement;
@@ -1424,14 +1417,6 @@ const SPEEDS = [
     });
   });
 
-  scopeChk.addEventListener('change', () => {
-    if (scopeChk.checked) {
-      scopeEl.removeAttribute('hidden');
-      refreshScope();
-    } else {
-      scopeEl.setAttribute('hidden', '');
-    }
-  });
 
   // ---------- Boot ----------
   applyState(true);
