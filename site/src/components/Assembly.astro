@@ -73,10 +73,6 @@ const steps: Step[] = [
         <span class="asm-meta-k">Photo guide</span>
         <span class="asm-meta-v" style="color: var(--fg-mute);">Rev-C deliverable</span>
       </span>
-      <span class="asm-meta-cell asm-meta-status" data-status>
-        <span class="asm-meta-k">Status</span>
-        <span class="asm-meta-v" data-status-label>Bench-ready</span>
-      </span>
     </div>
     <div class="asm-progress" role="progressbar" aria-label="Assembly progress" aria-valuemin="0" aria-valuemax={steps.length} aria-valuenow={0} data-progress>
       <div class="asm-progress-fill" data-progress-fill></div>
@@ -246,7 +242,7 @@ const steps: Step[] = [
   }
   .asm-manifest-meta {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 24px;
     align-items: baseline;
   }
@@ -263,16 +259,6 @@ const steps: Step[] = [
     font-size: 18px;
     color: var(--fg);
     letter-spacing: -.01em;
-  }
-  .asm-meta-status .asm-meta-v {
-    color: var(--flow);
-    font-family: var(--mono);
-    font-size: 13px;
-    letter-spacing: .04em;
-  }
-  .asm-meta-status[data-status="done"] .asm-meta-v {
-    color: var(--ir);
-    text-shadow: 0 0 14px rgba(255,107,53,.4);
   }
   .asm-done-count { color: var(--ir); font-variant-numeric: tabular-nums; }
 
@@ -674,10 +660,8 @@ const steps: Step[] = [
   const progressEl = document.querySelector('[data-progress]') as HTMLElement | null;
   const progressFill = document.querySelector('[data-progress-fill]') as HTMLElement | null;
   const doneCount = document.querySelector('[data-done-count]') as HTMLElement | null;
-  const statusEl = document.querySelector('[data-status]') as HTMLElement | null;
-  const statusLabel = document.querySelector('[data-status-label]') as HTMLElement | null;
 
-  if (list && progressFill && doneCount && statusEl && statusLabel && progressEl) {
+  if (list && progressFill && doneCount && progressEl) {
     const total = list.querySelectorAll<HTMLLIElement>('.asm-step').length;
     let state = new Set<number>();
 
@@ -704,17 +688,6 @@ const steps: Step[] = [
       progressFill.style.width = `${pct}%`;
       progressEl.setAttribute('aria-valuenow', String(n));
       doneCount.textContent = String(n);
-
-      if (n === 0) {
-        statusLabel.textContent = 'Bench-ready';
-        statusEl.removeAttribute('data-status');
-      } else if (n === total) {
-        statusLabel.textContent = 'Build complete ✓';
-        statusEl.setAttribute('data-status', 'done');
-      } else {
-        statusLabel.textContent = `Step ${n + 1 > total ? total : n + 1} next`;
-        statusEl.removeAttribute('data-status');
-      }
     };
 
     const persist = () => {
