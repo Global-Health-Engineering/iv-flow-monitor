@@ -367,8 +367,8 @@ const SPEEDS = [
             <ul>
               <li>Alkaline AA at 2 500 mAh × 1.5 V = 3 750 mWh raw; 80 % average TPS610981 boost efficiency → 3 000 mWh usable on the 3.3 V rail.</li>
               <li>IR LED drive: I<sub>F</sub> = (3.3 − 1.2 V) / 100 Ω = 21 mA per LED, fixed by R1/R4.</li>
-              <li>Phase 1: <em>both</em> LEDs at 8.33 % duty (150 µs ON / 1.80 ms); STM32G071 active polling at 32 MHz with peripherals on (~3.0 mA).</li>
-              <li>Phase 2: <em>TOP only</em> at 0.28 % duty (5 µs ON / 1.80 ms); STM32G071 Stop1 with COMP1 + RTC wake (~2 µA).</li>
+              <li>Phase 1 (Rev-B today): <em>both</em> LEDs continuously on (TIM1_CH2 PWM 100 % duty for TOP, static GPIO high for BOT); STM32G071 active polling at 32 MHz with peripherals on (~3.0 mA).</li>
+              <li>Phase 2 (Rev-C target, peripherals initialised but unused in Rev-B): <em>TOP only</em> at 0.28 % duty (5 µs ON / 1.80 ms); STM32G071 Stop1 with COMP1 + RTC wake (~2 µA).</li>
               <li>DOGS164W-A LCD: 250 µA continuous in both phases — cannot be turned off because the clinician must see the flow rate.</li>
               <li>Photodiode bias: 1 mA pull-up current when LED on, scaled by LED duty cycle and channel count.</li>
               <li>COMP1, boost-quiescent, ADC_V_BAT divider, gate pull-ups: grouped as ~5 µA misc.</li>
@@ -603,19 +603,19 @@ const SPEEDS = [
     { label: string; total_uA: number; runtime_days: number;
       components: { name: string; uA: number; color: string }[] }> = {
     active: {
-      label: 'P1 active',
-      total_uA: 6905,
-      runtime_days: 5.5,
+      label: 'P1 active (Rev-B)',
+      total_uA: 47253,
+      runtime_days: 0.8,
       components: [
-        { name: 'IR LEDs (2 × 21 mA × 8.3 %)',      uA: 3486, color: '#ff6b35' },
-        { name: 'STM32G071 (active polling)',       uA: 3000, color: '#06b6d4' },
-        { name: 'DOGS164 LCD',                      uA: 250,  color: '#9aa3ad' },
-        { name: 'Photodiode pull-ups (2 × duty)',   uA: 166,  color: '#f4a261' },
-        { name: 'COMP1 / boost-q / misc',           uA: 3,    color: '#577590' },
+        { name: 'IR LEDs (2 × 21 mA continuous)',   uA: 42000, color: '#ff6b35' },
+        { name: 'STM32G071 (active polling)',       uA: 3000,  color: '#06b6d4' },
+        { name: 'Photodiode pull-ups (2 × continuous)', uA: 2000, color: '#f4a261' },
+        { name: 'DOGS164 LCD',                      uA: 250,   color: '#9aa3ad' },
+        { name: 'COMP1 / boost-q / misc',           uA: 3,     color: '#577590' },
       ],
     },
     stop: {
-      label: 'P2 stop',
+      label: 'P2 stop (Rev-C target)',
       total_uA: 318,
       runtime_days: 119,
       components: [
