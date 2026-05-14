@@ -1,0 +1,11 @@
+
+================ RESULT ================
+  Duration:               60 s
+  Drops captured:         0
+  Scale samples:          1373  (window 59.9 s)
+  Scale first / last (g): +46.7804  ->  +47.5460
+  Scale delta (mL):       +0.7656
+  LCD/UART sum (mL):      +0.0000
+  Error  (LCD-scale):     -0.7656 mL
+  Error  %:               -100.00  %
+========================================

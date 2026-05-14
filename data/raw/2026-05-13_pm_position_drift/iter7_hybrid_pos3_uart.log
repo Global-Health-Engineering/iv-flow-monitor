@@ -1,0 +1,40 @@
+2.244	EVT,21939,DROP dt=12 tau=7 V=40.5
+2.249	DROP,21939,4,12360,7404,6742,75,43,405,1,0,3802,3530
+2.263	EVT,21939,PULSES,tau_lo_us=7404,tau_hi_us=1672,bot_lo_us=6742,bot_hi_us=5495,half_top_us=4315,half_bot_us=1953,top_peak=3918,bot_peak=3872
+6.824	EVT,26528,DROP dt=12 tau=7 V=40.4
+6.829	DROP,26528,5,12357,7413,6750,75,43,404,1,0,3808,3534
+6.842	EVT,26528,PULSES,tau_lo_us=7413,tau_hi_us=1668,bot_lo_us=6750,bot_hi_us=5489,half_top_us=1518,half_bot_us=1963,top_peak=3912,bot_peak=3872
+11.416	EVT,31128,DROP dt=12 tau=7 V=40.4
+11.421	DROP,31128,6,12369,7354,6680,75,43,404,1,0,3801,3531
+11.437	EVT,31128,PULSES,tau_lo_us=7354,tau_hi_us=1666,bot_lo_us=6680,bot_hi_us=5493,half_top_us=4085,half_bot_us=1952,top_peak=3914,bot_peak=3872
+16.035	EVT,35749,DROP dt=12 tau=7 V=40.7
+16.035	DROP,35749,7,12353,7285,6762,75,43,407,1,0,3800,3534
+16.047	EVT,35749,PULSES,tau_lo_us=7285,tau_hi_us=1648,bot_lo_us=6762,bot_hi_us=5499,half_top_us=4319,half_bot_us=1900,top_peak=3918,bot_peak=3866
+20.657	EVT,40384,DROP dt=12 tau=7 V=40.6
+20.662	DROP,40384,8,12381,7361,6797,75,43,406,1,0,3800,3528
+20.675	EVT,40384,PULSES,tau_lo_us=7361,tau_hi_us=1675,bot_lo_us=6797,bot_hi_us=5510,half_top_us=1503,half_bot_us=2010,top_peak=3912,bot_peak=3874
+25.289	EVT,45025,DROP dt=12 tau=7 V=39.6
+25.294	DROP,45024,9,12373,7220,6635,75,42,396,1,0,3796,3535
+25.308	EVT,45024,PULSES,tau_lo_us=7220,tau_hi_us=1599,bot_lo_us=6635,bot_hi_us=5461,half_top_us=4202,half_bot_us=1902,top_peak=3915,bot_peak=3872
+29.898	EVT,49642,DROP dt=12 tau=6 V=39.9
+29.904	DROP,49642,10,12285,6857,6608,75,42,399,1,0,3802,3535
+29.906	EVT,49650,CAL DONE Vcal=40.3 uL
+30.007	EVT,49642,PULSES,tau_lo_us=6857,tau_hi_us=1599,bot_lo_us=6608,bot_hi_us=5432,half_top_us=1374,half_bot_us=1900,top_peak=3907,bot_peak=3872
+34.478	EVT,54230,DROP dt=12 tau=7 V=40.8
+34.483	DROP,54229,11,12347,7357,6766,75,43,408,2,0,3802,3535
+34.496	EVT,54229,PULSES,tau_lo_us=7357,tau_hi_us=1674,bot_lo_us=6766,bot_hi_us=5501,half_top_us=4238,half_bot_us=1976,top_peak=3919,bot_peak=3873
+39.099	EVT,58859,DROP dt=12 tau=7 V=40.6
+39.104	DROP,58859,12,12360,7254,6804,75,43,406,2,483,3797,3528
+39.118	EVT,58859,PULSES,tau_lo_us=7254,tau_hi_us=1665,bot_lo_us=6804,bot_hi_us=5500,half_top_us=4212,half_bot_us=2088,top_peak=3918,bot_peak=3875
+43.722	EVT,63490,DROP dt=12 tau=7 V=40.4
+43.727	DROP,63489,13,12362,7385,6722,75,43,404,2,967,3798,3526
+43.740	EVT,63489,PULSES,tau_lo_us=7385,tau_hi_us=1716,bot_lo_us=6722,bot_hi_us=5490,half_top_us=4368,half_bot_us=2003,top_peak=3918,bot_peak=3874
+48.334	EVT,68109,DROP dt=12 tau=7 V=39.3
+48.339	DROP,68109,14,12403,7115,6689,75,42,393,2,1450,3797,3535
+48.352	EVT,68109,PULSES,tau_lo_us=7115,tau_hi_us=1663,bot_lo_us=6689,bot_hi_us=5464,half_top_us=4286,half_bot_us=2045,top_peak=3917,bot_peak=3873
+52.951	EVT,72735,DROP dt=12 tau=7 V=39.7
+52.957	DROP,72735,15,12365,7321,6724,75,42,397,2,1934,3799,3528
+52.970	EVT,72735,PULSES,tau_lo_us=7321,tau_hi_us=1666,bot_lo_us=6724,bot_hi_us=5464,half_top_us=4154,half_bot_us=2237,top_peak=3915,bot_peak=3876
+57.558	EVT,77351,DROP dt=12 tau=7 V=40.0
+57.564	DROP,77351,16,12404,7053,6625,75,42,400,2,2417,3802,3535
+57.577	EVT,77351,PULSES,tau_lo_us=7053,tau_hi_us=1657,bot_lo_us=6625,bot_hi_us=5494,half_top_us=4237,half_bot_us=1829,top_peak=3918,bot_peak=3872

@@ -1,0 +1,41 @@
+4.669	
+4.670	# Dripito Rev-B UART log v1; t_ms = ms since boot
+4.671	# EVT,<t_ms>,<message>
+4.672	# DROP,<t_ms>,<drop_N>,<transit_us>,<pulse_top_us>,<pulse_bot_us>,<v_centi_mps>,<d_0.1mm>,<V_0.1uL>,<state>,<Q_0.01mLph>,<top_raw>,<bot_raw>
+4.673	# EVT,<t_ms>,DROP_REJECT,reason=<r>,dt_us=...,tau_us=...,v_mmps_tenths=...,d_mm_tenths=...,V_uL_tenths=...
+4.674	EVT,6133,BOOT done
+4.676	EVT,6135,thresh T_hi=3795 B_hi=3534 T_core=3845 B_core=3584
+9.770	EVT,11239,DROP dt=12 tau=6 V=39.1
+9.774	DROP,11239,1,12392,6910,6562,75,42,391,1,0,3800,3535
+9.788	EVT,11239,PULSES,tau_lo_us=6910,tau_hi_us=1740,bot_lo_us=6562,bot_hi_us=5447,half_top_us=1505,half_bot_us=2076,top_peak=3919,bot_peak=3876
+14.598	EVT,16077,DROP dt=12 tau=7 V=39.9
+14.603	DROP,16077,2,12363,7310,6695,75,42,399,1,0,3798,3535
+14.617	EVT,16077,PULSES,tau_lo_us=7310,tau_hi_us=1691,bot_lo_us=6695,bot_hi_us=5470,half_top_us=1414,half_bot_us=1854,top_peak=3913,bot_peak=3866
+19.397	EVT,20885,DROP dt=12 tau=7 V=41.0
+19.402	DROP,20885,3,12349,7193,6680,75,43,410,1,0,3800,3543
+19.415	EVT,20885,PULSES,tau_lo_us=7193,tau_hi_us=1805,bot_lo_us=6680,bot_hi_us=5510,half_top_us=1428,half_bot_us=1818,top_peak=3919,bot_peak=3867
+24.258	EVT,25755,DROP dt=12 tau=7 V=36.7
+24.263	DROP,25754,4,12507,7213,6530,74,41,367,1,0,3800,3544
+24.277	EVT,25754,PULSES,tau_lo_us=7213,tau_hi_us=1809,bot_lo_us=6530,bot_hi_us=5390,half_top_us=1354,half_bot_us=3169,top_peak=3915,bot_peak=3882
+28.955	EVT,30460,DROP dt=12 tau=7 V=40.1
+28.960	DROP,30459,5,12402,7138,6609,75,42,401,1,0,3801,3552
+28.973	EVT,30459,PULSES,tau_lo_us=7138,tau_hi_us=1747,bot_lo_us=6609,bot_hi_us=5498,half_top_us=1431,half_bot_us=1981,top_peak=3915,bot_peak=3876
+33.719	EVT,35233,DROP dt=12 tau=7 V=40.5
+33.725	DROP,35232,6,12373,7114,6652,75,43,405,1,0,3798,3535
+33.738	EVT,35232,PULSES,tau_lo_us=7114,tau_hi_us=1701,bot_lo_us=6652,bot_hi_us=5500,half_top_us=1483,half_bot_us=1849,top_peak=3919,bot_peak=3872
+38.479	EVT,40000,DROP dt=12 tau=7 V=41.4
+38.484	DROP,40000,7,12308,7326,6767,75,43,414,1,0,3801,3535
+38.497	EVT,40000,PULSES,tau_lo_us=7326,tau_hi_us=1667,bot_lo_us=6767,bot_hi_us=5510,half_top_us=4160,half_bot_us=2076,top_peak=3915,bot_peak=3875
+43.242	EVT,44770,DROP dt=12 tau=7 V=41.7
+43.246	DROP,44770,8,12346,7480,6882,75,43,417,1,0,3801,3544
+43.260	EVT,44770,PULSES,tau_lo_us=7480,tau_hi_us=1817,bot_lo_us=6882,bot_hi_us=5538,half_top_us=1658,half_bot_us=2040,top_peak=3927,bot_peak=3878
+48.019	EVT,49556,DROP dt=12 tau=7 V=43.2
+48.024	DROP,49556,9,12235,7231,6778,76,44,432,1,0,3808,3539
+48.037	EVT,49556,PULSES,tau_lo_us=7231,tau_hi_us=1670,bot_lo_us=6778,bot_hi_us=5549,half_top_us=4177,half_bot_us=1951,top_peak=3917,bot_peak=3872
+52.802	EVT,54347,DROP dt=12 tau=7 V=42.0
+52.808	DROP,54347,10,12346,7426,6891,75,43,420,1,0,3801,3544
+52.810	EVT,54355,CAL DONE Vcal=40.7 uL
+52.914	EVT,54347,PULSES,tau_lo_us=7426,tau_hi_us=1817,bot_lo_us=6891,bot_hi_us=5552,half_top_us=1432,half_bot_us=1973,top_peak=3917,bot_peak=3874
+57.591	EVT,59143,DROP dt=12 tau=7 V=42.4
+57.595	DROP,59143,11,12347,7431,6855,75,43,424,2,0,3803,3544
+57.608	EVT,59143,PULSES,tau_lo_us=7431,tau_hi_us=1817,bot_lo_us=6855,bot_hi_us=5570,half_top_us=1361,half_bot_us=2052,top_peak=3914,bot_peak=3877
