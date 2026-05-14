@@ -623,35 +623,68 @@ p.lead { color: var(--fg); font-size: 19px; max-width: 60ch; }
   font-family: var(--mono);
   font-size: 13px;
 }
+.power-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 11.5px;
+  color: var(--fg-mute);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.power-card-head .pw-mode {
+  color: var(--ir);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12.5px;
+  transition: color .25s ease;
+}
 .power-card .power-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  margin: 8px 0;
 }
 .power-card .power-row .k { color: var(--fg-mute); }
 .power-card .power-row .v { color: var(--flow); font-size: 16px; }
-.power-bar-wrap { margin: 14px 0; }
-.power-bar {
-  height: 8px;
-  background: var(--bg-3);
+
+.power-breakdown {
+  margin: 14px 0 16px;
+}
+.pw-stack {
+  display: flex;
+  height: 14px;
+  width: 100%;
   border-radius: 4px;
   overflow: hidden;
-  position: relative;
+  background: var(--bg-3);
 }
-.power-bar-fill {
+.pw-seg {
   height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, var(--green) 0%, var(--yellow) 50%, var(--red) 100%);
-  transition: width .4s ease;
+  transition: width .35s ease;
 }
-.power-bar-axis {
-  display: flex;
-  justify-content: space-between;
-  font-size: 9px;
-  color: var(--fg-mute);
-  margin-top: 4px;
-  letter-spacing: .04em;
+.pw-legend {
+  margin-top: 12px;
+  display: grid;
+  gap: 5px;
+  font-size: 11.5px;
 }
+.pw-leg-row {
+  display: grid;
+  grid-template-columns: 14px 1fr auto 40px;
+  gap: 10px;
+  align-items: center;
+  color: var(--fg-dim);
+}
+.pw-leg-swatch {
+  width: 10px; height: 10px; border-radius: 2px;
+}
+.pw-leg-name { color: var(--fg-mute); font-family: var(--sans); font-size: 12px; }
+.pw-leg-val  { color: var(--fg); font-family: var(--mono); font-size: 11.5px; }
+.pw-leg-pct  { color: var(--fg-mute); font-family: var(--mono); text-align: right; }
+
 .power-card .power-foot {
   margin-top: 14px;
   padding-top: 12px;
@@ -661,6 +694,36 @@ p.lead { color: var(--fg); font-size: 19px; max-width: 60ch; }
   color: var(--fg-mute);
   line-height: 1.55;
 }
+.power-card .power-foot strong { color: var(--fg); }
+.power-card .power-foot a { color: var(--ir); }
+
+.pw-assumptions {
+  margin-top: 10px;
+}
+.pw-assumptions summary {
+  cursor: pointer;
+  color: var(--fg-mute);
+  font-size: 10.5px;
+  user-select: none;
+  list-style: none;
+}
+.pw-assumptions summary::before {
+  content: "▸ ";
+  display: inline-block;
+  margin-right: 2px;
+  transition: transform .15s ease;
+}
+.pw-assumptions[open] summary::before { content: "▾ "; }
+.pw-assumptions ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--fg-dim);
+  line-height: 1.55;
+  font-size: 10.5px;
+}
+.pw-assumptions li { margin-bottom: 4px; }
+.pw-assumptions sub { font-size: 9px; }
+.pw-assumptions em { color: var(--ir); font-style: normal; font-weight: 500; }
 
 /* ---------- pcb ---------- */
 .pcb-grid {

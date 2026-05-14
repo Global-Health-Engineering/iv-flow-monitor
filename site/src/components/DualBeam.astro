@@ -343,26 +343,37 @@ const SPEEDS = [
         monitoring (full-load bench measurement pending — see power tree).
       </p>
 
-      <div class="power-card">
-        <div class="power-row">
-          <span class="k">Average current</span>
-          <span class="v" id="pw-current">— mA</span>
-        </div>
-        <div class="power-bar-wrap">
-          <div class="power-bar"><div class="power-bar-fill" id="pw-bar"></div></div>
-          <div class="power-bar-axis">
-            <span>6 µA</span><span>100 µA</span><span>1 mA</span><span>5 mA</span>
-          </div>
+      <div class="power-card" id="power-card">
+        <div class="power-card-head">
+          <span class="pw-head-tag">Predicted power ·</span>
+          <span class="pw-mode" id="pw-mode">P1 active</span>
         </div>
         <div class="power-row">
-          <span class="k">Single-AA projection</span>
+          <span class="k">Total at 3.3 V rail</span>
+          <span class="v" id="pw-current">— µA</span>
+        </div>
+        <div class="power-breakdown" id="pw-breakdown"></div>
+        <div class="power-row">
+          <span class="k">Alkaline-AA runtime *</span>
           <span class="v" id="pw-runtime">— days</span>
         </div>
-        <div class="power-foot" id="pw-foot">
-          Phase 1 polls both photodiodes continuously — the readout is fast, the
-          battery is short. Phase 2 sleeps the MCU and pulses the IR LEDs at a
-          low duty cycle; the comparator wakes the core only when a drop is in
-          the beam.
+        <div class="power-foot">
+          <strong>Predicted, not bench-measured.</strong> Field-power-chain
+          validation deferred to Rev-C (see <a href="#limitations">§7
+          Limitations</a>). Real boost-converter efficiency drops at light
+          loads, so the P2 runtime estimate may be 10–20 % optimistic.
+          <details class="pw-assumptions">
+            <summary>Assumptions used in this calculation</summary>
+            <ul>
+              <li>Alkaline AA at 2 500 mAh × 1.5 V = 3 750 mWh raw; 80 % average TPS610981 boost efficiency → 3 000 mWh usable on the 3.3 V rail.</li>
+              <li>IR LED drive: I<sub>F</sub> = (3.3 − 1.2 V) / 100 Ω = 21 mA per LED, fixed by R1/R4.</li>
+              <li>Phase 1: <em>both</em> LEDs at 8.33 % duty (150 µs ON / 1.80 ms); STM32G071 active polling at 32 MHz with peripherals on (~3.0 mA).</li>
+              <li>Phase 2: <em>TOP only</em> at 0.28 % duty (5 µs ON / 1.80 ms); STM32G071 Stop1 with COMP1 + RTC wake (~2 µA).</li>
+              <li>DOGS164W-A LCD: 250 µA continuous in both phases — cannot be turned off because the clinician must see the flow rate.</li>
+              <li>Photodiode bias: 1 mA pull-up current when LED on, scaled by LED duty cycle and channel count.</li>
+              <li>COMP1, boost-quiescent, ADC_V_BAT divider, gate pull-ups: grouped as ~5 µA misc.</li>
+            </ul>
+          </details>
         </div>
       </div>
 
@@ -552,9 +563,10 @@ const SPEEDS = [
   const cmpDBarFill = document.getElementById('cmp-d-bar-fill')!;
 
   // power card
-  const pwCurrent = document.getElementById('pw-current')!;
-  const pwRuntime = document.getElementById('pw-runtime')!;
-  const pwBar     = document.getElementById('pw-bar')!;
+  const pwCurrent   = document.getElementById('pw-current')!;
+  const pwRuntime   = document.getElementById('pw-runtime')!;
+  const pwMode      = document.getElementById('pw-mode')!;
+  const pwBreakdown = document.getElementById('pw-breakdown')!;
 
   // ---------- Data tables ----------
   const FLUID_TABLE: Record<string, { name: string; V_uL: number }> = {
@@ -584,9 +596,37 @@ const SPEEDS = [
   const TAU_RATIO      = V_TOP_MS / V_BOT_MS;                        // ≈ 0.688
   const DT_NOMINAL_MS  = 1000 * (V_BOT_MS - V_TOP_MS) / G;           // ≈ 19.4 ms
 
-  // Phase-current targets (µA average)
-  const PHASE_CURRENT_UA = { active: 1500, stop: 80 };
-  const AA_CAPACITY_MAH  = 1500;
+  // Predicted power budget per phase (datasheets + firmware constants, NOT
+  // bench-measured — see §7 Limitations and the assumption block in the
+  // power-card footer). One entry per phase; each entry sums to total_uA.
+  const POWER_DATA: Record<'active' | 'stop',
+    { label: string; total_uA: number; runtime_days: number;
+      components: { name: string; uA: number; color: string }[] }> = {
+    active: {
+      label: 'P1 active',
+      total_uA: 6905,
+      runtime_days: 5.5,
+      components: [
+        { name: 'IR LEDs (2 × 21 mA × 8.3 %)',      uA: 3486, color: '#ff6b35' },
+        { name: 'STM32G071 (active polling)',       uA: 3000, color: '#06b6d4' },
+        { name: 'DOGS164 LCD',                      uA: 250,  color: '#9aa3ad' },
+        { name: 'Photodiode pull-ups (2 × duty)',   uA: 166,  color: '#f4a261' },
+        { name: 'COMP1 / boost-q / misc',           uA: 3,    color: '#577590' },
+      ],
+    },
+    stop: {
+      label: 'P2 stop',
+      total_uA: 318,
+      runtime_days: 119,
+      components: [
+        { name: 'DOGS164 LCD',                      uA: 250,  color: '#9aa3ad' },
+        { name: 'IR LED TOP (21 mA × 0.28 %)',      uA: 59,   color: '#ff6b35' },
+        { name: 'COMP1 / boost-q / misc',           uA: 4,    color: '#577590' },
+        { name: 'Photodiode pull-up (TOP × duty)',  uA: 3,    color: '#f4a261' },
+        { name: 'STM32G071 (Stop1 + RTC)',          uA: 2,    color: '#06b6d4' },
+      ],
+    },
+  };
 
   // ---------- State ----------
   const STATE = {
@@ -856,25 +896,39 @@ const SPEEDS = [
   }
 
   // ---------- Power card ----------
+  // Renders the component breakdown for the currently-selected phase.
+  // Single-beam is the deprecated counter — always-on LED, treated as P1.
   function updatePowerCard() {
-    // Single-beam is the deprecated counter — always-on LED, no Phase-2 benefit.
-    const uA = STATE.beamMode === 'single'
-      ? PHASE_CURRENT_UA.active
-      : PHASE_CURRENT_UA[STATE.phaseMode];
-    const mA = uA / 1000;
-    pwCurrent.textContent = mA >= 0.1 ? `${mA.toFixed(2)} mA` : `${uA.toFixed(0)} µA`;
-    const hours = AA_CAPACITY_MAH / mA;
-    const days = hours / 24;
-    pwRuntime.textContent = days < 1 ? `${hours.toFixed(0)} hr`
-                          : days < 1000 ? `${days.toFixed(0)} days`
-                          : `${(days / 365).toFixed(1)} yr`;
-    // Log-scale bar: 6 µA → 0%, 5 mA → 100%
-    const logMin = Math.log10(6);
-    const logMax = Math.log10(5000);
-    const pct = Math.max(0, Math.min(100,
-      ((Math.log10(uA) - logMin) / (logMax - logMin)) * 100
-    ));
-    (pwBar as HTMLElement).style.width = `${pct}%`;
+    const mode: 'active' | 'stop' =
+      STATE.beamMode === 'single' ? 'active' : STATE.phaseMode;
+    const data = POWER_DATA[mode];
+
+    pwMode.textContent = data.label;
+    pwCurrent.textContent = data.total_uA >= 1000
+      ? `${(data.total_uA / 1000).toFixed(2)} mA`
+      : `${data.total_uA.toFixed(0)} µA`;
+    pwRuntime.textContent = data.runtime_days >= 365
+      ? `${(data.runtime_days / 365).toFixed(1)} yr`
+      : `${data.runtime_days.toFixed(data.runtime_days >= 10 ? 0 : 1)} days`;
+
+    const fmt = (uA: number) => uA >= 1000 ? `${(uA / 1000).toFixed(2)} mA` : `${uA} µA`;
+    const total = data.total_uA;
+    const segments = data.components.map((c) => {
+      const pct = (c.uA / total) * 100;
+      return `<div class="pw-seg" style="width:${pct.toFixed(2)}%;background:${c.color};"`
+           + ` title="${c.name}: ${fmt(c.uA)} (${pct.toFixed(0)} %)"></div>`;
+    }).join('');
+    const legend = data.components.map((c) => {
+      const pct = (c.uA / total) * 100;
+      return `<div class="pw-leg-row">`
+           + `<span class="pw-leg-swatch" style="background:${c.color};"></span>`
+           + `<span class="pw-leg-name">${c.name}</span>`
+           + `<span class="pw-leg-val">${fmt(c.uA)}</span>`
+           + `<span class="pw-leg-pct">${pct.toFixed(0)} %</span>`
+           + `</div>`;
+    }).join('');
+    pwBreakdown.innerHTML = `<div class="pw-stack">${segments}</div>`
+                          + `<div class="pw-legend">${legend}</div>`;
   }
 
   // ---------- Phase 2 readout: locked at the P1 averages ----------
