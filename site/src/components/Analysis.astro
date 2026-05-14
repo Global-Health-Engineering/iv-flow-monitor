@@ -77,40 +77,8 @@ const findings = [
     contamination of the chord measurement — see
     <a href="#limitations">§17 in Limitations</a> for the architectural
     explanation and the cross-session Bland-Altman with the actual
-    measured residuals. The figures below sanity-check the bench
-    protocol itself (gravimetric integrity per V_50 run; time-of-flight
-    measurement consistent across mounts).
+    measured residuals.
   </p>
-
-  <h3 class="findings-heading">Sanity-check figures from the bench dataset</h3>
-
-  <figure class="analysis-figure">
-    <img src={`${baseUrl}analysis/cumulative_mass_v50.png`}
-         alt="Four panels, one per V_50 paired run, showing gravimetric cumulative mass versus scale-clock time. Each panel includes a linear fit overlaid in orange, with drop count, total mass delta, mean drop volume, and flow rate annotated in the panel title." />
-    <figcaption>
-      <strong>Gravimetric integrity, per V_50 run.</strong> Mass-vs-time
-      from the Mettler MS scale stream, one panel per paired run. The
-      orange linear fit gives the run-mean flow rate; deviations from
-      linearity flag flow-regime breaks. V_50_01, _02, _05 are smooth
-      and linear; V_50_03 shows a visible stutter at ~70–90 s into the
-      run (a real flow micro-stall, not a device defect — drop counts
-      and gravimetric mass both reflect it).
-    </figcaption>
-  </figure>
-
-  <figure class="analysis-figure">
-    <img src={`${baseUrl}analysis/velocity_histogram_per_position.png`}
-         alt="Histograms of drop velocity at the TOP beam, one color per mount position, all overlaid on the same axis. Different positions show different median velocities ranging from 0.73 to 1.32 meters per second." />
-    <figcaption>
-      <strong>Time-of-flight reliability across positions.</strong>
-      Per-drop transit-velocity v<sub>TOP</sub> = L/Δt − ½g·Δt, by mount
-      position. Different mounts produce different free-fall distances
-      before the drop reaches TOP, so the velocity itself is position-
-      dependent — but the dual-beam transit-time measurement reliably
-      captures whatever velocity each drop has. Medians span 0.73–1.32 m/s
-      across the nine distinct mounts in the campaign.
-    </figcaption>
-  </figure>
 
   <h3 class="findings-heading">Findings of architectural significance</h3>
   <ul class="findings">
