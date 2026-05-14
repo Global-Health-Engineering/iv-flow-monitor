@@ -69,13 +69,13 @@ A single head height (drip chamber to TOP beam) was used in the validation. Clin
 ## 14. Bench-day firmware constants modified during the campaign
 
 The firmware constants in effect during the 2026-05-13 bench were not the as-committed values at the start of the day. Changes applied in-bench and committed in the same PR:
-- `BEAM_WIDTH_MM`: 5.0 → 0.0 (W=5 over-corrected, causing 100 % DROP_REJECT)
-- `CAL_MARGIN_HIGH`: 220 → 100 → 30 (transiently for the backsplash test) → 100 (final)
-- `CAL_MARGIN_LOW`: 80 → 30 → 10 (transient) → 30 (final)
-- `D_MM_MIN`: 1.0 → 0.1
-- `V_CAL_K`: new constant 1.27 introduced after V_50_01..04 calibration
+- `BEAM_WIDTH_MM`: 5.0 → 0.0 (W=5 over-corrected, causing 100 % DROP_REJECT) — `firmware/STM32CubeIDE/Dripito/Core/Src/main.c:42`
+- `CAL_MARGIN_HIGH`: 220 → 100 → 30 (transiently for the backsplash test) → 100 (final) — `main.c:67`
+- `CAL_MARGIN_LOW`: 80 → 30 → 10 (transient) → 30 (final) — `main.c:63`
+- `D_MM_MIN`: 1.0 → 0.1 — `main.c:95`
+- `V_CAL_K`: new constant 1.27 introduced after V_50_01..04 calibration — `main.c:46`
 
-Each is documented in the firmware comments with a 2026-05-13 dated note explaining the bench observation that motivated the change.
+Each is documented at the cited line in the firmware comments with a 2026-05-13 dated note explaining the bench observation that motivated the change.
 
 ## 15. Single bench day
 
@@ -87,7 +87,7 @@ The a priori MC error budget attributes 49 % of the predicted MAPE to per-board 
 
 ## 17. Position-dependence — `V_CAL_K` does not generalise across mount heights
 
-A second bench session on the afternoon of 2026-05-13 mounted the device at three different heights on the same drip chamber (same drip set, same fluid, same board) and measured the K required to make the LCD-summed drop volume match the gravimetric reading. The required K varied from 0.28 to 1.27 across positions — not the ±30 % per-run residual quoted from the V_50_01..05 morning campaign, but a 4.5× range driven by mount geometry alone. Raw runs live in `data/raw/2026-05-13_pm_position_drift/` with a per-run README.
+A second bench session on the afternoon of 2026-05-13 mounted the device at four mount positions on the same drip chamber (same drip set, same fluid, same board) and measured the K required to make the LCD-summed drop volume match the gravimetric reading. For the shipped mean-of-pulses algorithm, K_fit varied from 0.42 to 1.27 across positions (3× spread). Across all eight algorithm variants trialled in the afternoon, K_fit spanned 0.42 to 1.98 (4.7× spread driven by mount geometry alone) — not the ±30 % per-run residual quoted from the V_50_01..05 morning campaign. Raw runs live in `data/raw/2026-05-13_pm_position_drift/` with a per-run README.
 
 Three position-dependent contaminants of the chord measurement were isolated:
 

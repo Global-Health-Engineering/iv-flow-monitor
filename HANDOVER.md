@@ -40,9 +40,11 @@ What's reproducible:
 
 1. **Position-dependent chord measurement (§17 of `docs/limitations.md`).**
    The 2026-05-13 afternoon session measured the K required to make the
-   LCD-summed drop volume match gravimetric at three different mount
-   heights on the same drip chamber. K ranged 0.28–1.27 — a 4.5×
-   spread driven by mount geometry alone. Three contaminants isolated:
+   LCD-summed drop volume match gravimetric at four mount positions on
+   the same drip chamber. With the shipped mean-of-pulses algorithm,
+   K_fit ranged 0.42–1.27 across positions (3× spread); across all eight
+   algorithm variants trialled, K_fit spanned 0.42–1.98 (4.7× spread
+   driven by mount geometry alone). Three contaminants isolated:
    *umbilical at TOP* (filament still attached when drop crosses TOP
    beam), *backsplash at BOT* (splash particles cross BOT beam after the
    drop body has cleared), *threshold-vs-peak mismatch* on the dual-

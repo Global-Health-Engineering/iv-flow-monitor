@@ -90,15 +90,18 @@ firmware — is the independent verification.
 ## Afternoon — mount-height re-test (position-drift)
 
 A second session on the afternoon of 2026-05-13 mounted the device at
-three different heights on the same drip chamber, same drip set, same
+four mount positions on the same drip chamber, same drip set, same
 fluid, same board, and measured the K required to make the LCD-summed
 drop volume match the gravimetric reading at that position.
 
-**Finding: K varied from 0.28 to 1.27 across positions — a 4.5× range
-driven by mount geometry alone.** Three position-dependent contaminants
-of the chord measurement were isolated (umbilical at TOP, backsplash at
-BOT, threshold-vs-peak mismatch at the dual-threshold core pulse). No
-single (algorithm, K) combination passed ±5 % at all positions.
+**Finding: for the shipped mean-of-pulses algorithm, K_fit varied from
+0.42 to 1.27 across positions (3× spread). Across all eight algorithm
+variants trialled in the afternoon, K_fit spanned 0.42 to 1.98 (4.7×
+spread driven by mount geometry alone).** Three position-dependent
+contaminants of the chord measurement were isolated (umbilical at TOP,
+backsplash at BOT, threshold-vs-peak mismatch at the dual-threshold core
+pulse). No single (algorithm, K) combination passed ±5 % at all
+positions.
 
 Full architectural analysis: `limitations.md` §17.
 
