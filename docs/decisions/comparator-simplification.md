@@ -6,7 +6,7 @@
 
 ## Context
 
-The Rev-A reference design (Fionn Smith) used an external LMV331 single-channel comparator to threshold the photodiode signal into a clean digital drop-detection edge for the MCU. Rev-B targets the STM32G071C8TX, which exposes one internal comparator peripheral (COMP1) with a programmable reference via the internal DAC and a deterministic propagation time in the sub-microsecond range — well below the millisecond-scale drop transit window. Keeping the external LMV331 would have added a part, a BOM line, and three passives without obvious gain over the on-chip alternative.
+The Rev-A reference design used an external LMV331 single-channel comparator to threshold the photodiode signal into a clean digital drop-detection edge for the MCU. Rev-B targets the STM32G071C8TX, which exposes one internal comparator peripheral (COMP1) with a programmable reference via the internal DAC and a deterministic propagation time in the sub-microsecond range — well below the millisecond-scale drop transit window. Keeping the external LMV331 would have added a part, a BOM line, and three passives without obvious gain over the on-chip alternative.
 
 ## Decision
 
@@ -21,9 +21,8 @@ The external LMV331 comparator was removed from the Rev-B schematic. The photodi
 
 - One IC and ~3 passives removed from the BOM. Lower component count, smaller PCB area for the analog front-end, simpler procurement.
 - Threshold and hysteresis configurability moved from external resistor network to firmware (DAC code + COMP1 hysteresis bits). This is more flexible (per-board threshold without rework) but couples the analog signal chain to firmware correctness.
-- The simplification was identified during schematic review without prompting from the supervisor. Documented here as evidence of independent design initiative beyond the inherited Rev-A reference.
 
 ## Revisit triggers
 
-- If bench measurement shows COMP1's input offset voltage or hysteresis is inadequate against the photodiode noise floor at low illumination, revisit by either tuning DAC threshold + hysteresis bits or restoring an external comparator. (Open as of 2026-03-12; to be validated during Rev-B bring-up.)
+- If bench measurement shows COMP1's input offset voltage or hysteresis is inadequate against the photodiode noise floor at low illumination, revisit by either tuning DAC threshold + hysteresis bits or restoring an external comparator.
 - If a future revision moves to a different MCU family without an on-chip comparator suitable for this task, the LMV331/TLV3201 path becomes the natural fallback.
