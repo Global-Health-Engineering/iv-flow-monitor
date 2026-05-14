@@ -1,8 +1,6 @@
 # Optical Architecture — Dual-Beam Phase 1 + LPTIM1 Single-Beam Phase 2
 
 **Date:** 2026-03-15
-**Status:** Accepted
-**Decider:** Leandro Catarci
 
 ## Context
 

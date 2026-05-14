@@ -1,8 +1,6 @@
 # Enclosure Geometry — External AA Holder on Sensor Arm for Counterbalance
 
 **Date:** 2026-03-15
-**Status:** Accepted
-**Decider:** Leandro Catarci
 
 ## Context
 

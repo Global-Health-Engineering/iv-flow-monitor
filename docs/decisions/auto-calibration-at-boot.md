@@ -1,8 +1,6 @@
 # Threshold Auto-Calibration at Boot
 
 **Date:** 2026-05-04 (architecture); finalised as primary path during 2026-05-13 campaign
-**Status:** Accepted (auto-cal primary; no manual `#define` fallback)
-**Decider:** Leandro Catarci
 
 ## Context
 

@@ -1,8 +1,6 @@
 # Battery Cell Size — Retain Single AA (vs AAA)
 
 **Date:** 2026-05-03
-**Status:** Accepted (AA retained for Rev-B)
-**Decider:** Leandro Catarci
 
 ## Context
 

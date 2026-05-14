@@ -1,8 +1,6 @@
 # USB Interface Removal — 5-Pin UART Debug Header Instead
 
 **Date:** 2026-03-12
-**Status:** Accepted
-**Decider:** Leandro Catarci
 
 ## Context
 

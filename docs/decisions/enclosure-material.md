@@ -1,8 +1,6 @@
 # Enclosure Material — ASA White, FDM, Snap-Fit Assembly
 
 **Date:** 2026-03-15
-**Status:** Accepted
-**Decider:** Leandro Catarci
 
 ## Context
 

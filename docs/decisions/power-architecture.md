@@ -1,8 +1,6 @@
 # Power Architecture — Single Li-ion AA via TPS610981 Boost
 
 **Date:** 2026-03-24
-**Status:** Accepted
-**Decider:** Leandro Catarci (with input from Jakub Tkaczuk, Elia, Janis Tupesis WHO EMT)
 
 ## Context
 

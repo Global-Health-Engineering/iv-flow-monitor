@@ -1,8 +1,6 @@
 # Power Architecture — Decision Process Record
 
 **Date:** 2026-03-26 (process records 2026-03-17 → 2026-03-26)
-**Status:** Companion to [`power-architecture.md`](power-architecture.md) (Accepted)
-**Decider:** Leandro Catarci
 
 > This is a record of *how* the power architecture decision was made — the supervisor pushback, the external clinical consultation, the solar feasibility investigation, and the methodology used to produce an unbiased comparison. The decision itself (Li-ion AA + TPS610981 boost) lives in [`power-architecture.md`](power-architecture.md).
 

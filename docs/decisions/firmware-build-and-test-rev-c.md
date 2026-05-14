@@ -1,8 +1,6 @@
 # Firmware Build & Test — CubeIDE Only in Rev-B, Dockerized Build + Host-Side Tests Deferred to Rev-C
 
 **Date:** 2026-05-14
-**Status:** Accepted
-**Decider:** Leandro Catarci
 
 ## Context
 

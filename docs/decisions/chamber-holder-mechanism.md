@@ -1,8 +1,6 @@
 # Chamber Holder Mechanism — Sliding Gear with Beam Pass-Through
 
 **Date:** 2026-04-28 (initial direction); 2026-05 (Rev-B implementation)
-**Status:** Accepted (Rev-B); Rev-C rework expected
-**Decider:** Leandro Catarci
 
 ## Context
 

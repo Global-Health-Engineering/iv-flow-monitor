@@ -14,8 +14,6 @@ Each decision is a single Markdown file with a stable structure:
 # <Decision title>
 
 **Date:** YYYY-MM-DD
-**Status:** proposed | accepted | superseded by [link] | reverted
-**Decider:** Leandro Catarci (with input from <list>)
 
 ## Context
 What problem does this solve? What constraints apply? What did we know

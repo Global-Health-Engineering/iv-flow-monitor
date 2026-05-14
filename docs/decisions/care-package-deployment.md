@@ -1,8 +1,6 @@
 # Dripito Care Package — Planned Deployment Model (Not Executed)
 
 **Date:** 2026-03-26 (initial framing)
-**Status:** Proposed (planning-stage outlook; not implemented for Rev-B)
-**Decider:** Leandro Catarci
 
 > **This ADR documents a planned deployment model, not a built deliverable.** The Care Package is the deployment-context surround for the cell-chemistry decision in [`power-architecture.md`](power-architecture.md). No Rev-B unit has shipped with this kit; the model exists as a target for Rev-C field trials and as input to manufacturing / logistics planning.
 

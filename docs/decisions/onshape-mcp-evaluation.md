@@ -1,8 +1,6 @@
 # Onshape MCP Evaluation — Not Adopted for Rev-B
 
 **Date:** 2026-05-01
-**Status:** Evaluated → Deferred to Rev-C
-**Decider:** Leandro Catarci
 
 ## Context
 

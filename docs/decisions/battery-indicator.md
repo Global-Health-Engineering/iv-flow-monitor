@@ -1,8 +1,6 @@
 # Battery Indicator — Low-Battery Symbol via Threshold (Deferred to Rev-C)
 
 **Date:** 2026-03-27
-**Status:** Proposed (deferred to Rev-C; Rev-B firmware has no battery indicator)
-**Decider:** Leandro Catarci
 
 ## Context
 

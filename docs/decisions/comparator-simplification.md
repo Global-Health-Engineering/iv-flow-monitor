@@ -1,8 +1,6 @@
 # COMP1 Simplification — Remove External LMV331, Use STM32G071 Internal Comparator
 
 **Date:** 2026-03-12
-**Status:** Accepted
-**Decider:** Leandro Catarci
 
 ## Context
 

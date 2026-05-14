@@ -1,8 +1,6 @@
 # Sensor Arm Alignment — FDM in Rev-B, Injection Moulding Pathway
 
 **Date:** 2026-03-15 (initial); 2026-05-01 (Rev-B implementation decision)
-**Status:** Accepted (Rev-B FDM); injection moulding identified as Rev-C / production-scale path
-**Decider:** Leandro Catarci
 
 ## Context
 

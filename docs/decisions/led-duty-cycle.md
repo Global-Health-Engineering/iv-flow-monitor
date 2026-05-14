@@ -1,8 +1,6 @@
 # LED Duty Cycle — Phase 2 IR LED at 0.3 %
 
 **Date:** 2026-04-01
-**Status:** Accepted
-**Decider:** Leandro Catarci
 
 ## Context
 
