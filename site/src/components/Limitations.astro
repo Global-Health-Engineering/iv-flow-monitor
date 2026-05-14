@@ -79,15 +79,52 @@ const items = [
     ))}
   </ol>
 
-  <div class="position-eyebrow">§17 — the raw evidence.</div>
+  <div class="position-eyebrow">§17 — the headline + the raw evidence.</div>
   <p class="position-lead">
-    Three views of the same 2026-05-14 PM raw-waveform capture set
+    Two summary figures (the per-drop Bland-Altman across all sessions
+    and the per-drop TOP-vs-BOT pulse-width scatter) followed by three
+    raw-waveform views of the 2026-05-14 PM capture set
     (TOP + BOT photodiode signals, ADC counts above baseline, time
     relative to the TOP-entry trigger). The capture firmware
     (<code>ENABLE_RAW_CAPTURE</code> on the
     <code>feat/raw-capture-rev-c</code> branch) is <em>not</em> the Rev-B
     submission firmware; submission firmware = HEAD of <code>v2</code>.
   </p>
+
+  <figure class="position-figure">
+    <img src={`${baseUrl}analysis/bland_altman_cross_session.png`}
+         alt="Cross-session Bland-Altman plot. X-axis is the mean of device estimate and gravimetric truth in microliters; Y-axis is the difference. Morning V_50 dots cluster tightly inside a horizontal band marked with morning bias and morning plus-minus 1.96 SD. Afternoon position-drift and PM raw-waveform dots scatter upward to plus 200 microliters, well outside the band." />
+    <figcaption>
+      <strong>One V_CAL_K, three sessions, one image.</strong> Bland-
+      Altman per-drop, with the same <code>V_CAL_K = 1.27</code> applied
+      uniformly across morning V_50 calibration (n=737, blue), afternoon
+      position-drift (n=150, orange), and PM raw-waveform (n=51, green).
+      Morning dots sit inside the morning ±1.96·SD bracket (the design
+      headline); afternoon and PM dots scatter to <code>+150 µL</code>
+      and <code>+220 µL</code> respectively — well outside the band. The
+      residual scales with drop size, which is the umbilical/splash
+      contamination pattern §17 describes. The cleanest summary of the
+      position-dependence finding.
+    </figcaption>
+  </figure>
+
+  <figure class="position-figure">
+    <img src={`${baseUrl}analysis/top_vs_bot_pulse_scatter.png`}
+         alt="Square scatter plot of TOP beam pulse width versus BOT beam pulse width, both in microseconds, with one dot per drop colored by mount position. The physics-expected diagonal BOT/TOP equals 0.92 is drawn as a dashed line. All clusters sit above the diagonal and form distinct groups for different mount positions." />
+    <figcaption>
+      <strong>The same drop, different (TOP, BOT) signatures.</strong>
+      Per-drop scatter of <code>pulse_top_us</code> versus
+      <code>pulse_bot_us</code>, coloured by mount position. The
+      physics-expected diagonal (BOT/TOP = 0.92, from gravity
+      acceleration over the 10 mm pitch) is drawn for reference; every
+      bench cluster sits above it (BOT pulse longer than physics
+      predicts — backsplash + intrinsic asymmetry, §3). And the
+      clusters separate by mount: A_morning_V50 around (3500, 5500–6000),
+      B_high_splash around (4000, 8000), P3 minus 4 mm shifted
+      again. The chord-time architecture's 2D feature space contains
+      position information that a single scalar K can't absorb (§17).
+    </figcaption>
+  </figure>
 
   <figure class="position-figure">
     <img src={`${baseUrl}analysis/raw_combined_P3_minus4mm.png`}
