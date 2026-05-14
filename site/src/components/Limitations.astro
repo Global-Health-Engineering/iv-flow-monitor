@@ -1,0 +1,160 @@
+---
+const LIMITATIONS_URL =
+  'https://github.com/Gluflex/iv-flow-monitor-v2/blob/v2/docs/limitations.md';
+
+const items = [
+  {
+    section: '§17',
+    title: 'Position-dependence — V_CAL_K does not generalise across mount heights.',
+    impact: 'Architectural',
+    body: 'On the afternoon of 2026-05-13 the device was mounted at three different heights on the same drip chamber (same set, same fluid, same board). The K required to match gravimetric ground truth varied from 0.28 to 1.27 across positions — a 4.5× spread driven by mount geometry alone. Three contaminants of the chord measurement were isolated: an umbilical at TOP when mounted close to the drip orifice, backsplash at BOT when mounted close to the pool, and a threshold-vs-peak mismatch that shifts with the boot-cal baseline. Several algorithm variants (BOT_core only, TOP_low only, adaptive EMA, hybrid splash-detection) were tried; no single (algorithm, K) combination passed ±5 % at all positions. Conclusion: with Rev-B optics, the optical chord-time architecture does not deliver a position-invariant V_CAL_K. The two beams do deliver position-agnostic velocity and reliable drop counting — what they don\'t deliver is a position-invariant chord. The Rev-C path is named: a second pair of horizontally-separated beams, wider TOP-to-BOT separation, and TOP/BOT gain equalisation.',
+    anchor: '17-position-dependence--v_cal_k-does-not-generalise-across-mount-heights',
+  },
+  {
+    section: '§1',
+    title: 'Drop-shape oscillation is the fundamental residual error.',
+    impact: 'Fundamental',
+    body: 'The chord-time architecture measures the vertical extent of each drop at the beam plane and assumes a sphere to compute volume. Drops oscillate between oblate (squashed) and prolate (elongated) for the first 10–30 mm after detachment; the beam catches each drop at an unpredictable point in this oscillation. Over many drops the bias averages out (V_CAL_K = 1.27 works on the run mean), but the per-drop CV stays inflated at ±30 % across V_50_01..05. A Rev-C optical front-end with two horizontally-separated beam pairs catching horizontal as well as vertical extent would let the firmware infer the oscillation phase.',
+    anchor: '1-drop-shape-oscillation-is-the-fundamental-residual-error',
+  },
+  {
+    section: '§2',
+    title: 'Two-orifice divergence invalidates per-drop matching.',
+    impact: 'Methodological',
+    body: 'The device measures drops at the drip-chamber orifice; the scale captures mass at the end-of-tubing orifice. These two orifices have different geometry and surface-tension dynamics, so they drip at different rates with different drop sizes. The 2026-05-13 campaign saw end-orifice drop counts 1.5–2× the chamber-drop counts. Mass conservation still gives a clean shared quantity (total mass passed), so the valid ground truth at the per-drop level is V_true_chamber = mass / N_UART, not a per-drop pairing. tools/match_scale_drops.py is preserved as an exploratory diagnostic only.',
+    anchor: '2-two-orifice-divergence-invalidates-per-drop-matching',
+  },
+  {
+    section: '§3',
+    title: 'TOP-vs-BOT optical asymmetry (backsplash + intrinsic).',
+    impact: 'Optical',
+    body: 'The TOP and BOT photodiodes report systematically different pulse widths for the same drop. The 2026-05-13 backsplash falsifiability test repositioned the device higher on the chamber; the BOT/TOP ratio fell from 1.75–2.50× to ~1.13×, suggesting the BOT photodiode sees a real splash-driven extension that the threshold-margin clips. A Rev-C optical front-end with the BOT beam moved further from the pool, plus TOP/BOT gain equalisation, would close the gap.',
+    anchor: '3-top-vs-bot-optical-asymmetry-backsplash--intrinsic',
+  },
+  {
+    section: '§5',
+    title: 'V_CAL_K is fitted to the runs it is validated against.',
+    impact: 'Methodological',
+    body: 'The scalar correction V_CAL_K = 1.27 is the unweighted mean of per-run k_pre across V_50_01..04. Reporting per-run residual against these four runs is therefore a self-consistency check, not an independent validation. V_50_05 (run after baking V_CAL_K into firmware) is the first generalisation check. Multi-day / multi-board / multi-fluid generalisation is out of Rev-B scope.',
+    anchor: '5-v_cal_k--127-is-fitted-to-the-same-runs-it-is-validated-against',
+  },
+  {
+    section: '§7',
+    title: 'Tethered 3.3 V supply.',
+    impact: 'Scope',
+    body: 'The validation dataset is collected with 3.3 V supplied directly to MCU VDD via ST-Link, bypassing the TPS610981 boost converter from the single-cell battery design. The dataset validates the optical detection chain, sphere-model calibration, and dual-beam architecture. The field power chain (1 × AA Li-ion → boost → MCU) is deferred to Rev-C.',
+    anchor: '7-tethered-33-v-supply',
+  },
+];
+---
+<section id="limitations">
+  <div class="eyebrow">Honest weaknesses</div>
+  <h2>What Rev-B does not resolve.</h2>
+  <p class="lead">
+    Six load-bearing limitations of the Rev-B validation, in order of impact on
+    the conclusions. The full list of 17 is in
+    <a href={LIMITATIONS_URL} rel="noopener"><code>docs/limitations.md</code></a>.
+    Each item below links to its full section. The position-dependence finding
+    (§17) is the single most important Rev-C-relevant learning of the bench
+    campaign.
+  </p>
+
+  <ol class="lim-list">
+    {items.map((it) => (
+      <li class="lim-item">
+        <a class="lim-row" href={`${LIMITATIONS_URL}#${it.anchor}`} rel="noopener">
+          <span class="lim-section">{it.section}</span>
+          <div class="lim-text">
+            <div class="lim-head">
+              <h3>{it.title}</h3>
+              <span class={`lim-impact lim-impact-${it.impact.toLowerCase()}`}>{it.impact}</span>
+            </div>
+            <p>{it.body}</p>
+          </div>
+        </a>
+      </li>
+    ))}
+  </ol>
+</section>
+
+<style>
+  #limitations {
+    padding-top: 56px;
+    padding-bottom: 56px;
+  }
+  #limitations h2 {
+    font-family: var(--serif);
+    font-size: 40px;
+    line-height: 1.1;
+    max-width: 22ch;
+    margin: 0 0 18px;
+  }
+  .lim-list {
+    list-style: none;
+    padding: 0;
+    margin: 36px 0 0;
+    display: grid;
+    gap: 14px;
+  }
+  .lim-row {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 18px;
+    padding: 20px 22px;
+    background: var(--bg-2);
+    border-left: 3px solid var(--ir);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 120ms ease, border-color 120ms ease;
+  }
+  .lim-row:hover {
+    background: var(--bg-3);
+    border-left-color: var(--flow);
+  }
+  .lim-section {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--ir);
+    padding-top: 2px;
+  }
+  .lim-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .lim-head h3 {
+    font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.3;
+    margin: 0;
+    color: var(--fg);
+  }
+  .lim-impact {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    color: var(--fg-mute);
+    white-space: nowrap;
+  }
+  .lim-impact-architectural { color: var(--ir); border-color: var(--ir); }
+  .lim-impact-fundamental   { color: var(--ir); border-color: var(--ir); }
+  .lim-impact-optical       { color: var(--flow); border-color: var(--flow); }
+  .lim-text p {
+    margin: 0;
+    color: var(--fg-dim);
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+  @media (max-width: 720px) {
+    .lim-row { grid-template-columns: 1fr; gap: 6px; }
+    .lim-section { font-size: 13px; }
+    #limitations h2 { font-size: 30px; }
+  }
+</style>
