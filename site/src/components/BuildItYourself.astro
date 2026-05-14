@@ -97,12 +97,17 @@ const downloads = [
   </p>
 
   <div class="build-grid">
-    <div class="bom-card" data-qty="1">
+    <div class="bom-card" data-qty="1" data-expanded-groups="">
       <div class="bom-head">
         <h3>Bill of materials</h3>
-        <div class="qty-toggle" role="group" aria-label="Quantity tier">
-          <button type="button" class="qty-btn active" data-qty-target="1">qty 1</button>
-          <button type="button" class="qty-btn" data-qty-target="1000">qty 1000</button>
+        <div class="bom-head-controls">
+          <button type="button" class="bom-expand-all" data-expand-all-target="expand">
+            Expand all <span aria-hidden="true">▾</span>
+          </button>
+          <div class="qty-toggle" role="group" aria-label="Quantity tier">
+            <button type="button" class="qty-btn active" data-qty-target="1">qty 1</button>
+            <button type="button" class="qty-btn" data-qty-target="1000">qty 1000</button>
+          </div>
         </div>
       </div>
       <table class="bom-table">
@@ -117,29 +122,38 @@ const downloads = [
           </tr>
         </thead>
         <tbody>
-          {groups.map((g, gi) => (
-            <>
-              <tr class="bom-group"><td colspan="6">{g.label}</td></tr>
-              {rows.filter((r) => r.group === g.key).map((r) => (
-                <tr>
-                  <td>{r.ref || '—'}</td>
-                  <td>
-                    {r.description}
-                    {r.category && <span class="bom-tag">{r.category}</span>}
+          {groups.map((g, gi) => {
+            const groupRows = rows.filter((r) => r.group === g.key);
+            return (
+              <>
+                <tr class="bom-group" data-group-toggle={g.key} role="button" tabindex="0" aria-expanded="false">
+                  <td colspan="6">
+                    <span class="bom-group-chevron" aria-hidden="true">▸</span>
+                    <span class="bom-group-label">{g.label}</span>
+                    <span class="bom-group-count">{groupRows.length} item{groupRows.length === 1 ? '' : 's'}</span>
                   </td>
-                  <td><code>{r.mfgPn || '—'}</code></td>
-                  <td class="num">{r.qtyPerUnit}</td>
-                  <td class="num col-1">{fmtPrice(r.priceUsd1)}</td>
-                  <td class="num col-1k">{fmtPrice(r.priceUsd1k)}</td>
                 </tr>
-              ))}
-              <tr class="bom-subtotal">
-                <td colspan="4">Subtotal · {g.label}</td>
-                <td class="num col-1">{totalsQty1[gi].complete ? `$${totalsQty1[gi].total.toFixed(2)}` : '—'}</td>
-                <td class="num col-1k">{totalsQty1k[gi].complete ? `$${totalsQty1k[gi].total.toFixed(2)}` : '—'}</td>
-              </tr>
-            </>
-          ))}
+                {groupRows.map((r) => (
+                  <tr class="bom-line" data-group={g.key}>
+                    <td>{r.ref || '—'}</td>
+                    <td>
+                      {r.description}
+                      {r.category && <span class="bom-tag">{r.category}</span>}
+                    </td>
+                    <td><code>{r.mfgPn || '—'}</code></td>
+                    <td class="num">{r.qtyPerUnit}</td>
+                    <td class="num col-1">{fmtPrice(r.priceUsd1)}</td>
+                    <td class="num col-1k">{fmtPrice(r.priceUsd1k)}</td>
+                  </tr>
+                ))}
+                <tr class="bom-subtotal">
+                  <td colspan="4">Subtotal · {g.label}</td>
+                  <td class="num col-1">{totalsQty1[gi].complete ? `$${totalsQty1[gi].total.toFixed(2)}` : '—'}</td>
+                  <td class="num col-1k">{totalsQty1k[gi].complete ? `$${totalsQty1k[gi].total.toFixed(2)}` : '—'}</td>
+                </tr>
+              </>
+            );
+          })}
           <tr class="bom-grand">
             <td colspan="4"><strong>Estimated unit cost</strong></td>
             <td class="num col-1"><strong>{qty1Complete ? `$${grandQty1.toFixed(2)}` : `≈ $${grandQty1.toFixed(2)}`}</strong></td>
@@ -178,15 +192,57 @@ const downloads = [
 
     <script is:inline>
       document.querySelectorAll('.bom-card').forEach((card) => {
-        const btns = card.querySelectorAll('.qty-btn');
-        btns.forEach((btn) => {
+        // qty=1 / qty=1000 toggle
+        const qtyBtns = card.querySelectorAll('.qty-btn');
+        qtyBtns.forEach((btn) => {
           btn.addEventListener('click', () => {
             const target = btn.getAttribute('data-qty-target');
             if (!target) return;
             card.setAttribute('data-qty', target);
-            btns.forEach((b) => b.classList.toggle('active', b === btn));
+            qtyBtns.forEach((b) => b.classList.toggle('active', b === btn));
           });
         });
+
+        // Per-group expand/collapse
+        const ALL_GROUPS = ['pcb', 'satellite', 'mechanical'];
+        const getOpen = () => (card.getAttribute('data-expanded-groups') || '').trim().split(/\s+/).filter(Boolean);
+        const setOpen = (list) => {
+          card.setAttribute('data-expanded-groups', list.join(' '));
+          // Sync group-row aria-expanded
+          card.querySelectorAll('tr.bom-group[data-group-toggle]').forEach((tr) => {
+            const key = tr.getAttribute('data-group-toggle');
+            tr.setAttribute('aria-expanded', list.includes(key) ? 'true' : 'false');
+          });
+          // Sync the expand-all button label
+          const allBtn = card.querySelector('.bom-expand-all');
+          if (allBtn) {
+            const allOpen = ALL_GROUPS.every((g) => list.includes(g));
+            allBtn.setAttribute('data-expand-all-target', allOpen ? 'collapse' : 'expand');
+            allBtn.innerHTML = allOpen
+              ? 'Collapse all <span aria-hidden="true">▴</span>'
+              : 'Expand all <span aria-hidden="true">▾</span>';
+          }
+        };
+
+        card.querySelectorAll('tr.bom-group[data-group-toggle]').forEach((tr) => {
+          const toggle = () => {
+            const key = tr.getAttribute('data-group-toggle');
+            const open = getOpen();
+            setOpen(open.includes(key) ? open.filter((k) => k !== key) : open.concat(key));
+          };
+          tr.addEventListener('click', toggle);
+          tr.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+          });
+        });
+
+        const expandAllBtn = card.querySelector('.bom-expand-all');
+        if (expandAllBtn) {
+          expandAllBtn.addEventListener('click', () => {
+            const target = expandAllBtn.getAttribute('data-expand-all-target');
+            setOpen(target === 'expand' ? ALL_GROUPS.slice() : []);
+          });
+        }
       });
     </script>
 
@@ -194,6 +250,14 @@ const downloads = [
       .bom-card { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; }
       .bom-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
       .bom-head h3 { margin: 0; }
+      .bom-head-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .bom-expand-all {
+        font-family: var(--mono); font-size: 12px; padding: 5px 12px;
+        background: transparent; color: var(--fg-mute);
+        border: 1px solid var(--line); border-radius: 999px;
+        cursor: pointer; transition: color 120ms ease, border-color 120ms ease;
+      }
+      .bom-expand-all:hover { color: var(--fg); border-color: var(--fg-mute); }
       .qty-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; background: var(--bg-3); }
       .qty-btn { font-family: var(--mono); font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 0; background: transparent; color: var(--fg-mute); cursor: pointer; transition: background 120ms ease, color 120ms ease; }
       .qty-btn:hover { color: var(--fg); }
@@ -204,7 +268,27 @@ const downloads = [
       .bom-table .num { text-align: right; font-variant-numeric: tabular-nums; }
       .bom-table code { font-family: var(--mono); font-size: 12px; color: var(--fg-dim); }
       .bom-tag { display: inline-block; margin-left: 8px; padding: 1px 6px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em; border: 1px solid var(--line); border-radius: 4px; color: var(--fg-mute); }
+
+      /* Group header (clickable to expand) */
       tr.bom-group td { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ir); padding-top: 14px; border-bottom: 1px solid var(--ir); }
+      tr.bom-group[data-group-toggle] { cursor: pointer; user-select: none; }
+      tr.bom-group[data-group-toggle]:hover td { color: var(--fg); border-bottom-color: var(--fg); }
+      tr.bom-group .bom-group-chevron {
+        display: inline-block; width: 14px; margin-right: 6px;
+        color: var(--fg-mute); transition: transform 120ms ease, color 120ms ease;
+      }
+      tr.bom-group[aria-expanded="true"] .bom-group-chevron { transform: rotate(90deg); color: var(--ir); }
+      tr.bom-group .bom-group-count {
+        float: right; font-size: 10.5px; color: var(--fg-mute);
+        letter-spacing: 0; text-transform: none;
+      }
+
+      /* Collapsed by default: hide line items unless their group is expanded */
+      .bom-card tr.bom-line { display: none; }
+      .bom-card[data-expanded-groups~="pcb"] tr.bom-line[data-group="pcb"] { display: table-row; }
+      .bom-card[data-expanded-groups~="satellite"] tr.bom-line[data-group="satellite"] { display: table-row; }
+      .bom-card[data-expanded-groups~="mechanical"] tr.bom-line[data-group="mechanical"] { display: table-row; }
+
       tr.bom-subtotal td { color: var(--fg-mute); font-size: 12.5px; border-top: 1px dashed var(--line); border-bottom: 1px solid var(--line); }
       tr.bom-grand td { border-top: 2px solid var(--line-2); border-bottom: 0; padding-top: 14px; }
       .bom-card[data-qty="1"]   .col-1k { display: none; }
