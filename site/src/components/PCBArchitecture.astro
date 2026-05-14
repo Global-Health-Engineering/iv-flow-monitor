@@ -96,7 +96,7 @@ const hotspots = [
     ir: {
       tag: 'Hotspot 3 · IR drive train',
       title: 'Q1/Q2 · 2N7002 N-MOSFET pair',
-      text: 'On-board low-side switches (Q1, Q2) for the two 940 nm IR LEDs, with R1/R4 = 100 Ω current-limit, R2/R6 = 100 kΩ gate pull-down (silences the LEDs during MCU reset/boot), R3/R7 = 100 Ω gate series. The LEDs themselves live on a satellite breakout, reached via the J4 FFC ribbon (see hotspot 5). Phase 1 schedule: 150 µs ON / 1.80 ms period (8.3 % duty, ~1.5 mA average per LED). Phase 2 stop-mode: 5 µs ON / 1.80 ms period (~0.3 % duty).',
+      text: 'On-board low-side switches (Q1, Q2) for the two 940 nm IR LEDs, with R1/R4 = 100 Ω current-limit, R2/R6 = 100 kΩ gate pull-down (silences the LEDs during MCU reset/boot), R3/R7 = 100 Ω gate series. The LEDs themselves live on a satellite breakout, reached via the J4 FFC ribbon (see hotspot 5). Rev-B Phase 1 (active dual-beam detection): both LEDs always-on continuous, ~21 mA each (TIM1_CH2 PWM at 100 % duty for TOP, static GPIO high for BOT). Phase 2 (LPTIM1-pulsed at ~0.3 % duty per the led-duty-cycle ADR) is initialised but deferred — Rev-B ships in Phase 1 only; Phase 2 power-savings is a Rev-C deliverable.',
       adr: 'LED duty cycle',
       adrSlug: 'led-duty-cycle',
       schematic: 'schematic-ir.png',
