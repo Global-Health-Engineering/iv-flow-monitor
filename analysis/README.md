@@ -3,9 +3,6 @@
 Reproducible data analysis pipeline. Takes raw CSVs from `../data/` and
 produces every figure, table, and number quoted in `../docs/results.md`.
 
-The contract: a reader who clones this repo cold can run a single command
-and regenerate every plot from raw measurements.
-
 ## Layout
 
 ```
