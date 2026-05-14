@@ -89,7 +89,10 @@ const downloads = [
 ---
 <section id="build">
   <div class="eyebrow">Reproduce</div>
-  <h2>Build it yourself.</h2>
+  <div class="build-head">
+    <h2>Build it yourself.</h2>
+    <a class="skip-to-assembly" href="#assembly">Skip to assembly →</a>
+  </div>
   <p class="lead">
     Single Docker command regenerates every figure in this page from the raw
     CSVs (Zenodo deposit pending mint). Hardware files are KiCad 8 native; firmware
@@ -238,6 +241,14 @@ const downloads = [
     </script>
 
     <style>
+      .build-head { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-bottom: 8px; }
+      .build-head h2 { margin: 0; }
+      .skip-to-assembly {
+        font-family: var(--mono); font-size: 13px; color: var(--ir);
+        text-decoration: none; opacity: 0.85; white-space: nowrap;
+        transition: opacity 120ms ease;
+      }
+      .skip-to-assembly:hover { opacity: 1; text-decoration: underline; }
       .bom-card { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; }
       .bom-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
       .bom-head h3 { margin: 0; }
