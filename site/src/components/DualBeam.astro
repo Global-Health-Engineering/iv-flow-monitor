@@ -172,19 +172,21 @@ const SPEEDS = [
           </svg>
 
           <div class="readout">
-            <div class="label-mini" style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
-              <span id="r-section-label">Per-beam shadow</span>
-              <span class="placeholder-inline" id="r-section-tag" style="font-size:8px; padding:1px 5px;">simulated</span>
+            <div id="r-phase1-block">
+              <div class="label-mini" style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
+                <span id="r-section-label">Per-beam shadow</span>
+                <span class="placeholder-inline" id="r-section-tag" style="font-size:8px; padding:1px 5px;">simulated</span>
+              </div>
+              <div class="row"><span class="k">τ_TOP</span><span class="v" id="r-tau-top">— ms</span></div>
+              <div class="row"><span class="k">τ_BOT</span><span class="v" id="r-tau-bot">— ms</span></div>
+              <div class="row"><span class="k">Δt</span>   <span class="v" id="r-dt">— ms</span></div>
+              <div class="divider"></div>
+              <div class="label-mini">Inferred (sphere model)</div>
+              <div class="row"><span class="k">v_drop</span><span class="v" id="r-v">— m·s⁻¹</span></div>
+              <div class="row"><span class="k">d_drop</span><span class="v" id="r-d">— mm</span></div>
+              <div class="row"><span class="k">V_drop</span><span class="v" id="r-vol">— µL</span></div>
+              <div class="divider"></div>
             </div>
-            <div class="row"><span class="k">τ_TOP</span><span class="v" id="r-tau-top">— ms</span></div>
-            <div class="row"><span class="k">τ_BOT</span><span class="v" id="r-tau-bot">— ms</span></div>
-            <div class="row"><span class="k">Δt</span>   <span class="v" id="r-dt">— ms</span></div>
-            <div class="divider"></div>
-            <div class="label-mini">Inferred (sphere model)</div>
-            <div class="row"><span class="k">v_drop</span><span class="v" id="r-v">— m·s⁻¹</span></div>
-            <div class="row"><span class="k">d_drop</span><span class="v" id="r-d">— mm</span></div>
-            <div class="row"><span class="k">V_drop</span><span class="v" id="r-vol">— µL</span></div>
-            <div class="divider"></div>
             <div class="row">
               <span class="k" id="r-count-label">Calibration</span>
               <span class="v" id="r-count-val">— / 5</span>
@@ -511,6 +513,7 @@ const SPEEDS = [
   const sectionTag   = document.getElementById('r-section-tag')!;
   const countLabel   = document.getElementById('r-count-label')!;
   const countVal     = document.getElementById('r-count-val')!;
+  const phase1Block  = document.getElementById('r-phase1-block')!;
   const beamT    = document.getElementById('beam-top')!;
   const beamB    = document.getElementById('beam-bot')!;
   const dT       = document.getElementById('diode-top')!;
@@ -986,14 +989,16 @@ const SPEEDS = [
   //   P2 (dual+stop):   averages locked from N P1 drops; count of P2 drops so far
   //   Single:           deprecated counter — no τ measured; count only
   function updateReadoutMode() {
+    // P2 (count-only) hides the per-beam-shadow + sphere-model rows entirely;
+    // P1 shows them.
+    phase1Block.style.display = STATE.phaseMode === 'stop' ? 'none' : '';
+
     if (STATE.beamMode === 'single') {
       sectionLabel.textContent = 'Single-beam · counter only';
       sectionTag.textContent = 'no τ measured';
       countLabel.textContent = 'Drops counted';
       countVal.textContent = `${countedDrops}`;
     } else if (STATE.phaseMode === 'stop') {
-      sectionLabel.textContent = 'Calibration · locked from P1';
-      sectionTag.textContent = `N=${volBuffer.length}`;
       countLabel.textContent = 'Drops counted (P2)';
       countVal.textContent = `${countedDrops}`;
     } else {
