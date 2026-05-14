@@ -2,11 +2,13 @@
 const stats = [
   {
     num: 'CHF 11',
-    label: 'estimated component BOM at qty=1000 (first-prototype unit ≈ CHF 33). Vendor-agnostic across macro (10 / 15 / 20 gtt·mL⁻¹) and micro (60 gtt·mL⁻¹) drip sets.',
+    label: 'estimated component BOM at qty=1000 (first-prototype unit ≈ CHF 33). Compatible with any standard IV drip set — macro (10 / 15 / 20 gtt·mL⁻¹) and micro (60 gtt·mL⁻¹).',
+    source: { text: '§ Build it yourself (BOM)', href: '#build' },
   },
   {
     num: '119 days',
-    label: 'standby runtime on a single alkaline AA cell (5.5 days actively monitoring). Field-deployable in clinics without reliable mains or USB charging.',
+    label: 'between-patient standby on a single alkaline AA cell (5.5 days under continuous active monitoring). Field-deployable in clinics without reliable mains or USB charging.',
+    source: { text: '§ Dual-beam (power budget)', href: '#dual-beam' },
   },
   {
     num: '73 %',
@@ -27,6 +29,9 @@ const stats = [
     single missed adjustment can deliver a fatal volume to a child in under an
     hour.
   </p>
+  <div class="lead-source">
+    Source: <a href="https://www.nice.org.uk/guidance/ng29" rel="noopener noreferrer">NICE NG29 — Intravenous fluid therapy in children and young people in hospital</a>
+  </div>
 
   <div class="problem-stats">
     {stats.map((s) => (
@@ -43,14 +48,18 @@ const stats = [
   </div>
 
   <style>
-    .stat-source {
-      margin-top: 10px;
+    .stat-source,
+    .lead-source {
       font-family: var(--mono);
       font-size: 11.5px;
       color: var(--fg-mute);
       letter-spacing: .01em;
     }
-    .stat-source a { color: var(--fg-mute); text-decoration: underline; text-decoration-color: var(--line); }
-    .stat-source a:hover { color: var(--fg); text-decoration-color: var(--fg-mute); }
+    .stat-source { margin-top: 10px; }
+    .lead-source { margin-top: -8px; margin-bottom: 22px; max-width: 68ch; }
+    .stat-source a,
+    .lead-source a { color: var(--fg-mute); text-decoration: underline; text-decoration-color: var(--line); }
+    .stat-source a:hover,
+    .lead-source a:hover { color: var(--fg); text-decoration-color: var(--fg-mute); }
   </style>
 </section>
