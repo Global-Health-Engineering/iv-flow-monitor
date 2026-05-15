@@ -7,7 +7,7 @@ abstract: >-
   dual-beam drop detection, monochrome graphic LCD, piezo alarm, and
   ASA-printed enclosure. Designed and built as an MSc semester project at
   ETH Global Health Engineering, 2026.
-license: CERN-OHL-2.0
+license: CERN-OHL-P-2.0
 type: software
 version: "1.0.0"
 date-released: "2026-05-14"

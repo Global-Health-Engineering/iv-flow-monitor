@@ -129,4 +129,4 @@ documenting each mount position and the K required at that position.
 Leandro Catarci · `lcatarci@ethz.ch` · ETH MSc, D-MAVT, Global Health
 Engineering. Bachelor thesis baseline:
 [10.5281/zenodo.16902366](https://doi.org/10.5281/zenodo.16902366).
-Rev-B dataset DOI minted post-submission.
+Rev-B archive DOI: [10.5281/zenodo.20199232](https://doi.org/10.5281/zenodo.20199232).
