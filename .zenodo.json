@@ -1,0 +1,41 @@
+{
+  "title": "Dripito — Open-Source IV Drip Flow Monitor (Rev-B)",
+  "description": "<p>A single-AA-cell intravenous-infusion flow-rate monitor for pediatric care in resource-constrained clinical settings. Custom STM32G0 PCB, optical dual-beam drop detection, monochrome graphic LCD, piezo alarm, and ASA-printed enclosure. Designed and built as an MSc semester project at ETH Zürich Global Health Engineering, 2026.</p><p>Includes firmware, hardware schematics (KiCad), enclosure CAD, and bench-validation data. Project page: <a href=\"https://gluflex.github.io/dripito\">https://gluflex.github.io/dripito</a>.</p>",
+  "upload_type": "software",
+  "creators": [
+    {
+      "name": "Catarci, Leandro",
+      "affiliation": "ETH Zürich, Department of Mechanical and Process Engineering",
+      "orcid": "0009-0005-8216-7799"
+    }
+  ],
+  "contributors": [
+    {
+      "name": "Tkaczuk, Jakub",
+      "affiliation": "ETH Zürich, Global Health Engineering",
+      "type": "Supervisor"
+    }
+  ],
+  "license": "CERN-OHL-P-2.0",
+  "access_right": "open",
+  "version": "1.0.0",
+  "keywords": [
+    "medical devices",
+    "global health",
+    "open hardware",
+    "humanitarian engineering",
+    "intravenous infusion",
+    "drip monitor",
+    "pediatric care",
+    "STM32",
+    "KiCad",
+    "embedded systems"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.16902366",
+      "relation": "continues",
+      "scheme": "doi"
+    }
+  ]
+}
