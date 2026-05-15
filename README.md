@@ -11,6 +11,7 @@ gear-driven broom-holder chamber clamp.
 
 ### → Full project page: **[gluflex.github.io/dripito](https://gluflex.github.io/dripito)**
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20199232.svg)](https://doi.org/10.5281/zenodo.20199232)
 [![Build & test](https://github.com/Gluflex/dripito/actions/workflows/build-and-test.yml/badge.svg?branch=v2)](https://github.com/Gluflex/dripito/actions/workflows/build-and-test.yml)
 [![Deploy site to GitHub Pages](https://github.com/Gluflex/dripito/actions/workflows/deploy-site.yml/badge.svg?branch=v2)](https://github.com/Gluflex/dripito/actions/workflows/deploy-site.yml)
 
@@ -83,7 +84,9 @@ A bachelor thesis preceded this work:
 
 > Catarci, L. (2025). *Improving a Low-Cost Intravenous Infusion Flow-Rate Monitoring Device for Paediatric Care in Humanitarian Healthcare Settings*. ETH Zürich, Global Health Engineering. DOI: [10.5281/zenodo.16902366](https://doi.org/10.5281/zenodo.16902366).
 
-The Rev-B work in this repository will receive its own Zenodo DOI: *10.5281/zenodo.TBD — minted post-submission*.
+The Rev-B work in this repository:
+
+> Catarci, L. (2026). *Dripito — Open-Source IV Drip Flow Monitor (Rev-B)*. ETH Zürich, Global Health Engineering. DOI: [10.5281/zenodo.20199232](https://doi.org/10.5281/zenodo.20199232).
 
 ## License
 

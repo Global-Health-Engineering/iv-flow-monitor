@@ -13,7 +13,7 @@ version: "1.0.0"
 date-released: "2026-05-14"
 repository-code: "https://github.com/Gluflex/dripito"
 url: "https://gluflex.github.io/dripito"
-# doi: 10.5281/zenodo.TBD  # populated post-submission
+doi: 10.5281/zenodo.20199232
 authors:
   - family-names: Catarci
     given-names: Leandro

@@ -136,5 +136,5 @@ limit; the V_50 headline in `results.md` is left untouched.
 ## Archive / Zenodo
 
 The complete dataset (raw CSVs, gravimetric log, per-drop summaries,
-analysis pipeline) will be deposited on Zenodo under CC BY 4.0. DOI:
-*10.5281/zenodo.TBD — minted post-submission*.
+analysis pipeline) is deposited on Zenodo under CC BY 4.0. DOI:
+[10.5281/zenodo.20199232](https://doi.org/10.5281/zenodo.20199232).
